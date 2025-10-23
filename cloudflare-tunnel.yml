@@ -1,0 +1,21 @@
+tunnel: saude-sistema
+credentials-file: ./tunnel-credentials.json
+
+ingress:
+  # Frontend (React)
+  - hostname: saude-sistema.trycloudflare.com
+    service: http://localhost:4173
+    originRequest:
+      noTLSVerify: true
+      httpHostHeader: localhost:4173
+
+  # Backend API
+  - hostname: api-saude-sistema.trycloudflare.com
+    service: http://localhost:8080
+    originRequest:
+      noTLSVerify: true
+      httpHostHeader: localhost:8080
+
+  # Catch-all rule
+  - service: http_status:404
+

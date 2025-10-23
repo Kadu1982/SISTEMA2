@@ -1,0 +1,37 @@
+# SCM
+.git
+.gitmodules
+
+# Editors
+.idea
+.vscode
+*.iml
+
+# Python
+__pycache__
+*.pyc
+
+# Node
+node_modules
+**/node_modules
+npm-debug.log
+
+# Build artifacts
+**/dist
+**/build
+**/.next
+**/target
+logs
+storage
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv
+
+# Environment files
+.env
+.env.local
+.env.*

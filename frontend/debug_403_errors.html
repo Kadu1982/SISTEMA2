@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug 403 Forbidden Errors - Hospital Module</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f8fafc; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { background: white; margin: 20px 0; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error { background: #fef2f2; border-left: 4px solid #ef4444; }
+        .success { background: #f0fdf4; border-left: 4px solid #22c55e; }
+        .warning { background: #fefce8; border-left: 4px solid #eab308; }
+        .info { background: #eff6ff; border-left: 4px solid #3b82f6; }
+        .code { background: #f3f4f6; padding: 15px; border-radius: 4px; font-family: monospace; white-space: pre-wrap; }
+        button { background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #1d4ed8; }
+        button.danger { background: #ef4444; }
+        button.danger:hover { background: #dc2626; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 4px; }
+        .token-info { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 4px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug 403 Forbidden Errors - Hospital Module</h1>
+        
+        <div class="section error">
+            <h2>🚨 Problem Description</h2>
+            <p><strong>Issue:</strong> Hospital Module API calls returning 403 Forbidden</p>
+            <p><strong>Affected Endpoints:</strong></p>
+            <ul>
+                <li><code>GET /api/hospitalar/filas</code></li>
+                <li><code>GET /api/hospitalar/leitos</code></li>
+                <li><code>GET /api/hospitalar/leitos/estatisticas</code></li>
+            </ul>
+            <p><strong>Expected:</strong> Master Administrator should have access to all endpoints</p>
+        </div>
+
+        <div class="section info">
+            <h2>🔧 Diagnostic Tools</h2>
+            <button onclick="checkAuthenticationState()">Check Authentication State</button>
+            <button onclick="checkLocalStorage()">Check Local Storage</button>
+            <button onclick="testHospitalAPI()">Test Hospital API</button>
+            <button onclick="testToken()">Validate Token</button>
+            <button class="danger" onclick="clearAuth()">Clear Auth Data</button>
+        </div>
+
+        <div class="section">
+            <h2>📊 Authentication State</h2>
+            <div id="authState"></div>
+        </div>
+
+        <div class="section">
+            <h2>💾 Local Storage</h2>
+            <div id="localStorageInfo"></div>
+        </div>
+
+        <div class="section">
+            <h2>🔑 Token Information</h2>
+            <div id="tokenInfo"></div>
+        </div>
+
+        <div class="section">
+            <h2>🏥 API Test Results</h2>
+            <div id="apiResults"></div>
+        </div>
+
+        <div class="section">
+            <h2>💡 Troubleshooting Steps</h2>
+            <ol>
+                <li><strong>Check Authentication:</strong> Verify if user is logged in and token exists</li>
+                <li><strong>Validate Token:</strong> Check if JWT token is valid and not expired</li>
+                <li><strong>Test API Calls:</strong> Make direct API calls to see exact error response</li>
+                <li><strong>Check Headers:</strong> Verify Authorization header is being sent</li>
+                <li><strong>Backend Logs:</strong> Check backend logs for authentication errors</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+
+        function checkAuthenticationState() {
+            const authState = document.getElementById('authState');
+            
+            // Check if OperadorContext data exists
+            let operadorData = null;
+            try {
+                operadorData = JSON.parse(localStorage.getItem('operadorData') || 'null');
+            } catch (e) {
+                console.error('Error parsing operadorData:', e);
+            }
+
+            const tokens = {
+                token: localStorage.getItem('token'),
+                authToken: localStorage.getItem('authToken'),
+                access_token: localStorage.getItem('access_token')
+            };
+
+            const hasValidToken = Object.values(tokens).some(t => t && t.length > 0);
+
+            authState.innerHTML = `
+                <div class="test-result ${operadorData ? 'success' : 'error'}">
+                    <strong>Operador Data:</strong> ${operadorData ? '✅ Found' : '❌ Missing'}
+                    ${operadorData ? `
+                        <div class="token-info">
+                            <strong>Login:</strong> ${operadorData.login || 'N/A'}<br>
+                            <strong>Nome:</strong> ${operadorData.nome || 'N/A'}<br>
+                            <strong>Is Master:</strong> ${operadorData.isMaster ? '✅ True' : '❌ False'}<br>
+                            <strong>Perfis:</strong> ${JSON.stringify(operadorData.perfis || [])}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="test-result ${hasValidToken ? 'success' : 'error'}">
+                    <strong>Tokens Available:</strong> ${hasValidToken ? '✅ Found' : '❌ Missing'}
+                </div>
+            `;
+        }
+
+        function checkLocalStorage() {
+            const localStorageInfo = document.getElementById('localStorageInfo');
+            
+            const relevantKeys = ['token', 'authToken', 'access_token', 'operadorData', 'user'];
+            let storageData = {};
+            
+            relevantKeys.forEach(key => {
+                const value = localStorage.getItem(key);
+                storageData[key] = value ? (key.includes('token') ? `${value.substring(0, 20)}...` : value) : null;
+            });
+
+            localStorageInfo.innerHTML = `
+                <div class="code">${JSON.stringify(storageData, null, 2)}</div>
+            `;
+        }
+
+        function testToken() {
+            const tokenInfo = document.getElementById('tokenInfo');
+            
+            const token = localStorage.getItem('token') || 
+                         localStorage.getItem('authToken') || 
+                         localStorage.getItem('access_token');
+
+            if (!token) {
+                tokenInfo.innerHTML = `
+                    <div class="test-result error">
+                        <strong>❌ No token found in localStorage</strong>
+                    </div>
+                `;
+                return;
+            }
+
+            try {
+                // Decode JWT token (basic decode, not verification)
+                const parts = token.split('.');
+                if (parts.length !== 3) {
+                    throw new Error('Invalid JWT format');
+                }
+
+                const header = JSON.parse(atob(parts[0]));
+                const payload = JSON.parse(atob(parts[1]));
+                
+                const now = Math.floor(Date.now() / 1000);
+                const isExpired = payload.exp && payload.exp < now;
+
+                tokenInfo.innerHTML = `
+                    <div class="test-result ${isExpired ? 'error' : 'success'}">
+                        <strong>Token Status:</strong> ${isExpired ? '❌ Expired' : '✅ Valid'}
+                    </div>
+                    <div class="token-info">
+                        <strong>Header:</strong><br>
+                        <div class="code">${JSON.stringify(header, null, 2)}</div>
+                        <strong>Payload:</strong><br>
+                        <div class="code">${JSON.stringify(payload, null, 2)}</div>
+                        <strong>Expiration:</strong> ${payload.exp ? new Date(payload.exp * 1000).toISOString() : 'Not set'}<br>
+                        <strong>Issued At:</strong> ${payload.iat ? new Date(payload.iat * 1000).toISOString() : 'Not set'}
+                    </div>
+                `;
+            } catch (error) {
+                tokenInfo.innerHTML = `
+                    <div class="test-result error">
+                        <strong>❌ Error decoding token:</strong> ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testHospitalAPI() {
+            const apiResults = document.getElementById('apiResults');
+            apiResults.innerHTML = '<p>Testing API endpoints...</p>';
+
+            const endpoints = [
+                '/hospitalar/status',
+                '/hospitalar/filas',
+                '/hospitalar/leitos',
+                '/hospitalar/leitos/estatisticas'
+            ];
+
+            const token = localStorage.getItem('token') || 
+                         localStorage.getItem('authToken') || 
+                         localStorage.getItem('access_token');
+
+            let results = '';
+
+            for (const endpoint of endpoints) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+
+                    const statusClass = response.ok ? 'success' : 'error';
+                    const statusText = response.ok ? '✅' : '❌';
+                    
+                    let responseData = 'No content';
+                    try {
+                        responseData = await response.text();
+                        if (responseData) {
+                            responseData = JSON.stringify(JSON.parse(responseData), null, 2);
+                        }
+                    } catch (e) {
+                        // Keep as text
+                    }
+
+                    results += `
+                        <div class="test-result ${statusClass}">
+                            <strong>${statusText} ${endpoint}</strong> - ${response.status} ${response.statusText}
+                            ${!response.ok ? `<div class="code">${responseData}</div>` : ''}
+                        </div>
+                    `;
+                } catch (error) {
+                    results += `
+                        <div class="test-result error">
+                            <strong>❌ ${endpoint}</strong> - Network Error: ${error.message}
+                        </div>
+                    `;
+                }
+            }
+
+            apiResults.innerHTML = results;
+        }
+
+        function clearAuth() {
+            if (confirm('This will clear all authentication data. Continue?')) {
+                ['token', 'authToken', 'access_token', 'operadorData', 'user'].forEach(key => {
+                    localStorage.removeItem(key);
+                });
+                
+                alert('Authentication data cleared. Please refresh and login again.');
+                location.reload();
+            }
+        }
+
+        // Auto-run initial checks
+        window.addEventListener('load', () => {
+            checkAuthenticationState();
+            checkLocalStorage();
+            testToken();
+        });
+    </script>
+</body>
+</html>

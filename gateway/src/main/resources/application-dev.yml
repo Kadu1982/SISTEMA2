@@ -1,0 +1,92 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: saude-gateway
+
+  cloud:
+    gateway:
+      # Configurações globais
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:5011"
+              - "http://localhost:8080"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      # Circuit Breaker sem rate limiting para desenvolvimento
+      default-filters:
+        - name: CircuitBreaker
+          args:
+            name: backend-circuit-breaker
+            fallbackUri: forward:/fallback
+        - name: Retry
+          args:
+            retries: 3
+            statuses:
+              - BAD_GATEWAY
+              - GATEWAY_TIMEOUT
+            methods:
+              - GET
+              - POST
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
+
+      # Configuração simples de rotas
+      routes:
+        - id: backend-main
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+        - id: swagger-docs
+          uri: http://localhost:8080
+          predicates:
+            - Path=/swagger-ui/**, /v3/api-docs/**
+
+# Circuit Breaker configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      backend-circuit-breaker:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.sistemadesaude.gateway: DEBUG
+
+# Info endpoint
+info:
+  app:
+    name: Sistema de Saúde - API Gateway (DEV)
+    description: Gateway simplificado para desenvolvimento
+    version: 1.0.0
+    backend: http://localhost:8080

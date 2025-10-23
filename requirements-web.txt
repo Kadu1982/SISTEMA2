@@ -1,0 +1,6 @@
+duckduckgo-search
+requests
+beautifulsoup4
+readability-lxml
+lxml-html-clean
+html5lib

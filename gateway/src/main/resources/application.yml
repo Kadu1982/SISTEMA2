@@ -1,0 +1,130 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: saude-gateway
+
+  cloud:
+    gateway:
+      # Configurações globais
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:5173"
+              - "http://localhost:5011"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+      # Rate Limiting global
+      filter:
+        request-rate-limiter:
+          redis-rate-limiter:
+            replenish-rate: 10  # tokens por segundo
+            burst-capacity: 20  # máximo de tokens
+            requested-tokens: 1
+
+      # Circuit Breaker e filtros
+      default-filters:
+        - name: CircuitBreaker
+          args:
+            name: backend-circuit-breaker
+            fallbackUri: forward:/fallback
+        - name: RequestRateLimiter
+          args:
+            key-resolver: "#{@userKeyResolver}"
+            redis-rate-limiter:
+              replenish-rate: 50
+              burst-capacity: 100
+        - name: Retry
+          args:
+            retries: 3
+            statuses:
+              - BAD_GATEWAY
+              - GATEWAY_TIMEOUT
+            methods:
+              - GET
+              - POST
+            backoff:
+              firstBackoff: 50ms
+              maxBackoff: 500ms
+
+      # Configuração de rotas para load balancing
+      routes:
+        - id: backend-route-1
+          uri: http://localhost:8080
+          predicates:
+            - Path=/api/**
+        - id: backend-route-2
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/**
+        - id: backend-route-3
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/**
+
+  # Redis configuration
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 2000ms
+
+# Circuit Breaker configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      backend-circuit-breaker:
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 30s
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    com.sistemadesaude.gateway: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level [%X{traceId:-},%X{spanId:-}] %logger{36} - %msg%n"
+
+# Info endpoint
+info:
+  app:
+    name: Sistema de Saúde - API Gateway
+    description: Gateway para distribuição de carga e roteamento
+    version: 1.0.0
+    instances:
+      - name: backend-instance1
+        url: http://localhost:8080
+        weight: 40
+      - name: backend-instance2
+        url: http://localhost:8081
+        weight: 30
+      - name: backend-instance3
+        url: http://localhost:8082
+        weight: 30

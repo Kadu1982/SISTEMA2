@@ -1,0 +1,14 @@
+# Maven output
+/target
+
+# Local artifacts
+/logs
+
+# IDE artifacts
+*.iml
+.idea
+.vscode
+
+# Operating system files
+.DS_Store
+Thumbs.db

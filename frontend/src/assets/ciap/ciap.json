@@ -1,0 +1,3432 @@
+[
+  {
+    "codigo": "A01",
+    "titulo": "Dor generalizada / múltipla",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A02",
+    "titulo": "Arrepios",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A03",
+    "titulo": "Febre",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A04",
+    "titulo": "Debilidade / cansaço geral",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A05",
+    "titulo": "Sentir-se doente",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A06",
+    "titulo": "Desmaio / síncope",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A07",
+    "titulo": "Coma",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A08",
+    "titulo": "Inchaço",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A09",
+    "titulo": "Problemas de sudorese",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A10",
+    "titulo": "Sangramento / hemorragia NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A11",
+    "titulo": "Dores torácicas NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A13",
+    "titulo": "Receio ou medo do tratamento",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A16",
+    "titulo": "Criança irritável",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A18",
+    "titulo": "Preocupação com a aparência",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A20",
+    "titulo": "Pedido / discussão da eutanásia",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A21",
+    "titulo": "Factor de risco de malignidade",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A23",
+    "titulo": "Factor de risco NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A25",
+    "titulo": "Medo de morrer / da morte",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A26",
+    "titulo": "Medo de cancro NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A27",
+    "titulo": "Medo de outra doença NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A28",
+    "titulo": "Limitação funcional / incapacidade NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A29",
+    "titulo": "Outros sinais / sintomas gerais",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A70",
+    "titulo": "Tuberculose",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A71",
+    "titulo": "Sarampo",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A72",
+    "titulo": "Varicela",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A73",
+    "titulo": "Malária",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A74",
+    "titulo": "Rubéola",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A75",
+    "titulo": "Mononucleose infecciosa",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A76",
+    "titulo": "Outro exantema viral",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A77",
+    "titulo": "Outras doenças virais NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A78",
+    "titulo": "Outras doenças infecciosas NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A79",
+    "titulo": "Carcinomatose (localização primária desconhecida) NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A80",
+    "titulo": "Lesão traumática / acidente NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A81",
+    "titulo": "Politraumatismos / ferimentos múltiplos",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A82",
+    "titulo": "Efeito secundário de uma lesão traumática",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A84",
+    "titulo": "Intoxicação por medicamento",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A85",
+    "titulo": "Efeitos secundários de um fármaco",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A86",
+    "titulo": "Efeito tóxico de uma substância não-medicinal",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A87",
+    "titulo": "Complicações do tratamento",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A88",
+    "titulo": "Efeitos secundários por factores físicos",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A89",
+    "titulo": "Efeitos de uma prótese",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A90",
+    "titulo": "Malformações congénitas NE / múltiplas",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A91",
+    "titulo": "Investigação com resultados anormais NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A92",
+    "titulo": "Alergia / reacção alérgica NE",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A93",
+    "titulo": "Recém-nascido prematuro",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A94",
+    "titulo": "Morbilidade perinatal, outra",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A95",
+    "titulo": "Mortalidade perinatal",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A96",
+    "titulo": "Morte",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A97",
+    "titulo": "Sem doença",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A98",
+    "titulo": "Medicina preventiva / manutenção da saùde",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "A99",
+    "titulo": "Doença ou condição de natureza ou localização não especificadas",
+    "capitulo": "A"
+  },
+  {
+    "codigo": "B02",
+    "titulo": "Gânglio(s) linfático(s) aumentado(s) de volume/doloroso(s)",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B04",
+    "titulo": "Sinais/sintomas do sangue",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B25",
+    "titulo": "Medo de SIDA/VIH",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B26",
+    "titulo": "Medo de cancro do sangue/linfático",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B27",
+    "titulo": "Medo de outras doenças do sangue/linfáticos",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B28",
+    "titulo": "Limitação funcional/incapacidade",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B29",
+    "titulo": "Outros sinais/sintomas do sangue/linfático/baço NE",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B70",
+    "titulo": "Linfadenite aguda",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B71",
+    "titulo": "Linfadenite crónica / não específica",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B72",
+    "titulo": "Doença de Hodgkin/linfomas",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B73",
+    "titulo": "Leucemia",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B74",
+    "titulo": "Outra neoplasia maligna do sangue",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B75",
+    "titulo": "Neoplasias benignas NE",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B76",
+    "titulo": "Rotura do baço",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B77",
+    "titulo": "Outras lesões traumáticas do sangue/linfa/baço",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B78",
+    "titulo": "Anemias hemolíticas hereditárias",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B79",
+    "titulo": "Outra malformação congénita do sangue/linfática",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B80",
+    "titulo": "Anemia por deficiência de ferro",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B81",
+    "titulo": "Anemia por deficiência de vitamina B12 / folatos",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B82",
+    "titulo": "Outras anemias não especificadas",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B83",
+    "titulo": "Púrpura/defeitos de coagulação",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B84",
+    "titulo": "Glóbulos brancos anormais inexplicados",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B87",
+    "titulo": "Esplenomegália",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B90",
+    "titulo": "Infecção-VIH, SIDA",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "B99",
+    "titulo": "Outra doença do sangue / linfáticos / baço",
+    "capitulo": "B"
+  },
+  {
+    "codigo": "D01",
+    "titulo": "Dor / cólica abdominal generalizada",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D02",
+    "titulo": "Dor abdominal epigástrica",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D03",
+    "titulo": "Azia",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D04",
+    "titulo": "Dor anal / rectal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D05",
+    "titulo": "Irritação perianal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D06",
+    "titulo": "Dor abdominal localizada, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D07",
+    "titulo": "Dispepsia / indigestão",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D08",
+    "titulo": "Flatulência / meteorismo / eructação",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D09",
+    "titulo": "Náusea",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D10",
+    "titulo": "Vómitos",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D11",
+    "titulo": "Diarreia",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D12",
+    "titulo": "Obstipação",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D13",
+    "titulo": "Icterícia",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D14",
+    "titulo": "Hematemese / vómito de sangue",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D15",
+    "titulo": "Melena",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D16",
+    "titulo": "Hemorragia rectal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D17",
+    "titulo": "Incontinência intestinal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D18",
+    "titulo": "Alteração nas fezes / movimentos intestinais",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D19",
+    "titulo": "Sinal / sintoma dos dentes / gengivas",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D20",
+    "titulo": "Sinal / sintoma da boca / língua / lábios",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D21",
+    "titulo": "Problema de deglutição",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D23",
+    "titulo": "Hepatomegália",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D24",
+    "titulo": "Massa abdominal ne",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D25",
+    "titulo": "Distensão abdominal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D26",
+    "titulo": "Medo de cancro do aparelho digestivo",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D27",
+    "titulo": "Medo de outra doença do aparelho digestivo",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D28",
+    "titulo": "Limitação funcional / incapacidade (d)",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D29",
+    "titulo": "Sinal / sintoma digestivo, outro",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D70",
+    "titulo": "Infecção gastrointestinal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D71",
+    "titulo": "Papeira / parotidite epidémica",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D72",
+    "titulo": "Hepatite viral",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D73",
+    "titulo": "Gastroenterite, presumível infecção",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D74",
+    "titulo": "Neoplasia maligna do estômago",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D75",
+    "titulo": "Neoplasia maligna do cólon / recto",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D76",
+    "titulo": "Neoplasia maligna do pâncreas",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D77",
+    "titulo": "Neoplasia maligna do aparelho digestivo, outra / ne",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D78",
+    "titulo": "Neoplasia do aparelho digestivo benigna / incerta",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D79",
+    "titulo": "Corpo estranho no aparelho digestivo",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D80",
+    "titulo": "Lesão traumática, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D81",
+    "titulo": "Malformação congénita do aparelho digestivo",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D82",
+    "titulo": "Doença dos dentes / gengivas",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D83",
+    "titulo": "Doença da boca / lingua / lábios",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D84",
+    "titulo": "Doença do esófago",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D85",
+    "titulo": "Úlcera do duodeno",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D86",
+    "titulo": "Úlcera péptica, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D87",
+    "titulo": "Alteração funcional do estômago",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D88",
+    "titulo": "Apendicite",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D89",
+    "titulo": "Hérnia inguinal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D90",
+    "titulo": "Hérnia de hiato",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D91",
+    "titulo": "Hérnia abdominal, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D92",
+    "titulo": "Doença diverticular intestinal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D93",
+    "titulo": "Síndrome do cólon irritável",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D94",
+    "titulo": "Enterite crónica / colite ulcerosa",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D95",
+    "titulo": "Fissura anal / abcesso perianal",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D96",
+    "titulo": "Lombrigas / outros parasitas",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D97",
+    "titulo": "Doença de fígado, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D98",
+    "titulo": "Colecistite, colelitíase",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "D99",
+    "titulo": "Doença do sistema digestivo, outra",
+    "capitulo": "D"
+  },
+  {
+    "codigo": "F01",
+    "titulo": "Dor no olho",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F02",
+    "titulo": "Olho vermelho",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F03",
+    "titulo": "Secreção ocular",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F04",
+    "titulo": "Moscas volantes / pontos luminosos / manchas",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F05",
+    "titulo": "Perturbação visual, outra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F13",
+    "titulo": "Sensação ocular anormal",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F14",
+    "titulo": "Movimentos oculares anormais",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F15",
+    "titulo": "Aparência anormal do olho",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F16",
+    "titulo": "Sinal / sintoma da pálpebra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F17",
+    "titulo": "Sinal / sintoma relacionado com os óculos",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F18",
+    "titulo": "Sinal / sintoma relacionado com as lentes de contacto",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F27",
+    "titulo": "Medo de doença ocular",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F28",
+    "titulo": "Limitação funcional / incapacidade (f)",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F29",
+    "titulo": "Sinal / sintoma ocular, outro",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F70",
+    "titulo": "Conjuntivite infecciosa",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F71",
+    "titulo": "Conjuntivite alérgica",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F72",
+    "titulo": "Blefarite / hordeólo / calázio",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F73",
+    "titulo": "Infecção / inflamação ocular, outra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F74",
+    "titulo": "Neoplasia do olho / anexos",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F75",
+    "titulo": "Contusão / hemorragia ocular",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F76",
+    "titulo": "Corpo estranho ocular",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F79",
+    "titulo": "Lesão traumática ocular, outra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F80",
+    "titulo": "Obstrução do canal lacrimal da criança",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F81",
+    "titulo": "Malformação congénita do olho, outra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F82",
+    "titulo": "Descolamento da retina",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F83",
+    "titulo": "Retinopatia",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F84",
+    "titulo": "Degenerescência macular",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F85",
+    "titulo": "Úlcera da córnea",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F86",
+    "titulo": "Tracoma",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F91",
+    "titulo": "Erro de refracção",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F92",
+    "titulo": "Catarata",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F93",
+    "titulo": "Glaucoma",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F94",
+    "titulo": "Cegueira",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F95",
+    "titulo": "Estrabismo",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "F99",
+    "titulo": "Doença ocular / anexos, outra",
+    "capitulo": "F"
+  },
+  {
+    "codigo": "H01",
+    "titulo": "Dor de ouvidos",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H02",
+    "titulo": "Problema de audição",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H03",
+    "titulo": "Acufeno / zumbido, ruído, assobio",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H04",
+    "titulo": "Secreção do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H05",
+    "titulo": "Hemorragia do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H13",
+    "titulo": "Sensação de ouvido tapado",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H15",
+    "titulo": "Preocupação com a aparência das orelhas",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H27",
+    "titulo": "Medo de doença do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H28",
+    "titulo": "Limitação funcional / incapacidade (h)",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H29",
+    "titulo": "Sinal / sintoma do ouvido, outro",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H70",
+    "titulo": "Otite externa",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H71",
+    "titulo": "Otite média aguda / miringite",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H72",
+    "titulo": "Otite média serosa",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H73",
+    "titulo": "Infecção da trompa de eustáquio",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H74",
+    "titulo": "Otite média crónica",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H75",
+    "titulo": "Neoplasia do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H76",
+    "titulo": "Corpo estranho no ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H77",
+    "titulo": "Perfuraçâo do tímpano",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H78",
+    "titulo": "Traumatismo superficial do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H79",
+    "titulo": "Traumatismo do ouvido, outro",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H80",
+    "titulo": "Malformação congénita do ouvido",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H81",
+    "titulo": "Cerumen no ouvido em excesso",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H82",
+    "titulo": "Síndrome vertiginoso",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H83",
+    "titulo": "Otoesclerose",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H84",
+    "titulo": "Presbiacusia",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H85",
+    "titulo": "Lesão acústica",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H86",
+    "titulo": "Surdez",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "H99",
+    "titulo": "Doença do ouvido / mastóide, outra",
+    "capitulo": "H"
+  },
+  {
+    "codigo": "K01",
+    "titulo": "Dor atribuída ao coração",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K02",
+    "titulo": "Sensação de pressão / aperto atribuído ao coração",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K03",
+    "titulo": "Dor atribuída ao aparelho circulatório, outra",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K04",
+    "titulo": "Palpitações / percepção do batimento cardíaco",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K05",
+    "titulo": "Irregularidade do batimento cardíaco, outra",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K06",
+    "titulo": "Veias proeminentes",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K07",
+    "titulo": "Tornozelos inchados / edema",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K22",
+    "titulo": "Factor de risco de doença cardiovascular",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K24",
+    "titulo": "Medo de doença cardíaca",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K25",
+    "titulo": "Medo de hipertensão",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K27",
+    "titulo": "Medo de outra doença cardiovascular",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K28",
+    "titulo": "Limitação funcional / incapacidade (k)",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K29",
+    "titulo": "Sinal / sintoma cardiovascular, outro",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K70",
+    "titulo": "Doença infecciosa do aparelho circulatório",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K71",
+    "titulo": "Febre reumática / cardiopatia",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K72",
+    "titulo": "Neoplasia do aparelho circulatório",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K73",
+    "titulo": "Malformação congénita do aparelho circulatório",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K74",
+    "titulo": "Doença cardíaca isquémica com angina",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K75",
+    "titulo": "Enfarte agudo do miocárdio",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K76",
+    "titulo": "Doença cardíaca isquémica sem angina",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K77",
+    "titulo": "Insuficiência cardíaca",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K78",
+    "titulo": "Fibrilhação / flutter auricular",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K79",
+    "titulo": "Taquicardia paroxística",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K80",
+    "titulo": "Arritmia cardíaca ne",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K81",
+    "titulo": "Sopro cardíaco / arterial ne",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K82",
+    "titulo": "Doença cardio-pulmonar",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K83",
+    "titulo": "Doença valvular cardíaca ne",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K84",
+    "titulo": "Doença cardíaca, outra",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K85",
+    "titulo": "Tensão arterial elevada",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K86",
+    "titulo": "Hipertensão sem complicações",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K87",
+    "titulo": "Hipertensão com complicações",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K88",
+    "titulo": "Hipotensão postural",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K89",
+    "titulo": "Isquémia cerebral transitória",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K90",
+    "titulo": "Trombose / acidente vascular cerebral",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K91",
+    "titulo": "Doença vascular cerebral",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K92",
+    "titulo": "Aterosclerose / doença vascular periférica",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K93",
+    "titulo": "Embolia pulmonar",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K94",
+    "titulo": "Flebite e tromboflebite",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K95",
+    "titulo": "Veias varicosas da perna",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K96",
+    "titulo": "Hemorróidas",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "K99",
+    "titulo": "Doença do aparelho circulatório, outra",
+    "capitulo": "K"
+  },
+  {
+    "codigo": "L01",
+    "titulo": "Sinal / sintoma do pescoço",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L02",
+    "titulo": "Sinal / sintoma da região dorsal",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L03",
+    "titulo": "Sinal / sintoma da região lombar",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L04",
+    "titulo": "Sinal / sintoma do tórax",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L05",
+    "titulo": "Sinal / sintoma do flanco / axila",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L07",
+    "titulo": "Sinal / sintoma da mandíbula",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L08",
+    "titulo": "Sinal / sintoma do ombro",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L09",
+    "titulo": "Sinal / sintoma do braço",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L10",
+    "titulo": "Sinal / sintoma do cotovelo",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L11",
+    "titulo": "Sinal / sintoma do punho",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L12",
+    "titulo": "Sinal / sintoma da mão / dedo",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L13",
+    "titulo": "Sinal / sintoma da anca",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L14",
+    "titulo": "Sinal / sintoma da perna / coxa",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L15",
+    "titulo": "Sinal / sintoma do joelho",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L16",
+    "titulo": "Sinal / sintoma do tornozelo",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L17",
+    "titulo": "Sinal / sintoma do pé / dedo do pé",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L18",
+    "titulo": "Dor muscular",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L19",
+    "titulo": "Sinal / sintoma muscular ne",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L20",
+    "titulo": "Sinal / sintoma de articulação ne",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L26",
+    "titulo": "Medo de cancro do aparelho músculo-esquelético",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L27",
+    "titulo": "Medo de doença do aparelho músculo-esquelético, outra",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L28",
+    "titulo": "Limitação funcional / incapacidade (l)",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L29",
+    "titulo": "Sinal / sintoma do aparelho músculo-esquelético, outro",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L70",
+    "titulo": "Infecção do aparelho músculo-esquelético",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L71",
+    "titulo": "Neoplasia maligna",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L72",
+    "titulo": "Fractura: rádio / cúbito",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L73",
+    "titulo": "Fractura: tíbia / peróneo",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L74",
+    "titulo": "Fractura: osso da mão / pé",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L75",
+    "titulo": "Fractura: fémur",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L76",
+    "titulo": "Fractura, outras",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L77",
+    "titulo": "Entorse / distensão do tornozelo",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L78",
+    "titulo": "Entorse / distensão do joelho",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L79",
+    "titulo": "Entorse / distensão de articulação ne",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L80",
+    "titulo": "Luxação / subluxação",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L81",
+    "titulo": "Traumatismo do aparelho músculo-esquelético ne",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L82",
+    "titulo": "Malformação congénita músculo-esqueléticas",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L83",
+    "titulo": "Síndrome da coluna cervical",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L84",
+    "titulo": "Síndrome da coluna sem irradiação de dor",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L85",
+    "titulo": "Deformação adquirida da coluna",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L86",
+    "titulo": "Síndrome da coluna com irradiação de dores",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L87",
+    "titulo": "Bursite / tendinite / sinovite ne",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L88",
+    "titulo": "Artrite reumatóide / seropositiva",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L89",
+    "titulo": "Osteoartrose da anca",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L90",
+    "titulo": "Osteoartrose do joelho",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L91",
+    "titulo": "Osteoartrose, outra",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L92",
+    "titulo": "Síndrome do ombro doloroso",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L93",
+    "titulo": "Cotovelo de tenista",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L94",
+    "titulo": "Osteocondrose",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L95",
+    "titulo": "Osteoporose",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L96",
+    "titulo": "Lesão interna aguda do joelho",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L97",
+    "titulo": "Neoplasia benignas / incerta do aparelho músculo-esquelético",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L98",
+    "titulo": "Malformação adquirida de um membro",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "L99",
+    "titulo": "Doença do aparelho músculo-esquelético, outra",
+    "capitulo": "L"
+  },
+  {
+    "codigo": "N01",
+    "titulo": "Cefaleia",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N03",
+    "titulo": "Dor da face",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N04",
+    "titulo": "Síndrome das pernas inquietas",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N05",
+    "titulo": "Formigueiro nos dedos / mãos / pés",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N06",
+    "titulo": "Alteração da sensibilidade, outra",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N07",
+    "titulo": "Convulsões / ataques",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N08",
+    "titulo": "Movimentos involuntários anormais",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N16",
+    "titulo": "Alteração do olfacto / gosto",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N17",
+    "titulo": "Vertigens / tonturas",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N18",
+    "titulo": "Paralisia / fraqueza",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N19",
+    "titulo": "Perturbação da fala",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N26",
+    "titulo": "Medo de cancro do sistema neurológico",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N27",
+    "titulo": "Medo de outra doença neurológica",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N28",
+    "titulo": "Limitação funcional / incapacidade (n)",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N29",
+    "titulo": "Sinal / sintoma do sistema nervoso, outro",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N70",
+    "titulo": "Poliomielite",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N71",
+    "titulo": "Meningite / encefalite",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N72",
+    "titulo": "Tétano",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N73",
+    "titulo": "Infecção neurológica, outra",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N74",
+    "titulo": "Neoplasia maligna do sistema neurológico",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N75",
+    "titulo": "Neoplasia benigna do sistema neurológico",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N76",
+    "titulo": "Neoplasia do sistema neurológico de natureza incerta",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N79",
+    "titulo": "Concussão",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N80",
+    "titulo": "Lesão craniana, outra",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N81",
+    "titulo": "Lesão do sistema neurológico, outra",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N85",
+    "titulo": "Malformação congénita neurológica",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N86",
+    "titulo": "Esclerose múltipla",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N87",
+    "titulo": "Parkinsonismo",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N88",
+    "titulo": "Epilepsia",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N89",
+    "titulo": "Enxaqueca",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N90",
+    "titulo": "Cefaleia de cluster",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N91",
+    "titulo": "Paralisia facial / paralisia de bell",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N92",
+    "titulo": "Nevralgia do trigémio",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N93",
+    "titulo": "Síndrome do canal cárpico",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N94",
+    "titulo": "Nevrite / neuropatia periférica",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N95",
+    "titulo": "Cefaleia de tensão",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "N99",
+    "titulo": "Doença do sistema neurológico, outra",
+    "capitulo": "N"
+  },
+  {
+    "codigo": "P01",
+    "titulo": "Sensação de ansiedade / nervosismo / tensão",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P02",
+    "titulo": "Reacção aguda ao stress",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P03",
+    "titulo": "Sensação de depressão",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P04",
+    "titulo": "Sentir-se / comportar-se de forma irritável / zangada",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P05",
+    "titulo": "Sensação / comportamento senil",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P06",
+    "titulo": "Perturbação do sono",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P07",
+    "titulo": "Diminuição do desejo sexual",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P08",
+    "titulo": "Diminuição da satisfação sexual",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P09",
+    "titulo": "Preocupação com a preferência sexual",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P10",
+    "titulo": "Gaguejar, balbuciar, tiques",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P11",
+    "titulo": "Problema de alimentação da criança",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P12",
+    "titulo": "Molhar a cama / enurese",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P13",
+    "titulo": "Encoprese / outro problema de incontinência fecal",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P15",
+    "titulo": "Abuso crónico do álcool",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P16",
+    "titulo": "Abuso agudo do álcool",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P17",
+    "titulo": "Abuso do tabaco",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P18",
+    "titulo": "Abuso de medicação",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P19",
+    "titulo": "Abuso de drogas",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P20",
+    "titulo": "Alteração da memória",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P22",
+    "titulo": "Sinais / sintomas do comportamento da criança",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P23",
+    "titulo": "Sinais / sintomas do comportamento do adolescente",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P24",
+    "titulo": "Dificuldade específica de aprendizagem",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P25",
+    "titulo": "Problema numa fase da vida de um adulto",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P27",
+    "titulo": "Medo de perturbação mental",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P28",
+    "titulo": "Limitação funcional / incapacidade (p)",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P29",
+    "titulo": "Sinal / sintoma psicológico, outro",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P70",
+    "titulo": "Demência",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P71",
+    "titulo": "Psicose orgânica, outra / ne",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P72",
+    "titulo": "Esquizofrenia",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P73",
+    "titulo": "Psicose afectiva",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P74",
+    "titulo": "Distúrbio ansioso / estado de ansiedade",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P75",
+    "titulo": "Somatização",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P76",
+    "titulo": "Perturbação depressiva",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P77",
+    "titulo": "Suicídio / tentativa de suicídio",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P78",
+    "titulo": "Neurastenia / surmenage",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P79",
+    "titulo": "Fobia / perturbação compulsiva",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P80",
+    "titulo": "Alteração da personalidade",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P81",
+    "titulo": "Perturbação hipercinética",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P82",
+    "titulo": "Stress pós-traumático",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P85",
+    "titulo": "Atraso mental",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P86",
+    "titulo": "Anorexia nervosa / bulimia",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P98",
+    "titulo": "Psicose, outra / ne",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "P99",
+    "titulo": "Perturbação psicológica, outra",
+    "capitulo": "P"
+  },
+  {
+    "codigo": "R01",
+    "titulo": "Dor atribuída ao aparelho respiratório",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R02",
+    "titulo": "Dificuldade respiratória / dispneia",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R03",
+    "titulo": "Respiração ruidosa",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R04",
+    "titulo": "Problema respiratório, outro",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R05",
+    "titulo": "Tosse",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R06",
+    "titulo": "Hemorragia nasal / epistáxis",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R07",
+    "titulo": "Espirro / congestão nasal",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R08",
+    "titulo": "Sinal / sintoma nasal, outro",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R09",
+    "titulo": "Sinal / sintoma dos seios perinasais",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R21",
+    "titulo": "Sinal / sintoma da garganta",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R23",
+    "titulo": "Sinal / sintoma da voz",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R24",
+    "titulo": "Hemoptise",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R25",
+    "titulo": "Expectoração / mucosidade anormal",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R26",
+    "titulo": "Medo de cancro do aparelho respiratório",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R27",
+    "titulo": "Medo de outra doença respiratória",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R28",
+    "titulo": "Limitação funcional / incapacidade (r)",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R29",
+    "titulo": "Sinal / sintoma do aparelho respiratório, outro",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R71",
+    "titulo": "Tosse convulsa",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R72",
+    "titulo": "Infecção estreptocócica da orofaringe",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R73",
+    "titulo": "Abcesso / furúnculo no nariz",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R74",
+    "titulo": "Infecção aguda do aparelho respiratório superior",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R75",
+    "titulo": "Sinusite crónica / aguda",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R76",
+    "titulo": "Amigdalite aguda",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R77",
+    "titulo": "Laringite / traqueíte aguda",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R78",
+    "titulo": "Bronquite / bronquiolite aguda",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R79",
+    "titulo": "Bronquite crónica",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R80",
+    "titulo": "Gripe",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R81",
+    "titulo": "Pneumonia",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R82",
+    "titulo": "Pleurisia / derrame pleural",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R83",
+    "titulo": "Infecção respiratória, outra",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R84",
+    "titulo": "Neoplasia maligna do brônquio / pulmão",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R85",
+    "titulo": "Neoplasia respiratória maligna, outra",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R86",
+    "titulo": "Neoplasia benigna respiratória",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R87",
+    "titulo": "Corpo estranho no nariz / laringe / brônquios",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R88",
+    "titulo": "Lesão respiratória, outra",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R89",
+    "titulo": "Malformação congénita do aparelho respiratório",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R90",
+    "titulo": "Hipertrofia das amígdalas / adenóides",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R92",
+    "titulo": "Neoplasia respiratória de natureza incerta",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R95",
+    "titulo": "Doença pulmonar obstrutiva crónica",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R96",
+    "titulo": "Asma",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R97",
+    "titulo": "Rinite alérgica",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R98",
+    "titulo": "Sindrome de hiperventilação",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "R99",
+    "titulo": "Doença respiratória, outra",
+    "capitulo": "R"
+  },
+  {
+    "codigo": "S01",
+    "titulo": "Dor / sensibilidade dolorosa da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S02",
+    "titulo": "Prurido",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S03",
+    "titulo": "Verrugas",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S04",
+    "titulo": "Tumor / massa localizada da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S05",
+    "titulo": "Tumores / inchaços generalizados",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S06",
+    "titulo": "Erupção cutânea localizada",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S07",
+    "titulo": "Erupção cutânea generalizada",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S08",
+    "titulo": "Alteração da cor da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S09",
+    "titulo": "Infecção de dedo da mão / pé",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S10",
+    "titulo": "Furúnculo / antraz",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S11",
+    "titulo": "Infecção pós-traumática da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S12",
+    "titulo": "Picada ou mordedura de insecto",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S13",
+    "titulo": "Mordedura animal / humana",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S14",
+    "titulo": "Queimadura / escaldão",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S15",
+    "titulo": "Corpo estranho na pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S16",
+    "titulo": "Traumatismo / contusão",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S17",
+    "titulo": "Abrasão / arranhão / bolhas",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S18",
+    "titulo": "Laceração / corte",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S19",
+    "titulo": "Lesão cutânea, outra",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S20",
+    "titulo": "Calos / calosidades",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S21",
+    "titulo": "Sinal / sintoma da textura da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S22",
+    "titulo": "Sinal / sintoma da unha",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S23",
+    "titulo": "Queda de cabelo / calvície",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S24",
+    "titulo": "Sinal / sintoma do cabelo / couro cabeludo",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S26",
+    "titulo": "Medo de cancro da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S27",
+    "titulo": "Medo de outra doença da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S28",
+    "titulo": "Limitação funcional / incapacidade (s)",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S29",
+    "titulo": "Sinal / sintoma da pele, outro",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S70",
+    "titulo": "Herpes zoster",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S71",
+    "titulo": "Herpes simples",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S72",
+    "titulo": "Escabiose / outra acaríase",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S73",
+    "titulo": "Pediculose / outra infestação da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S74",
+    "titulo": "Dermatofitose",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S75",
+    "titulo": "Monilíase / candidíase da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S76",
+    "titulo": "Infecção da pele, outra",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S77",
+    "titulo": "Neoplasia maligna da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S78",
+    "titulo": "Lipoma",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S79",
+    "titulo": "Neoplasia cutânea benigna / incerta",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S80",
+    "titulo": "Queratose solar / queimadura solar",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S81",
+    "titulo": "Hemangioma / linfangioma",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S82",
+    "titulo": "Nevo / sinal da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S83",
+    "titulo": "Lesão congénita da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S84",
+    "titulo": "Impetigo",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S85",
+    "titulo": "Quisto pilonidal / fístula",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S86",
+    "titulo": "Dermatite seborreica",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S87",
+    "titulo": "Dermatite / eczema atópico",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S88",
+    "titulo": "Dermatite de contacto / alérgica",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S89",
+    "titulo": "Eritema das fraldas",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S90",
+    "titulo": "Pitiríase rosada",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S91",
+    "titulo": "Psoríase",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S92",
+    "titulo": "Doença das glândulas sudoríparas",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S93",
+    "titulo": "Quisto sebáceo",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S94",
+    "titulo": "Unha encravada",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S95",
+    "titulo": "Molusco contagioso",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S96",
+    "titulo": "Acne",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S97",
+    "titulo": "Úlcera crónica da pele",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S98",
+    "titulo": "Urticária",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "S99",
+    "titulo": "Doença da pele, outra",
+    "capitulo": "S"
+  },
+  {
+    "codigo": "T01",
+    "titulo": "Sede excessiva",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T02",
+    "titulo": "Apetite excessivo",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T03",
+    "titulo": "Perda de apetite",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T04",
+    "titulo": "Problema alimentar do lactente / criança",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T05",
+    "titulo": "Problema alimentar do adulto",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T07",
+    "titulo": "Aumento de peso",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T08",
+    "titulo": "Perda de peso",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T10",
+    "titulo": "Atraso de crescimento",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T11",
+    "titulo": "Desidratação",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T26",
+    "titulo": "Medo de cancro do sistema endócrino",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T27",
+    "titulo": "Medo de outra doença endócrina / metabólica",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T28",
+    "titulo": "Limitação funcional / incapacidade (t)",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T29",
+    "titulo": "Sinal / sintoma endócrino, metabólico ou nutricional, outros",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T70",
+    "titulo": "Infecção endócrina",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T71",
+    "titulo": "Neoplasia maligna da tiróide",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T72",
+    "titulo": "Neoplasia benigna da tiróide",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T73",
+    "titulo": "Neoplasia endócrina, outra / ne",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T78",
+    "titulo": "Quisto do canal tireoglosso",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T80",
+    "titulo": "Malformação endócrina / metabólica congénita",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T81",
+    "titulo": "Bócio",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T82",
+    "titulo": "Obesidade",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T83",
+    "titulo": "Excesso de peso",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T85",
+    "titulo": "Hipertiroidismo / tirotoxicose",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T86",
+    "titulo": "Hipotiroidismo / mixedema",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T87",
+    "titulo": "Hipoglicémia",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T89",
+    "titulo": "Diabetes insulino-dependente",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T90",
+    "titulo": "Diabetes não insulino-dependente",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T91",
+    "titulo": "Deficiência vitamínica / nutricional",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T92",
+    "titulo": "Gota",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T93",
+    "titulo": "Alteração do metabolismo dos lípidos",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "T99",
+    "titulo": "Doença endócrina / metabólica / nutricional, outra",
+    "capitulo": "T"
+  },
+  {
+    "codigo": "U01",
+    "titulo": "Disúria / micção dolorosa",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U02",
+    "titulo": "Micção frequente / urgente",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U04",
+    "titulo": "Incontinência urinária",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U05",
+    "titulo": "Problema com a micção, outro",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U06",
+    "titulo": "Hematúria",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U07",
+    "titulo": "Sinal / sintoma da urina, outro",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U08",
+    "titulo": "Retenção urinária",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U13",
+    "titulo": "Sinal / sintoma da bexiga, outro",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U14",
+    "titulo": "Sinal / sintoma do rim",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U26",
+    "titulo": "Medo de cancro do aparelho urinário",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U27",
+    "titulo": "Medo de outra doença urinária",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U28",
+    "titulo": "Limitação funcional / incapacidade (u)",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U29",
+    "titulo": "Sinal / sintoma do aparelho urinário, outro",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U70",
+    "titulo": "Pielonefrite / pielite",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U71",
+    "titulo": "Cistite / outra infecção urinária",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U72",
+    "titulo": "Uretrite",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U75",
+    "titulo": "Neoplasia maligna do rim",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U76",
+    "titulo": "Neoplasia maligna da bexiga",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U77",
+    "titulo": "Neoplasia maligna do aparelho urinário, outra",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U78",
+    "titulo": "Neoplasia benigna do aparelho urinário",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U79",
+    "titulo": "Neoplasia do aparelho urinário ne",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U80",
+    "titulo": "Lesão traumática do aparelho urinário",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U85",
+    "titulo": "Malformação congénita do aparelho urinário",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U88",
+    "titulo": "Glomerulonefrite / nefrose",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U90",
+    "titulo": "Albuminúria / proteinúria ortostática",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U95",
+    "titulo": "Cálculo urinário",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U98",
+    "titulo": "Análise de urina anormal ne",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "U99",
+    "titulo": "Doença urinária, outra",
+    "capitulo": "U"
+  },
+  {
+    "codigo": "W01",
+    "titulo": "Questão sobre gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W02",
+    "titulo": "Medo de estar grávida",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W03",
+    "titulo": "Hemorragia antes do parto",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W05",
+    "titulo": "Vómitos / náuseas durante a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W10",
+    "titulo": "Contracepção pós-coital",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W11",
+    "titulo": "Contracepção oral",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W12",
+    "titulo": "Contracepção intra-uterina",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W13",
+    "titulo": "Esterilização",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W14",
+    "titulo": "Contracepção, outros",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W15",
+    "titulo": "Infertilidade / subfertilidade",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W17",
+    "titulo": "Hemorragia pós-parto",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W18",
+    "titulo": "Sinal / sintoma do pós-parto, outro",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W19",
+    "titulo": "Sinal / sintoma da mama / lactação",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W21",
+    "titulo": "Preocupação com a imagem corporal durante a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W27",
+    "titulo": "Medo de complicação da gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W28",
+    "titulo": "Limitação funcional / incapacidade (w)",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W29",
+    "titulo": "Sinal / sintoma da gravidez, outro",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W70",
+    "titulo": "Sépsis / infecção puerperal",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W71",
+    "titulo": "Infecção que complica a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W72",
+    "titulo": "Neoplasia maligna relacionada com a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W73",
+    "titulo": "Neoplasia benigna / incerta relacionada com a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W75",
+    "titulo": "Lesão traumática que complica a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W76",
+    "titulo": "Malformação congénita que complica a gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W78",
+    "titulo": "Gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W79",
+    "titulo": "Gravidez não desejada",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W80",
+    "titulo": "Gravidez ectópica",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W81",
+    "titulo": "Toxémia da gravidez",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W82",
+    "titulo": "Aborto espontâneo",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W83",
+    "titulo": "Aborto provocado",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W84",
+    "titulo": "Gravidez de alto risco",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W85",
+    "titulo": "Diabetes gestational",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W90",
+    "titulo": "Parto sem complicações de nado vivo",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W91",
+    "titulo": "Parto sem complicações de nado morto",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W92",
+    "titulo": "Parto com complicações de nado vivo",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W93",
+    "titulo": "Parto com complicações de nado morto",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W94",
+    "titulo": "Mastite puerperal",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W95",
+    "titulo": "Problema da mama durante a gravidez / puerpério, outro",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W96",
+    "titulo": "Complicação do puerpério, outra",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "W99",
+    "titulo": "Problema da gravidez / parto, outro",
+    "capitulo": "W"
+  },
+  {
+    "codigo": "X01",
+    "titulo": "Dor genital",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X02",
+    "titulo": "Dor menstrual",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X03",
+    "titulo": "Dor intermenstrual",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X04",
+    "titulo": "Relação sexual dolorosa na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X05",
+    "titulo": "Menstruação escassa / ausente",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X06",
+    "titulo": "Menstruação excessiva",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X07",
+    "titulo": "Menstruação irregular / frequente",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X08",
+    "titulo": "Hemorragia inter-menstrual",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X09",
+    "titulo": "Sinal / sintoma pré-menstrual",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X10",
+    "titulo": "Desejo de alterar a data da menstruação",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X11",
+    "titulo": "Sinal / sintoma da menopausa",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X12",
+    "titulo": "Hemorragia pós-menopausa",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X13",
+    "titulo": "Hemorragia pós-coito",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X14",
+    "titulo": "Secreção vaginal",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X15",
+    "titulo": "Sinal / sintoma da vagina, outro",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X16",
+    "titulo": "Sinal / sintoma da vulva",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X17",
+    "titulo": "Sinal / sintoma da pélvis feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X18",
+    "titulo": "Dor na mama feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X19",
+    "titulo": "Tumor / nódulo da mama feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X20",
+    "titulo": "Sinal / sintoma do mamilo na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X21",
+    "titulo": "Sinal / sintoma da mama feminina, outro",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X22",
+    "titulo": "Preocupação com a aparência da mama feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X23",
+    "titulo": "Medo de doença sexualmente transmissível na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X24",
+    "titulo": "Medo de disfunção sexual na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X25",
+    "titulo": "Medo de cancro genital na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X26",
+    "titulo": "Medo de cancro da mama na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X27",
+    "titulo": "Medo de outra doença genital / da mama na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X28",
+    "titulo": "Limitação funcional / incapacidade (x)",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X29",
+    "titulo": "Sinal / sintoma do aparelho genital feminino, outro",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X70",
+    "titulo": "Sífilis feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X71",
+    "titulo": "Gonorreia feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X72",
+    "titulo": "Candidíase genital na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X73",
+    "titulo": "Tricomoníase genital na mulher",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X74",
+    "titulo": "Doença inflamatória pélvica",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X75",
+    "titulo": "Neoplasia maligna do colo",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X76",
+    "titulo": "Neoplasia maligna da mama feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X77",
+    "titulo": "Neoplasia maligna genital feminina, outra",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X78",
+    "titulo": "Fibromioma do útero",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X79",
+    "titulo": "Neoplasia benigna da mama feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X80",
+    "titulo": "Neoplasia benigna genital feminina",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X81",
+    "titulo": "Neoplasia genital feminina de natureza incerta / outra",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X82",
+    "titulo": "Lesão traumática genital feminino",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X83",
+    "titulo": "Malformação congénita genital",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X84",
+    "titulo": "Vaginite / vulvite ne",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X85",
+    "titulo": "Doença do colo ne",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X86",
+    "titulo": "Esfregaço de papanicolau anormal",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X87",
+    "titulo": "Prolapso útero-vaginal",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X88",
+    "titulo": "Doença fibroquística da mama",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X89",
+    "titulo": "Síndrome de tensão pré-menstrual",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X90",
+    "titulo": "Herpes genital feminino",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X91",
+    "titulo": "Condiloma acuminado feminino",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X92",
+    "titulo": "Infecção genital por chlamydia",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "X99",
+    "titulo": "Doença genital feminino, outra",
+    "capitulo": "X"
+  },
+  {
+    "codigo": "Y01",
+    "titulo": "Dor no pénis",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y02",
+    "titulo": "Dor no escroto / testículos",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y03",
+    "titulo": "Secreção uretral",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y04",
+    "titulo": "Sinal / sintoma do pénis, outro",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y05",
+    "titulo": "Sinal / sintoma do escroto / testículos, outro",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y06",
+    "titulo": "Sinal / sintoma da próstata",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y07",
+    "titulo": "Impotência ne",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y08",
+    "titulo": "Sinal / sintoma da função sexual masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y10",
+    "titulo": "Infertilidade / subfertilidade masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y13",
+    "titulo": "Esterilização masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y14",
+    "titulo": "Planeamento familiar no homem, outro",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y16",
+    "titulo": "Sinal / sintoma da mama masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y24",
+    "titulo": "Medo de disfunção sexual no homem",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y25",
+    "titulo": "Medo de doença sexualmente transmissível no homem",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y26",
+    "titulo": "Medo de cancro genital masculino",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y27",
+    "titulo": "Medo de outra doença genital masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y28",
+    "titulo": "Limitação funcional / incapacidade (y)",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y29",
+    "titulo": "Sinal / sintoma genital masculino, outro",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y70",
+    "titulo": "Sífilis masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y71",
+    "titulo": "Gonorreia masculina",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y72",
+    "titulo": "Herpes genital no homem",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y73",
+    "titulo": "Prostatite / vesiculite seminal",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y74",
+    "titulo": "Orquite / epididimite",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y75",
+    "titulo": "Balanite",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y76",
+    "titulo": "Condiloma acuminado",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y77",
+    "titulo": "Neoplasia maligna da próstata",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y78",
+    "titulo": "Neoplasia maligna genital maculino, outra",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y79",
+    "titulo": "Neoplasia benigna / incerta genital masculino",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y80",
+    "titulo": "Traumatismo genital masculino, outro",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y81",
+    "titulo": "Fimose / prepúcio redundante",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y82",
+    "titulo": "Hipospádias",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y83",
+    "titulo": "Testículo não descido",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y84",
+    "titulo": "Malformação congénita genital no homem, outra",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y85",
+    "titulo": "Hipertrofia prostática benigna",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y86",
+    "titulo": "Hidrocelo",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Y99",
+    "titulo": "Doença genital masculino, outra",
+    "capitulo": "Y"
+  },
+  {
+    "codigo": "Z01",
+    "titulo": "Pobreza / problema económico",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z02",
+    "titulo": "Problema relacionado com a água / alimentação",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z03",
+    "titulo": "Problema de habitação / vizinhança",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z04",
+    "titulo": "Problema socio-cultural",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z05",
+    "titulo": "Problema com as condições de trabalho",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z06",
+    "titulo": "Problema de desemprego",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z07",
+    "titulo": "Problema relacionado com a educação",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z08",
+    "titulo": "Problema relacionado com o sistema de segurança social",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z09",
+    "titulo": "Problema legal",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z10",
+    "titulo": "Problema relacionado com o sistema de saúde",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z11",
+    "titulo": "Problema com o estar doente",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z12",
+    "titulo": "Problema relacional com o parceiro",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z13",
+    "titulo": "Problema comportamental do parceiro",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z14",
+    "titulo": "Problema por doença do parceiro",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z15",
+    "titulo": "Perda ou falecimento do parceiro",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z16",
+    "titulo": "Problema relacional com uma criança",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z18",
+    "titulo": "Problema com uma criança doente",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z19",
+    "titulo": "Perda ou falecimento de uma criança",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z20",
+    "titulo": "Problema relacional com familiares",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z21",
+    "titulo": "Problema comportamental de familiar",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z22",
+    "titulo": "Problema por doença de familiar",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z23",
+    "titulo": "Perda / falecimento de familiar",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z24",
+    "titulo": "Problema relacional com amigos",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z25",
+    "titulo": "Acto / acontecimento violento",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z27",
+    "titulo": "Medo de problema social",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z28",
+    "titulo": "Limitação funcional / incapacidade (z)",
+    "capitulo": "Z"
+  },
+  {
+    "codigo": "Z29",
+    "titulo": "Problema social ne",
+    "capitulo": "Z"
+  }
+]

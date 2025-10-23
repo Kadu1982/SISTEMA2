@@ -1,0 +1,42 @@
+/* src/App.css - VERSÃO ORIGINAL */
+
+/* Estilo do contêiner principal que limita a largura e centraliza */
+/* #root {
+  @apply max-w-7xl mx-auto p-6 text-center;
+}
+
+/* O restante dos estilos originais que você tinha */
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  @apply p-6 rounded-xl shadow-lg bg-white;
+}
+
+.read-the-docs {
+  color: #888;
+}
