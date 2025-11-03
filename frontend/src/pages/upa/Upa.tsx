@@ -36,9 +36,9 @@ const Upa: React.FC = () => {
     useEffect(() => {
         if (!operador) return;
 
-        // ✅ OPERADOR MASTER - Aba padrão: Nova Ocorrência
+        // ✅ OPERADOR MASTER - Aba padrão: Novo Atendimento
         if (isMasterUser()) {
-            setAbaAtiva('nova-ocorrencia');
+            setAbaAtiva('novo-atendimento');
             return;
         }
 
@@ -47,13 +47,13 @@ const Upa: React.FC = () => {
             const perfisLower = operador.perfis.map(p => p.toLowerCase());
 
             if (perfisLower.some(p => p.includes('recepcionista') || p.includes('recepcao'))) {
-                setAbaAtiva('nova-ocorrencia');
+                setAbaAtiva('novo-atendimento');
             } else if (perfisLower.some(p => p.includes('enfermeiro'))) {
                 setAbaAtiva('triagem');
             } else if (perfisLower.some(p => p.includes('medico') || p.includes('médico'))) {
                 setAbaAtiva('atendimento');
             } else {
-                setAbaAtiva('nova-ocorrencia');
+                setAbaAtiva('novo-atendimento');
             }
             return;
         }
@@ -61,18 +61,18 @@ const Upa: React.FC = () => {
         // Fallback: usar perfil principal
         const perfil = operador.perfil?.toLowerCase() || '';
         if (perfil.includes('recepcionista') || perfil.includes('recepcao')) {
-            setAbaAtiva('nova-ocorrencia');
+            setAbaAtiva('novo-atendimento');
         } else if (perfil.includes('enfermeiro')) {
             setAbaAtiva('triagem');
         } else if (perfil.includes('medico') || perfil.includes('médico')) {
             setAbaAtiva('atendimento');
         } else {
-            setAbaAtiva('nova-ocorrencia');
+            setAbaAtiva('novo-atendimento');
         }
     }, [operador]);
 
     // ✅ VERIFICAR PERMISSÕES COM SUPORTE A MASTER
-    const podeAcessarNovaOcorrencia = () => {
+    const podeAcessarNovoAtendimento = () => {
         if (!operador) return false;
 
         // ✅ MASTER TEM ACESSO IRRESTRITO
@@ -144,7 +144,7 @@ const Upa: React.FC = () => {
 
     // Contar quantas abas o usuário tem acesso
     const totalAbas = [
-        podeAcessarNovaOcorrencia(),
+        podeAcessarNovoAtendimento(),
         podeAcessarTriagem(),
         podeAcessarAtendimento()
     ].filter(Boolean).length;
@@ -209,10 +209,10 @@ const Upa: React.FC = () => {
                     ${totalAbas === 1 ? 'w-auto' : 'w-full max-w-4xl'} 
                     gap-1 mb-6
                 `}>
-                    {/* Aba Nova Ocorrência */}
-                    {podeAcessarNovaOcorrencia() && (
+                    {/* Aba Novo Atendimento */}
+                    {podeAcessarNovoAtendimento() && (
                         <TabsTrigger
-                            value="nova-ocorrencia"
+                            value="novo-atendimento"
                             className="
                                 inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium
                                 ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2
@@ -223,7 +223,7 @@ const Upa: React.FC = () => {
                             "
                         >
                             <FileText size={18} />
-                            <span>Nova Ocorrência</span>
+                            <span>Ficha de Atendimento</span>
                         </TabsTrigger>
                     )}
 
@@ -266,19 +266,10 @@ const Upa: React.FC = () => {
 
                 {/* ✅ CONTEÚDO DAS ABAS */}
 
-                {/* Aba Nova Ocorrência */}
-                {podeAcessarNovaOcorrencia() && (
-                    <TabsContent value="nova-ocorrencia" className="mt-0">
+                {/* Aba Ficha de Atendimento */}
+                {podeAcessarNovoAtendimento() && (
+                    <TabsContent value="novo-atendimento" className="mt-0">
                         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                            <div className="flex items-center gap-2 mb-4">
-                                <FileText className="h-5 w-5 text-blue-600" />
-                                <h2 className="text-xl font-semibold text-gray-800">Registrar Nova Ocorrência</h2>
-                                {isMasterUser() && (
-                                    <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full">
-                                        Acesso Master
-                                    </span>
-                                )}
-                            </div>
                             <NovaOcorrenciaUPA />
                         </div>
                     </TabsContent>

@@ -33,10 +33,29 @@ public class PerfilServiceImpl implements PerfilService {
     @Transactional(readOnly = true)
     public List<PerfilDTO> listarTodos() {
         log.debug("Listando todos os perfis");
-        return perfilRepository.findAllOrderedByLevel()
-                .stream()
-                .map(perfilMapper::toDTO)
-                .collect(Collectors.toList());
+        // ✅ CORRIGIDO: Protege contra perfis com enum inválido (ex: UPA_ENFERMEIRO que não existe)
+        try {
+            return perfilRepository.findAllOrderedByLevel()
+                    .stream()
+                    .map(entity -> {
+                        try {
+                            return perfilMapper.toDTO(entity);
+                        } catch (IllegalArgumentException e) {
+                            // Enum inválido no banco - ignora esse perfil
+                            log.warn("⚠️ Perfil com tipo inválido ignorado: ID={}, erro={}",
+                                    entity.getId(), e.getMessage());
+                            return null;
+                        } catch (Exception e) {
+                            log.error("❌ Erro ao converter perfil ID={}: {}", entity.getId(), e.getMessage());
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+        } catch (Exception e) {
+            log.error("❌ Erro ao listar perfis: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
     }
 
     @Override

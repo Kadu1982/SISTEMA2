@@ -3,7 +3,7 @@ import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useOperador } from '@/contexts/OperadorContext';
 import { Button } from '@/components/ui/button';
 import {
-    ChevronRight,
+    ChevronRight, Menu, X,
     LogOut, LayoutDashboard, Users, Stethoscope, Smile, Boxes,
     ClipboardCheck, Pill, DollarSign, MessageSquare, Truck, Syringe,
     Leaf, ShieldCheck, Biohazard, Filter, Settings, Ambulance, Building2, Microscope,
@@ -27,6 +27,8 @@ interface MenuItem {
 const Layout: React.FC = () => {
     const { operador, logout } = useOperador();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({ ESF: true });
+    const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
     const { pathname } = useLocation();
 
     // =====================================================
@@ -102,11 +104,11 @@ const Layout: React.FC = () => {
         // Se não há operador logado, nega acesso
         if (!operador) return false;
 
-        // ✅ CORREÇÃO: Verifica se é admin usando a estrutura correta de perfis
-        // O campo 'perfis' é um array de objetos { codigo: string, nome?: string }
+        // ✅ CORREÇÃO: Verifica se é admin
+        // O campo 'perfis' é um array de strings
         const isAdmin = operador.login === 'admin.master' ||
             operador.isMaster ||
-            operador.perfis?.some(perfil => perfil.codigo === 'ADMINISTRADOR_SISTEMA');
+            operador.perfis?.some(perfil => perfil === 'ADMINISTRADOR_SISTEMA' || perfil === 'ADMIN');
 
         // Se o item é somente para admin, retorna se é admin
         if (item.adminOnly) return Boolean(isAdmin);
@@ -117,16 +119,16 @@ const Layout: React.FC = () => {
         // ✅ CORREÇÃO: Verifica perfis específicos permitidos
         if (item.allowedProfiles && item.allowedProfiles.length > 0) {
             return item.allowedProfiles.some((profileCode) =>
-                operador.perfis?.some(perfil => perfil.codigo === profileCode)
+                operador.perfis?.includes(profileCode)
             );
         }
 
         // Para itens sem sub-itens e sem perfis específicos
-        // Gera o código do perfil baseado no label (ex: "Dashboard" -> "DASHBOARD")
+        // Gera o código do perfil baseado no label (ex: "UPA" -> "UPA", "Dashboard" -> "DASHBOARD")
         if (!item.subItems) {
             const perfilNecessario = item.label.toUpperCase().replace(/ /g, '_');
-            // ✅ CORREÇÃO: Usa some() para verificar o código do perfil
-            return operador.perfis?.some(perfil => perfil.codigo === perfilNecessario) ?? false;
+            // ✅ CORREÇÃO: perfis é array de strings, usa includes()
+            return operador.perfis?.includes(perfilNecessario) ?? false;
         }
 
         return false;
@@ -135,12 +137,85 @@ const Layout: React.FC = () => {
     return (
         <div className="flex h-screen bg-gray-100">
             {/* =====================================================
-                🎨 SIDEBAR DE NAVEGAÇÃO
+                📱 BOTÃO TOGGLE (quando menu mobile fechado)
                 ===================================================== */}
-            <aside className="w-64 flex-shrink-0 bg-gray-800 p-4 text-white flex flex-col overflow-y-auto">
-                {/* Logo/Título do Sistema */}
-                <h2 className="mb-6 text-2xl font-semibold">VITALIZA SAUDE</h2>
+            {!sidebarOpen && (
+                <button
+                    onClick={() => setSidebarOpen(true)}
+                    className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-xl shadow-lg hover:shadow-xl transition-all"
+                    aria-label="Abrir Menu"
+                >
+                    <Menu className="w-6 h-6" />
+                </button>
+            )}
 
+            {/* =====================================================
+                🎨 SIDEBAR DE NAVEGAÇÃO COM ESTILO MODERNO
+                ===================================================== */}
+            <aside className={`
+                ${sidebarCollapsed ? 'w-24' : 'w-64'}
+                flex-shrink-0 bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 p-4 text-white flex flex-col overflow-y-auto
+                fixed lg:relative inset-y-0 left-0 z-40
+                transform transition-all duration-300 ease-in-out
+                shadow-2xl
+                ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+                {/* Header com Logo e Controles */}
+                <div className="relative mb-8 pb-4 border-b border-gray-700">
+                    {/* Botões de controle no topo direito */}
+                    <div className="absolute top-0 right-0 flex gap-1 z-10">
+                        <button
+                            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                            className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-all hover:scale-110"
+                            aria-label={sidebarCollapsed ? "Expandir Menu" : "Recolher Menu"}
+                        >
+                            <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${sidebarCollapsed ? 'rotate-0' : 'rotate-180'}`} />
+                        </button>
+                        <button
+                            onClick={() => setSidebarOpen(false)}
+                            className="lg:hidden p-1.5 hover:bg-gray-700/50 rounded-lg transition-all hover:scale-110"
+                            aria-label="Fechar Menu"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Logo centralizado */}
+                    {!sidebarCollapsed && (
+                        <div className="flex flex-col items-center justify-center py-2 pr-10">
+                            {/* Logo Tipográfico Artístico */}
+                            <div className="relative">
+                                <h1 className="text-3xl font-black tracking-tight leading-none">
+                                    <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-500 bg-clip-text text-transparent drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]">
+                                        VITALIZA
+                                    </span>
+                                    <span className="block text-center bg-gradient-to-r from-blue-400 via-cyan-300 to-blue-500 bg-clip-text text-transparent text-lg font-bold tracking-[0.3em] mt-0.5">
+                                        SAÚDE
+                                    </span>
+                                </h1>
+                                {/* Detalhe decorativo */}
+                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-16 h-0.5 bg-gradient-to-r from-transparent via-cyan-400 to-transparent rounded-full"></div>
+                            </div>
+                        </div>
+                    )}
+                    {sidebarCollapsed && (
+                        <div className="flex items-center justify-center py-2">
+                            {/* Versão compacta - apenas iniciais */}
+                            <div className="relative w-14 h-14 flex items-center justify-center rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30">
+                                <span className="text-4xl font-black bg-gradient-to-br from-cyan-400 to-blue-500 bg-clip-text text-transparent leading-none">
+                                    VS
+                                </span>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Título Módulos */}
+                {!sidebarCollapsed && (
+                    <div className="text-center mb-4">
+                        <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Módulos</h3>
+                    </div>
+                )}
 
                 <nav className="flex-grow">
                     <ul>
@@ -172,28 +247,32 @@ const Layout: React.FC = () => {
                                         {/* Botão do menu pai (expansível) */}
                                         <button
                                             onClick={() => toggleMenu(item.label)}
-                                            className={`relative w-full flex items-center justify-between p-2 rounded-md text-left transition-colors duration-200 ${
-                                                isParentActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                                            className={`group relative w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-200 ${
+                                                isParentActive
+                                                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20'
+                                                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
                                             }`}
                                         >
                                             {/* Indicador visual de menu ativo */}
                                             {isParentActive && (
-                                                <span className="absolute left-0 top-0 h-full w-1 bg-cyan-400 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
+                                                <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
                                             )}
 
                                             {/* Ícone e texto do menu pai */}
-                                            <div className="flex items-center gap-2 pl-2">
-                                                <Icon className="w-4 h-4" />
-                                                <span>{item.label}</span>
+                                            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : 'gap-3 pl-2'}`}>
+                                                <Icon className={`flex-shrink-0 ${isParentActive ? 'text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'} transition-colors ${sidebarCollapsed ? 'w-7 h-7' : 'w-6 h-6'}`} />
+                                                {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
                                             </div>
 
                                             {/* Seta de expansão (rotaciona quando aberto) */}
-                                            <ChevronRight className={`w-4 h-4 transition-transform ${openMenus[item.label] ? 'rotate-90' : ''}`} />
+                                            {!sidebarCollapsed && (
+                                                <ChevronRight className={`w-4 h-4 transition-transform duration-200 ${openMenus[item.label] ? 'rotate-90' : ''}`} />
+                                            )}
                                         </button>
 
                                         {/* Lista de sub-itens (renderizada condicionalmente) */}
-                                        {openMenus[item.label] && (
-                                            <ul className="pl-4 mt-2 space-y-1">
+                                        {!sidebarCollapsed && openMenus[item.label] && (
+                                            <ul className="pl-6 mt-2 space-y-1">
                                                 {item.subItems!.map(subItem => {
                                                     // Verifica permissão para cada sub-item
                                                     if (!checkPermission(subItem)) return null;
@@ -205,16 +284,18 @@ const Layout: React.FC = () => {
                                                         <li key={subItem.path}>
                                                             <Link
                                                                 to={subItem.path!}
-                                                                className={`relative flex items-center gap-2 p-2 rounded-md text-sm transition-colors duration-200 ${
-                                                                    isSubItemActive ? 'bg-gray-600 text-white' : 'text-gray-400 hover:bg-gray-600 hover:text-white'
+                                                                className={`group relative flex items-center gap-3 p-2.5 pl-4 rounded-lg text-sm transition-all duration-200 ${
+                                                                    isSubItemActive
+                                                                        ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-white'
+                                                                        : 'text-gray-400 hover:bg-gray-700/30 hover:text-white'
                                                                 }`}
                                                             >
                                                                 {/* Indicador visual de sub-item ativo */}
                                                                 {isSubItemActive && (
-                                                                    <span className="absolute left-0 top-0 h-full w-1 bg-cyan-400 rounded-r-full"></span>
+                                                                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-cyan-400 rounded-r-full"></span>
                                                                 )}
-                                                                <SubIcon className="w-4 h-4 ml-2" />
-                                                                {subItem.label}
+                                                                <SubIcon className={`w-5 h-5 flex-shrink-0 ${isSubItemActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400'} transition-colors`} />
+                                                                <span className="font-normal">{subItem.label}</span>
                                                             </Link>
                                                         </li>
                                                     );
@@ -230,19 +311,21 @@ const Layout: React.FC = () => {
                             // =====================================================
                             const isActive = item.path === pathname;
                             return (
-                                <li key={item.path} className="mb-2">
+                                <li key={item.path} className="mb-2" title={sidebarCollapsed ? item.label : ''}>
                                     <Link
                                         to={item.path!}
-                                        className={`relative flex items-center gap-2 p-2 rounded-md transition-colors duration-200 ${
-                                            isActive ? 'bg-gray-700 text-white' : 'text-gray-400 hover:bg-gray-700 hover:text-white'
-                                        } ${item.adminOnly ? 'text-yellow-300' : ''}`} // ✨ Destaque visual para itens admin
+                                        className={`group relative flex items-center p-3 rounded-xl transition-all duration-200 ${
+                                            isActive
+                                                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20'
+                                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                                        } ${item.adminOnly ? 'border border-yellow-500/30' : ''} ${sidebarCollapsed ? 'justify-center' : 'gap-3 pl-2'}`}
                                     >
                                         {/* Indicador visual de item ativo */}
                                         {isActive && (
-                                            <span className="absolute left-0 top-0 h-full w-1 bg-cyan-400 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
+                                            <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
                                         )}
-                                        <Icon className="w-4 h-4 ml-2" />
-                                        {item.label}
+                                        <Icon className={`flex-shrink-0 ${isActive ? 'text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'} transition-colors ${sidebarCollapsed ? 'w-7 h-7' : 'w-6 h-6'}`} />
+                                        {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
                                     </Link>
                                 </li>
                             );
@@ -251,21 +334,35 @@ const Layout: React.FC = () => {
                 </nav>
 
                 {/* =====================================================
-                    🚪 BOTÃO DE LOGOUT (FIXO NO RODAPÉ)
+                    🚪 BOTÃO DE LOGOUT (FIXO, 10% ACIMA DO RODAPÉ)
                     ===================================================== */}
-                <Button
-                    onClick={logout}
-                    variant="ghost"
-                    className="mt-auto w-full flex justify-start gap-2 pt-4 hover:bg-gray-700"
-                >
-                    <LogOut className="w-4 h-4" /> Sair
-                </Button>
+                <div className="mt-auto pb-[10%] pt-4 border-t border-gray-700">
+                    <button
+                        onClick={logout}
+                        className={`group w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-200 bg-gradient-to-r from-red-600/80 to-red-700/80 hover:from-red-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl hover:scale-105 ${sidebarCollapsed ? 'justify-center' : 'pl-2'}`}
+                        title={sidebarCollapsed ? 'Sair' : ''}
+                    >
+                        <LogOut className={`flex-shrink-0 ${sidebarCollapsed ? 'w-6 h-6' : 'w-5 h-5'}`} />
+                        {!sidebarCollapsed && <span className="font-medium">Sair</span>}
+                    </button>
+                </div>
             </aside>
+
+            {/* =====================================================
+                🌫️ OVERLAY (backdrop escuro quando menu aberto em mobile)
+                ===================================================== */}
+            {sidebarOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-30"
+                    onClick={() => setSidebarOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
 
             {/* =====================================================
                 📄 ÁREA DE CONTEÚDO PRINCIPAL
                 ===================================================== */}
-            <main className="flex-1 p-6 overflow-y-auto">
+            <main className="flex-1 p-6 overflow-y-auto transition-all duration-300">
                 <Outlet />
             </main>
         </div>

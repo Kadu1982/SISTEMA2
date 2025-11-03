@@ -64,12 +64,16 @@ public class UpaController {
     @PostMapping
     public ResponseEntity<ApiResponse<UpaDTO>> criar(@RequestBody UpaDTO dto) {
         try {
-            log.info("➕ POST /api/upa - Criando nova UPA: {}", dto);
+            log.info("➕ POST /api/upa - Criando nova UPA");
+            log.info("📦 DTO recebido: pacienteId={}, dataEntrada={}, horaEntrada={}, status={}, unidadeId={}, observacoes={}",
+                dto.getPacienteId(), dto.getDataEntrada(), dto.getHoraEntrada(),
+                dto.getStatus(), dto.getUnidadeId(), dto.getObservacoes());
+
             UpaDTO upaSalva = upaService.salvar(dto);
-            log.info("✅ UPA criada com ID: {}", upaSalva.getId());
+            log.info("✅ UPA criada com sucesso! ID: {}", upaSalva.getId());
             return ResponseEntity.ok(new ApiResponse<>(true, "UPA criada com sucesso", upaSalva));
         } catch (Exception e) {
-            log.error("❌ Erro ao criar UPA", e);
+            log.error("❌ Erro ao criar UPA: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(new ApiResponse<>(false, "Erro ao criar UPA: " + e.getMessage(), null));
         }
     }

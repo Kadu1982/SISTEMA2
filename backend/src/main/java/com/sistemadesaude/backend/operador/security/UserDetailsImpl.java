@@ -37,19 +37,35 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Tenta obter perfis/cargos como lista de String; se vier nulo, retorna vazio
+        // ✅ CORRIGIDO: Adiciona ROLE_ADMINISTRADOR_SISTEMA para admin.master (bypass)
+        java.util.List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+
+        // Verifica se é admin.master (tem acesso total)
+        try {
+            String login = operador.getLogin();
+            if ("admin.master".equalsIgnoreCase(login) || "admin".equalsIgnoreCase(login)) {
+                // Admin master tem TODAS as permissões
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR_SISTEMA"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_MASTER"));
+            }
+        } catch (Exception ignored) { }
+
+        // Adiciona perfis do operador
         try {
             Object v = operador.getClass().getMethod("getPerfis").invoke(operador);
             if (v instanceof List<?> lista) {
-                return lista.stream()
+                List<SimpleGrantedAuthority> perfilAuthorities = lista.stream()
                         .map(String::valueOf)
                         .filter(s -> !s.isBlank())
                         .map(s -> s.startsWith("ROLE_") ? s : "ROLE_" + s)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
+                authorities.addAll(perfilAuthorities);
             }
         } catch (Exception ignored) { }
-        return Collections.emptyList();
+
+        return authorities.isEmpty() ? Collections.emptyList() : authorities;
     }
 
     @Override

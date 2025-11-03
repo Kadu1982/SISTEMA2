@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * Controller para gerenciamento de perfis de acesso
- * Apenas usuários com perfil ADMINISTRADOR_SISTEMA ou admin.master podem acessar
+ * ✅ CORRIGIDO: PreAuthorize agora funciona porque UserDetailsImpl adiciona ROLE_ADMINISTRADOR_SISTEMA para admin.master
  */
 @RestController
 @RequestMapping("/api/perfis")

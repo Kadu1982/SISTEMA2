@@ -75,6 +75,23 @@ public class Upa {
     @Column(name = "atualizado_em", nullable = false)
     private LocalDateTime atualizadoEm;
 
+    /* ====================== LIFECYCLE CALLBACKS ===================== */
+
+    @PrePersist
+    protected void onCreate() {
+        if (dataHoraRegistro == null) {
+            dataHoraRegistro = LocalDateTime.now();
+        }
+        if (atualizadoEm == null) {
+            atualizadoEm = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        atualizadoEm = LocalDateTime.now();
+    }
+
     /* ====================== GETTERS / SETTERS ======================= */
 
     public Long getId() { return id; }
