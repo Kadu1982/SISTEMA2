@@ -1,0 +1,13 @@
+🚀 Iniciando testes do fluxo de criação de operadores...
+
+
+❌ ERRO DURANTE OS TESTES: browserType.launch: Executable doesn't exist at /root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome
+╔═════════════════════════════════════════════════════════════════════════╗
+║ Looks like Playwright Test or Playwright was just installed or updated. ║
+║ Please run the following command to download new browsers:              ║
+║                                                                         ║
+║     npx playwright install                                              ║
+║                                                                         ║
+║ <3 Playwright Team                                                      ║
+╚═════════════════════════════════════════════════════════════════════════╝
+🎉 Testes finalizados!

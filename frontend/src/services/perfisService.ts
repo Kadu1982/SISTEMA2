@@ -4,12 +4,18 @@ import apiService, { ApiResponse } from './apiService';
 export interface PerfilDTO {
     id?: number;
     tipo: string;
-    nome: string;
-    ativo: boolean;
-    sistemaPerfil?: boolean;
+    nome?: string;
+    nomeExibicao?: string;
     nomeCustomizado?: string;
+    ativo?: boolean;
+    sistemaPerfil?: boolean;
     modulos?: string[];
     permissoes?: string[];
+    codigo?: string;
+    descricao?: string;
+    nivel?: number;
+    isAdmin?: boolean;
+    isProfissionalSaude?: boolean;
 }
 
 const BASE_URL = '/api/perfis';
@@ -19,11 +25,30 @@ const BASE_URL = '/api/perfis';
  */
 export async function listarPerfis(): Promise<PerfilDTO[]> {
     try {
+        console.log('🔍 Buscando perfis em:', BASE_URL);
         const response = await apiService.get<ApiResponse<PerfilDTO[]>>(BASE_URL);
-        return response.data.data || [];
-    } catch (error) {
-        console.warn('⚠️ Erro ao listar perfis:', error);
-        return [];
+        console.log('✅ Resposta da API:', response.data);
+        
+        if (!response.data.success) {
+            console.warn('⚠️ API retornou success=false:', response.data.message);
+            throw new Error(response.data.message || 'Erro ao listar perfis');
+        }
+        
+        const perfis = response.data.data || [];
+        console.log(`✅ ${perfis.length} perfis carregados:`, perfis);
+        return perfis;
+    } catch (error: any) {
+        console.error('❌ Erro ao listar perfis:', error);
+        
+        // Log detalhado do erro
+        if (error?.response) {
+            console.error('Status:', error.response.status);
+            console.error('Data:', error.response.data);
+            console.error('Headers:', error.response.headers);
+        }
+        
+        // Re-throw para que o componente possa tratar o erro
+        throw error;
     }
 }
 

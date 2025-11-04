@@ -26,7 +26,7 @@ interface MenuItem {
 
 const Layout: React.FC = () => {
     const { operador, logout } = useOperador();
-    const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({ ESF: true });
+    const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
     const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
     const { pathname } = useLocation();
@@ -249,17 +249,21 @@ const Layout: React.FC = () => {
                                             onClick={() => toggleMenu(item.label)}
                                             className={`group relative w-full flex items-center justify-between p-3 rounded-xl text-left transition-all duration-200 ${
                                                 isParentActive
-                                                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20'
-                                                    : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
+                                                    ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20 border-2 border-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)]'
+                                                    : 'text-gray-300 hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:border-2 hover:border-yellow-400/80 hover:shadow-[0_0_15px_rgba(250,204,21,0.5)]'
                                             }`}
                                         >
                                             {/* Indicador visual de menu ativo */}
                                             {isParentActive && (
                                                 <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
                                             )}
+                                            {/* Indicador visual de hover */}
+                                            {!isParentActive && (
+                                                <span className="absolute left-0 top-2 bottom-2 w-0 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50 group-hover:w-1 transition-all duration-200"></span>
+                                            )}
 
                                             {/* Ícone e texto do menu pai */}
-                                            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : 'gap-3 pl-2'}`}>
+                                            <div className={`flex items-center ${sidebarCollapsed ? 'justify-center w-full' : 'gap-3'}`}>
                                                 <Icon className={`flex-shrink-0 ${isParentActive ? 'text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'} transition-colors ${sidebarCollapsed ? 'w-7 h-7' : 'w-6 h-6'}`} />
                                                 {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}
                                             </div>
@@ -286,13 +290,17 @@ const Layout: React.FC = () => {
                                                                 to={subItem.path!}
                                                                 className={`group relative flex items-center gap-3 p-2.5 pl-4 rounded-lg text-sm transition-all duration-200 ${
                                                                     isSubItemActive
-                                                                        ? 'bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-white'
-                                                                        : 'text-gray-400 hover:bg-gray-700/30 hover:text-white'
+                                                                        ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20 border-2 border-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)]'
+                                                                        : 'text-gray-400 hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:border-2 hover:border-yellow-400/80 hover:shadow-[0_0_15px_rgba(250,204,21,0.5)]'
                                                                 }`}
                                                             >
                                                                 {/* Indicador visual de sub-item ativo */}
                                                                 {isSubItemActive && (
-                                                                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 bg-cyan-400 rounded-r-full"></span>
+                                                                    <span className="absolute left-0 top-1.5 bottom-1.5 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
+                                                                )}
+                                                                {/* Indicador visual de hover */}
+                                                                {!isSubItemActive && (
+                                                                    <span className="absolute left-0 top-1.5 bottom-1.5 w-0 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50 group-hover:w-1 transition-all duration-200"></span>
                                                                 )}
                                                                 <SubIcon className={`w-5 h-5 flex-shrink-0 ${isSubItemActive ? 'text-cyan-400' : 'text-gray-500 group-hover:text-cyan-400'} transition-colors`} />
                                                                 <span className="font-normal">{subItem.label}</span>
@@ -316,13 +324,17 @@ const Layout: React.FC = () => {
                                         to={item.path!}
                                         className={`group relative flex items-center p-3 rounded-xl transition-all duration-200 ${
                                             isActive
-                                                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20'
-                                                : 'text-gray-300 hover:bg-gray-700/50 hover:text-white'
-                                        } ${item.adminOnly ? 'border border-yellow-500/30' : ''} ${sidebarCollapsed ? 'justify-center' : 'gap-3 pl-2'}`}
+                                                ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-white shadow-lg shadow-cyan-500/20 border-2 border-yellow-400/80 shadow-[0_0_15px_rgba(250,204,21,0.5)]'
+                                                : 'text-gray-300 hover:bg-gradient-to-r hover:from-cyan-500/20 hover:to-blue-500/20 hover:text-white hover:shadow-lg hover:shadow-cyan-500/20 hover:border-2 hover:border-yellow-400/80 hover:shadow-[0_0_15px_rgba(250,204,21,0.5)]'
+                                        } ${sidebarCollapsed ? 'justify-center' : 'gap-3 pl-2'}`}
                                     >
-                                        {/* Indicador visual de item ativo */}
+                                        {/* Indicador visual de item ativo (barra vertical azul) */}
                                         {isActive && (
                                             <span className="absolute left-0 top-2 bottom-2 w-1 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50"></span>
+                                        )}
+                                        {/* Indicador visual de hover (barra vertical azul) */}
+                                        {!isActive && (
+                                            <span className="absolute left-0 top-2 bottom-2 w-0 bg-gradient-to-b from-cyan-400 to-blue-500 rounded-r-full shadow-[0_0_10px] shadow-cyan-400/50 group-hover:w-1 transition-all duration-200"></span>
                                         )}
                                         <Icon className={`flex-shrink-0 ${isActive ? 'text-cyan-400' : 'text-gray-400 group-hover:text-cyan-400'} transition-colors ${sidebarCollapsed ? 'w-7 h-7' : 'w-6 h-6'}`} />
                                         {!sidebarCollapsed && <span className="font-medium">{item.label}</span>}

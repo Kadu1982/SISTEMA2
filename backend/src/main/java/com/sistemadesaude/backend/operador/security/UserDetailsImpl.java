@@ -41,15 +41,36 @@ public class UserDetailsImpl implements UserDetails {
         java.util.List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
 
         // Verifica se é admin.master (tem acesso total)
+        // Verifica tanto pelo login quanto pelo flag isMaster
+        boolean isMaster = false;
         try {
             String login = operador.getLogin();
-            if ("admin.master".equalsIgnoreCase(login) || "admin".equalsIgnoreCase(login)) {
+            if (login != null) {
+                String loginTrimmed = login.trim();
+                isMaster = "admin.master".equalsIgnoreCase(loginTrimmed) || 
+                          "admin".equalsIgnoreCase(loginTrimmed);
+            }
+            
+            // Verifica também pelo flag isMaster se existir
+            if (!isMaster) {
+                try {
+                    Object isMasterObj = operador.getClass().getMethod("getIsMaster").invoke(operador);
+                    if (isMasterObj instanceof Boolean && Boolean.TRUE.equals(isMasterObj)) {
+                        isMaster = true;
+                    }
+                } catch (Exception ignored) { }
+            }
+            
+            if (isMaster) {
                 // Admin master tem TODAS as permissões
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR_SISTEMA"));
                 authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                 authorities.add(new SimpleGrantedAuthority("ROLE_MASTER"));
             }
-        } catch (Exception ignored) { }
+        } catch (Exception e) {
+            // Log apenas em caso de erro crítico (não ignorar completamente)
+            System.err.println("⚠️ Erro ao verificar se é admin.master: " + e.getMessage());
+        }
 
         // Adiciona perfis do operador
         try {

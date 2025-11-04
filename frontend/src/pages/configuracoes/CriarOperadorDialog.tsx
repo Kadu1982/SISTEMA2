@@ -11,6 +11,7 @@ import operadoresService from '@/services/operadoresService';
 import * as perfisService from '@/services/perfisService';
 import { PerfilDTO } from '@/services/perfisService';
 import { listarUnidades, UnidadeDTO } from '@/services/unidadesService';
+import { aplicarMascaraCpf, removerMascaraCpf } from '@/lib/pacienteUtils';
 
 interface CriarOperadorDialogProps {
     aberto: boolean;
@@ -59,11 +60,55 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
 
     const carregarPerfis = async () => {
         setCarregandoPerfis(true);
+        setErro(''); // Limpar erros anteriores
         try {
+            console.log('🔍 Carregando perfis...');
             const perfis = await perfisService.listarPerfis();
-            setPerfisDisponiveis(perfis);
-        } catch (error) {
-            console.error('Erro ao carregar perfis:', error);
+            console.log('✅ Perfis recebidos:', perfis);
+            console.log('✅ Primeiro perfil (debug):', perfis[0]);
+            console.log('✅ Tipo do primeiro perfil:', typeof perfis[0]?.tipo, perfis[0]?.tipo);
+            
+            if (!perfis || perfis.length === 0) {
+                console.warn('⚠️ Nenhum perfil retornado');
+                setErro('Nenhum perfil cadastrado no sistema. Por favor, cadastre um perfil primeiro.');
+                setPerfisDisponiveis([]);
+            } else {
+                console.log(`✅ ${perfis.length} perfis definidos no estado`);
+                // Garante que tipo seja sempre uma string
+                const perfisNormalizados = perfis.map(p => ({
+                    ...p,
+                    tipo: typeof p.tipo === 'string' ? p.tipo : (p.tipo?.name || p.tipo?.toString() || String(p.tipo) || '')
+                }));
+                console.log('✅ Perfis normalizados:', perfisNormalizados);
+                setPerfisDisponiveis(perfisNormalizados);
+            }
+        } catch (error: any) {
+            console.error('❌ Erro ao carregar perfis:', error);
+            
+            // Tratamento específico para diferentes tipos de erro
+            let mensagem = 'Erro ao carregar perfis';
+            
+            if (error?.response) {
+                const status = error.response.status;
+                const data = error.response.data;
+                
+                if (status === 403) {
+                    mensagem = 'Acesso negado. Você não tem permissão para visualizar perfis. Entre como administrador do sistema.';
+                } else if (status === 401) {
+                    mensagem = 'Sessão expirada. Por favor, faça login novamente.';
+                } else if (status === 404) {
+                    mensagem = 'Endpoint de perfis não encontrado. Verifique a configuração do servidor.';
+                } else if (data?.message) {
+                    mensagem = `Erro ao carregar perfis: ${data.message}`;
+                } else {
+                    mensagem = `Erro ao carregar perfis (Status: ${status})`;
+                }
+            } else if (error?.message) {
+                mensagem = `Erro ao carregar perfis: ${error.message}`;
+            }
+            
+            setErro(mensagem);
+            setPerfisDisponiveis([]);
         } finally {
             setCarregandoPerfis(false);
         }
@@ -71,22 +116,75 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
 
     const carregarUnidades = async () => {
         setCarregandoUnidades(true);
+        // Não limpar erro aqui para não apagar erro de perfis
         try {
             const response = await listarUnidades();
-            setUnidadesDisponiveis(response.content || []);
-        } catch (error) {
+            const unidades = response.content || [];
+            if (unidades.length === 0) {
+                setErro((prev) => {
+                    const novoErro = 'Nenhuma unidade de saúde cadastrada no sistema. Por favor, cadastre uma unidade primeiro.';
+                    return prev ? `${prev}\n${novoErro}` : novoErro;
+                });
+                setUnidadesDisponiveis([]);
+            } else {
+                setUnidadesDisponiveis(unidades);
+            }
+        } catch (error: any) {
             console.error('Erro ao carregar unidades:', error);
+            const mensagem = error?.response?.data?.message || error?.message || 'Erro ao carregar unidades';
+            setErro((prev) => {
+                const novoErro = `Erro ao carregar unidades: ${mensagem}`;
+                return prev ? `${prev}\n${novoErro}` : novoErro;
+            });
+            setUnidadesDisponiveis([]);
         } finally {
             setCarregandoUnidades(false);
         }
     };
 
     const adicionarPerfil = () => {
-        if (!perfilParaAdicionar) return;
-        if (!perfisSelecionados.includes(perfilParaAdicionar)) {
-            setPerfisSelecionados([...perfisSelecionados, perfilParaAdicionar]);
+        console.log('🔍 adicionarPerfil chamado, perfilParaAdicionar:', perfilParaAdicionar);
+        if (!perfilParaAdicionar) {
+            console.warn('⚠️ Nenhum perfil selecionado');
+            return;
         }
+        
+        // Busca o perfil pelo ID ou valor
+        const perfilEncontrado = perfisDisponiveis.find(p => {
+            const valorItem = p.id?.toString() || `${p.tipo}-${p.nome}`;
+            return valorItem === perfilParaAdicionar;
+        });
+        
+        if (!perfilEncontrado) {
+            console.warn('⚠️ Perfil não encontrado:', perfilParaAdicionar);
+            console.warn('⚠️ Perfis disponíveis:', perfisDisponiveis.map(p => ({
+                id: p.id,
+                tipo: p.tipo,
+                nome: p.nome,
+                valorItem: p.id?.toString() || `${p.tipo}-${p.nome}`
+            })));
+            return;
+        }
+        
+        console.log('✅ Perfil encontrado:', perfilEncontrado);
+        
+        // Usa o tipo do perfil como identificador (compatibilidade com backend)
+        const perfilTipo = perfilEncontrado.tipo || perfilEncontrado.id?.toString() || '';
+        
+        if (!perfilTipo) {
+            console.error('❌ Não foi possível determinar o tipo do perfil');
+            return;
+        }
+        
+        if (perfisSelecionados.includes(perfilTipo)) {
+            console.warn('⚠️ Perfil já está selecionado:', perfilTipo);
+            return;
+        }
+        
+        console.log('✅ Adicionando perfil:', perfilTipo);
+        setPerfisSelecionados([...perfisSelecionados, perfilTipo]);
         setPerfilParaAdicionar('');
+        console.log('✅ Perfis selecionados atualizados:', [...perfisSelecionados, perfilTipo]);
     };
 
     const removerPerfil = (perfil: string) => {
@@ -156,24 +254,32 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
     };
 
     const criarOperador = async () => {
-        // Validações
+        // Validações com mensagens mais específicas
         if (!nome || !login || !senha || !cpf) {
-            setErro('Preencha todos os campos obrigatórios');
+            setErro('Preencha todos os campos obrigatórios (Nome, Login, Senha, CPF)');
             return;
         }
 
         if (perfisSelecionados.length === 0) {
-            setErro('Selecione pelo menos um perfil');
+            if (perfisDisponiveis.length === 0) {
+                setErro('Nenhum perfil disponível. Por favor, cadastre um perfil primeiro ou use os templates disponíveis.');
+            } else {
+                setErro('Selecione pelo menos um perfil de acesso para o operador.');
+            }
             return;
         }
 
         if (unidadesSelecionadas.length === 0) {
-            setErro('Selecione pelo menos uma unidade de saúde');
+            if (unidadesDisponiveis.length === 0) {
+                setErro('Nenhuma unidade de saúde disponível. Por favor, cadastre uma unidade primeiro.');
+            } else {
+                setErro('Selecione pelo menos uma unidade de saúde onde o operador pode atuar.');
+            }
             return;
         }
 
         if (!unidadePrincipal) {
-            setErro('Defina uma unidade principal');
+            setErro('Defina uma unidade principal para o operador (clique em "Definir como Principal" em uma das unidades selecionadas).');
             return;
         }
 
@@ -182,11 +288,14 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
 
         try {
             // 1. Criar operador com unidade principal
+            // Remove máscara do CPF antes de enviar ao backend
+            const cpfLimpo = removerMascaraCpf(cpf);
+            
             const operadorCriado = await operadoresService.criar({
                 nome,
                 login,
                 senha,
-                cpf,
+                cpf: cpfLimpo,
                 email: email || undefined,
                 ativo: true,
                 unidadeId: unidadePrincipal,
@@ -226,6 +335,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
         setUnidadesSelecionadas([]);
         setUnidadePrincipal(null);
     };
+    
 
     const usarTemplate = async (templateKey: keyof typeof perfisService.PERFIS_TEMPLATES) => {
         try {
@@ -270,6 +380,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                     value={login}
                                     onChange={(e) => setLogin(e.target.value)}
                                     placeholder="usuario.login"
+                                    autoComplete="username"
                                 />
                             </div>
 
@@ -281,6 +392,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                     value={senha}
                                     onChange={(e) => setSenha(e.target.value)}
                                     placeholder="Senha@123"
+                                    autoComplete="new-password"
                                 />
                             </div>
 
@@ -288,9 +400,33 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                 <Label htmlFor="cpf">CPF *</Label>
                                 <Input
                                     id="cpf"
+                                    type="text"
+                                    inputMode="numeric"
                                     value={cpf}
-                                    onChange={(e) => setCpf(e.target.value)}
+                                    onChange={(e) => {
+                                        const inputValue = e.target.value;
+                                        // Aplica máscara 000.000.000-00 durante a digitação
+                                        const maskedValue = aplicarMascaraCpf(inputValue);
+                                        setCpf(maskedValue);
+                                    }}
+                                    onBlur={(e) => {
+                                        // Garante que a máscara está aplicada mesmo ao perder o foco
+                                        const inputValue = e.target.value;
+                                        const maskedValue = aplicarMascaraCpf(inputValue);
+                                        if (inputValue !== maskedValue) {
+                                            setCpf(maskedValue);
+                                        }
+                                    }}
+                                    onPaste={(e) => {
+                                        // Previne o comportamento padrão e aplica a máscara
+                                        e.preventDefault();
+                                        const pastedText = e.clipboardData.getData('text');
+                                        const maskedValue = aplicarMascaraCpf(pastedText);
+                                        setCpf(maskedValue);
+                                    }}
                                     placeholder="000.000.000-00"
+                                    maxLength={14}
+                                    autoComplete="off"
                                 />
                             </div>
 
@@ -397,34 +533,78 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                         )}
 
                         {/* Selecionar perfil existente */}
-                        <div className="flex gap-2">
-                            <Select value={perfilParaAdicionar} onValueChange={setPerfilParaAdicionar}>
-                                <SelectTrigger className="flex-1">
-                                    <SelectValue placeholder="Selecione um perfil..." />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {carregandoPerfis ? (
-                                        <SelectItem value="loading" disabled>Carregando...</SelectItem>
-                                    ) : perfisDisponiveis.length === 0 ? (
-                                        <SelectItem value="empty" disabled>Nenhum perfil disponível</SelectItem>
-                                    ) : (
-                                        perfisDisponiveis.map((perfil) => (
-                                            <SelectItem key={perfil.id} value={perfil.tipo}>
-                                                {perfil.nome} ({perfil.tipo})
-                                                {perfil.modulos && perfil.modulos.length > 0 && (
-                                                    <span className="text-xs text-muted-foreground ml-2">
-                                                        - {perfil.modulos.join(', ')}
-                                                    </span>
-                                                )}
-                                            </SelectItem>
-                                        ))
-                                    )}
-                                </SelectContent>
-                            </Select>
-                            <Button onClick={adicionarPerfil} disabled={!perfilParaAdicionar}>
-                                <Plus className="h-4 w-4" />
-                            </Button>
+                        <div className="space-y-2">
+                            <Label htmlFor="selecionar-perfil">Selecionar Perfil *</Label>
+                            <div className="flex gap-2">
+                                <Select 
+                                    value={perfilParaAdicionar} 
+                                    onValueChange={(value) => {
+                                        console.log('🔍 Perfil selecionado:', value);
+                                        setPerfilParaAdicionar(value);
+                                    }}
+                                >
+                                    <SelectTrigger id="selecionar-perfil" className="flex-1">
+                                        <SelectValue placeholder={carregandoPerfis ? "Carregando perfis..." : "Selecione um perfil..."} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {carregandoPerfis ? (
+                                            <div className="p-2 text-sm text-muted-foreground flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Carregando perfis...
+                                            </div>
+                                        ) : perfisDisponiveis.length === 0 ? (
+                                            <div className="p-2 text-sm text-destructive">
+                                                ⚠️ Nenhum perfil cadastrado. Use os templates acima ou crie um novo perfil.
+                                            </div>
+                                        ) : (
+                                            perfisDisponiveis.map((perfil) => {
+                                                // Usa o ID do perfil como valor, garantindo unicidade
+                                                const valorItem = perfil.id?.toString() || `${perfil.tipo}-${perfil.nome}`;
+                                                return (
+                                                    <SelectItem 
+                                                        key={perfil.id || valorItem} 
+                                                        value={valorItem}
+                                                        onSelect={() => {
+                                                            console.log('🔍 SelectItem clicado:', valorItem);
+                                                        }}
+                                                    >
+                                                        {perfil.nomeExibicao || perfil.nomeCustomizado || perfil.nome}
+                                                        {perfil.tipo && (
+                                                            <span className="text-xs text-muted-foreground ml-2">
+                                                                ({perfil.tipo})
+                                                            </span>
+                                                        )}
+                                                        {perfil.modulos && perfil.modulos.length > 0 && (
+                                                            <span className="text-xs text-muted-foreground ml-2">
+                                                                - {perfil.modulos.join(', ')}
+                                                            </span>
+                                                        )}
+                                                    </SelectItem>
+                                                );
+                                            })
+                                        )}
+                                    </SelectContent>
+                                </Select>
+                                <Button 
+                                    onClick={() => {
+                                        console.log('🔍 Botão adicionar clicado, perfilParaAdicionar:', perfilParaAdicionar);
+                                        adicionarPerfil();
+                                    }} 
+                                    disabled={!perfilParaAdicionar || carregandoPerfis}
+                                    type="button"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                </Button>
+                            </div>
                         </div>
+                        
+                        {/* Mensagem de erro específica para perfis */}
+                        {erro && erro.includes('perfis') && (
+                            <div className="text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded p-3">
+                                <div className="font-medium mb-1">⚠️ Erro ao carregar perfis</div>
+                                <div className="text-xs">{erro}</div>
+                            </div>
+                        )}
 
                         {/* Lista de perfis selecionados */}
                         <div className="border rounded">
@@ -434,12 +614,21 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                 </div>
                             ) : (
                                 <div className="divide-y">
-                                    {perfisSelecionados.map((perfil) => {
-                                        const perfilInfo = perfisDisponiveis.find(p => p.tipo === perfil);
+                                    {perfisSelecionados.map((perfilTipo) => {
+                                        const perfilInfo = perfisDisponiveis.find(p => 
+                                            p.tipo === perfilTipo || p.id?.toString() === perfilTipo
+                                        );
                                         return (
-                                            <div key={perfil} className="flex items-center justify-between px-3 py-2">
+                                            <div key={perfilTipo} className="flex items-center justify-between px-3 py-2">
                                                 <div>
-                                                    <span className="font-mono text-sm">{perfil}</span>
+                                                    <span className="font-medium text-sm">
+                                                        {perfilInfo?.nomeExibicao || perfilInfo?.nomeCustomizado || perfilInfo?.nome || perfilTipo}
+                                                    </span>
+                                                    {perfilInfo?.tipo && (
+                                                        <div className="text-xs text-muted-foreground">
+                                                            Tipo: {perfilInfo.tipo}
+                                                        </div>
+                                                    )}
                                                     {perfilInfo?.modulos && perfilInfo.modulos.length > 0 && (
                                                         <div className="text-xs text-muted-foreground">
                                                             Módulos: {perfilInfo.modulos.join(', ')}
@@ -449,7 +638,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                                 <Button
                                                     variant="ghost"
                                                     size="sm"
-                                                    onClick={() => removerPerfil(perfil)}
+                                                    onClick={() => removerPerfil(perfilTipo)}
                                                 >
                                                     <X className="h-4 w-4" />
                                                 </Button>
@@ -478,11 +667,14 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                             {carregandoUnidades ? (
                                 <div className="p-4 text-center text-sm text-muted-foreground">
                                     <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
-                                    Carregando unidades...
+                                    Carregando unidades de saúde...
                                 </div>
                             ) : unidadesDisponiveis.length === 0 ? (
-                                <div className="p-4 text-center text-sm text-muted-foreground">
-                                    Nenhuma unidade de saúde cadastrada
+                                <div className="p-4 text-center text-sm text-destructive">
+                                    ⚠️ Nenhuma unidade de saúde cadastrada no sistema.
+                                    <div className="text-xs mt-2 text-muted-foreground">
+                                        Por favor, cadastre uma unidade antes de criar operadores.
+                                    </div>
                                 </div>
                             ) : (
                                 unidadesDisponiveis.map((unidade) => {
