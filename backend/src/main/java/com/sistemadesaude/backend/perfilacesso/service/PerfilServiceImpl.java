@@ -32,11 +32,155 @@ public class PerfilServiceImpl implements PerfilService {
     @Override
     @Transactional(readOnly = true)
     public List<PerfilDTO> listarTodos() {
-        log.debug("Listando todos os perfis");
-        return perfilRepository.findAllOrderedByLevel()
-                .stream()
-                .map(perfilMapper::toDTO)
-                .collect(Collectors.toList());
+        log.info("🔍 Listando todos os perfis do banco de dados");
+        // ✅ CORRIGIDO: Protege contra perfis com enum inválido (ex: UPA_ENFERMEIRO que não existe)
+        try {
+            List<PerfilEntity> entities = perfilRepository.findAllOrderedByLevel();
+            log.info("📊 Total de entidades de perfis encontradas no banco: {}", entities.size());
+            
+            if (entities.isEmpty()) {
+                log.warn("⚠️ Nenhuma entidade de perfil encontrada no banco de dados");
+                return Collections.emptyList();
+            }
+            
+            // Verifica se há perfis com tipo NULL e corrige em uma transação separada
+            List<Long> perfisComTipoNullIds = entities.stream()
+                    .filter(e -> e.getTipo() == null)
+                    .map(PerfilEntity::getId)
+                    .collect(Collectors.toList());
+            
+            if (!perfisComTipoNullIds.isEmpty()) {
+                log.warn("⚠️ Encontrados {} perfis com tipo=NULL (IDs: {}), corrigindo...", 
+                        perfisComTipoNullIds.size(), perfisComTipoNullIds);
+                corrigirTiposPerfis(perfisComTipoNullIds);
+                // Recarrega as entidades após a correção
+                entities = perfilRepository.findAllOrderedByLevel();
+            }
+            
+            List<PerfilDTO> perfis = entities.stream()
+                    .map(entity -> {
+                        try {
+                            Perfil tipoFinal = null;
+                            
+                            // Verifica se o tipo é NULL
+                            if (entity.getTipo() == null) {
+                                log.warn("⚠️ Perfil ID={} tem tipo=NULL, tentando inferir do nome: {}", 
+                                        entity.getId(), entity.getNome());
+                                tipoFinal = inferirTipoPorNome(
+                                        entity.getNomeCustomizado() != null ? entity.getNomeCustomizado() : entity.getNome());
+                                if (tipoFinal == null) {
+                                    tipoFinal = Perfil.USUARIO_SISTEMA;
+                                }
+                            } else {
+                                // O tipo já é um enum Perfil válido
+                                tipoFinal = entity.getTipo();
+                            }
+                            
+                            // Atualiza a entidade com o tipo (se necessário)
+                            if (entity.getTipo() == null || !entity.getTipo().equals(tipoFinal)) {
+                                log.info("✅ Ajustando tipo do perfil ID={}: {} → {}", 
+                                        entity.getId(), entity.getTipo(), tipoFinal);
+                                entity.setTipo(tipoFinal);
+                                
+                                // Tenta salvar a correção em uma transação separada
+                                try {
+                                    corrigirTipoPerfil(entity.getId(), tipoFinal);
+                                } catch (Exception e) {
+                                    log.debug("⚠️ Não foi possível salvar correção do perfil ID={} (pode estar em read-only): {}", 
+                                            entity.getId(), e.getMessage());
+                                }
+                            }
+                            
+                            log.debug("🔄 Convertendo perfil ID={}, tipo={}, nome={}", 
+                                    entity.getId(), entity.getTipo(), entity.getNomeCustomizado());
+                            PerfilDTO dto = perfilMapper.toDTO(entity);
+                            log.debug("✅ Perfil convertido com sucesso: {}", dto.getNome());
+                            return dto;
+                        } catch (IllegalArgumentException e) {
+                            // Enum inválido no banco - tenta corrigir e retry
+                            log.warn("⚠️ Perfil ID={} tem tipo inválido no enum, tentando corrigir: {}", 
+                                    entity.getId(), e.getMessage());
+                            try {
+                                // Tenta inferir o tipo do nome
+                                Perfil tipoCorrigido = inferirTipoPorNome(
+                                        entity.getNomeCustomizado() != null ? entity.getNomeCustomizado() : entity.getNome());
+                                if (tipoCorrigido == null) {
+                                    tipoCorrigido = mapearTipoInvalidoParaEnum(
+                                            entity.getTipo() != null ? entity.getTipo().toString() : null,
+                                            entity.getNomeCustomizado() != null ? entity.getNomeCustomizado() : entity.getNome());
+                                }
+                                if (tipoCorrigido == null) {
+                                    tipoCorrigido = Perfil.USUARIO_SISTEMA;
+                                }
+                                
+                                entity.setTipo(tipoCorrigido);
+                                log.info("✅ Tipo corrigido para perfil ID={}: {} → {}", 
+                                        entity.getId(), entity.getTipo(), tipoCorrigido);
+                                
+                                // Tenta salvar a correção
+                                try {
+                                    corrigirTipoPerfil(entity.getId(), tipoCorrigido);
+                                } catch (Exception ex) {
+                                    log.debug("⚠️ Não foi possível salvar correção: {}", ex.getMessage());
+                                }
+                                
+                                // Tenta converter novamente
+                                PerfilDTO dto = perfilMapper.toDTO(entity);
+                                log.info("✅ Perfil ID={} convertido após correção: {}", entity.getId(), dto.getNome());
+                                return dto;
+                            } catch (Exception ex2) {
+                                log.error("❌ Erro ao corrigir perfil ID={}: {}", entity.getId(), ex2.getMessage());
+                                return null;
+                            }
+                        } catch (Exception e) {
+                            log.error("❌ Erro ao converter perfil ID={}: {}", entity.getId(), e.getMessage(), e);
+                            return null;
+                        }
+                    })
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            
+            log.info("✅ Total de perfis convertidos com sucesso: {}", perfis.size());
+            return perfis;
+        } catch (Exception e) {
+            log.error("❌ Erro ao listar perfis: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+    
+    /**
+     * Corrige perfis com tipo NULL em uma transação separada (não-read-only)
+     * Usa IDs para evitar problemas com entidades detached
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    private void corrigirTiposPerfis(List<Long> perfisComTipoNullIds) {
+        for (Long id : perfisComTipoNullIds) {
+            try {
+                PerfilEntity entity = perfilRepository.findById(id)
+                        .orElseThrow(() -> new EntityNotFoundException("Perfil não encontrado com ID: " + id));
+                
+                log.warn("⚠️ Corrigindo perfil ID={} com tipo=NULL, nome: {}", entity.getId(), entity.getNome());
+                
+                // Tenta inferir o tipo pelo nome
+                Perfil tipoInferido = inferirTipoPorNome(
+                        entity.getNomeCustomizado() != null ? entity.getNomeCustomizado() : entity.getNome());
+                
+                if (tipoInferido != null) {
+                    entity.setTipo(tipoInferido);
+                    log.info("✅ Tipo inferido para perfil ID={}: {}", entity.getId(), tipoInferido);
+                } else {
+                    log.warn("⚠️ Não foi possível inferir tipo para perfil ID={}, nome={}, usando padrão USUARIO_SISTEMA", 
+                            entity.getId(), entity.getNome());
+                    entity.setTipo(Perfil.USUARIO_SISTEMA);
+                }
+                
+                // Salva a entidade com o tipo corrigido
+                perfilRepository.save(entity);
+                log.info("✅ Perfil ID={} corrigido com tipo: {}", entity.getId(), entity.getTipo());
+            } catch (Exception e) {
+                log.error("❌ Erro ao corrigir perfil ID={}: {}", id, e.getMessage(), e);
+            }
+        }
     }
 
     @Override
@@ -265,6 +409,57 @@ public class PerfilServiceImpl implements PerfilService {
         if (n.contains("USUARIO") || n.contains("USUAR")) return Perfil.USUARIO_SISTEMA;
 
         return null;
+    }
+    
+    /**
+     * Mapeia valores de tipo inválidos no banco para valores válidos do enum Perfil.
+     * Ex: "UPA_RECEPCIONISTA" → RECEPCIONISTA, "Enfermeiro UPA" → ENFERMEIRO
+     */
+    private Perfil mapearTipoInvalidoParaEnum(String tipoInvalido, String nome) {
+        if (tipoInvalido == null) return null;
+        String tipoUpper = tipoInvalido.toUpperCase().trim();
+        
+        // Mapeia valores inválidos conhecidos para valores válidos do enum
+        if (tipoUpper.contains("UPA_RECEPCIONISTA") || 
+            tipoUpper.contains("RECEPCIONISTA UPA") || 
+            tipoUpper.equals("UPA")) {
+            return Perfil.RECEPCIONISTA;
+        }
+        if (tipoUpper.contains("UPA_ENFERMEIRO") || 
+            tipoUpper.contains("ENFERMEIRO UPA")) {
+            return Perfil.ENFERMEIRO;
+        }
+        if (tipoUpper.contains("UPA_MEDICO") || 
+            tipoUpper.contains("MEDICO UPA") ||
+            tipoUpper.contains("MÉDICO UPA")) {
+            return Perfil.MEDICO;
+        }
+        if (tipoUpper.contains("UPA_TECNICO_ENFERMAGEM") || 
+            tipoUpper.contains("TECNICO_ENFERMAGEM UPA")) {
+            return Perfil.TECNICO_ENFERMAGEM;
+        }
+        if (tipoUpper.equals("DENTISTA")) {
+            return Perfil.DENTISTA;
+        }
+        
+        // Se não conseguiu mapear pelo tipo inválido, tenta inferir pelo nome
+        return inferirTipoPorNome(nome);
+    }
+    
+    /**
+     * Corrige o tipo de um perfil específico em uma transação separada
+     */
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
+    private void corrigirTipoPerfil(Long id, Perfil tipoCorreto) {
+        try {
+            PerfilEntity entity = perfilRepository.findById(id)
+                    .orElseThrow(() -> new EntityNotFoundException("Perfil não encontrado com ID: " + id));
+            entity.setTipo(tipoCorreto);
+            perfilRepository.save(entity);
+            log.info("✅ Perfil ID={} corrigido com tipo: {}", id, tipoCorreto);
+        } catch (Exception e) {
+            log.warn("⚠️ Não foi possível corrigir perfil ID={}: {}", id, e.getMessage());
+        }
     }
 
     /**

@@ -247,7 +247,8 @@ const samuService = {
       params: { situacaoId }
     }),
 
-  atualizarSituacaoAmbulancia: (ambulanciaId: number, situacaoId: number, detalhamento?: string) =>
+  // ✅ CORRIGIDO: Renomeado para evitar conflito com o CRUD de cadastros
+  atualizarSituacaoDeAmbulancia: (ambulanciaId: number, situacaoId: number, detalhamento?: string) =>
     api.put(`/samu/ambulancias/${ambulanciaId}/situacao`, {
       situacaoId,
       detalhamento
@@ -278,7 +279,7 @@ const samuService = {
   deletarAmbulancia: (id: number) =>
     api.delete(`/samu/cadastros/ambulancias/${id}`),
 
-  // Situações de Ambulâncias
+  // Situações de Ambulâncias (CRUD de cadastros)
   listarSituacoesAmbulancia: () => api.get<SituacaoAmbulancia[]>('/samu/cadastros/situacoes-ambulancia'),
   criarSituacaoAmbulancia: (situacao: SituacaoAmbulancia) =>
     api.post<SituacaoAmbulancia>('/samu/cadastros/situacoes-ambulancia', situacao),

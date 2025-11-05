@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -54,6 +55,10 @@ public class AuthenticationService {
         // 2) Carrega Operador por login
         Operador operador = operadorRepository.findByLogin(request.getLogin())
                 .orElseThrow(() -> new UsernameNotFoundException("Operador não encontrado com o login: " + request.getLogin()));
+
+        if (Boolean.FALSE.equals(operador.getAtivo())) {
+            throw new DisabledException("Operador inativo: " + request.getLogin());
+        }
 
         // 3) ✅ Valida Horários de Acesso no momento do login (Passo 2).
         //    - Usa reflexão para não criar dependência dura. Quando criarmos o AcessoValidator,

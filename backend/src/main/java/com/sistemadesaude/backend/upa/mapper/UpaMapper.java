@@ -51,6 +51,11 @@ public class UpaMapper {
         dto.setPacienteId(entity.getPaciente() != null ? entity.getPaciente().getId() : null);
         dto.setUnidadeId(entity.getUnidade() != null ? entity.getUnidade().getId() : null);
 
+        // Nome do paciente para exibição
+        if (entity.getPaciente() != null) {
+            dto.setPacienteNome(entity.getPaciente().getNomeCompleto());
+        }
+
         // Tipos fortes (enum/datas/boolean)
         dto.setAtivo(entity.isAtivo());
         dto.setStatus(entity.getStatus());         // UpaStatus no DTO

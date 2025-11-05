@@ -537,6 +537,7 @@ class ConfiguracaoService {
 
     /**
      * Lista todos os perfis
+     * ✅ CORRIGIDO: Tratamento silencioso de erros de permissão
      */
     async listarPerfis(): Promise<Perfil[]> {
         try {
@@ -551,6 +552,12 @@ class ConfiguracaoService {
             console.log('✅ Perfis carregados:', response.data.data?.length || 0);
             return response.data.data || [];
         } catch (error: any) {
+            // ✅ Silencia erros 400/403 (permissão) - retorna array vazio
+            const status = error?.response?.status;
+            if (status === 400 || status === 403) {
+                console.warn('⚠️ Sem permissão para listar perfis - usando lista vazia');
+                return [];
+            }
             console.error('❌ Erro ao listar perfis:', error);
             return [];
         }

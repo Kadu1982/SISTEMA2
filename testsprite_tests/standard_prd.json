@@ -1,0 +1,103 @@
+{
+  "product": {
+    "name": "Sistema de Saúde - Operadores e Autenticação",
+    "version": "1.0",
+    "owner": "Equipe Sistema Saúde"
+  },
+  "objectives": [
+    "Garantir autenticação segura de operadores (login/senha, JWT)",
+    "Permitir criação e gestão de operadores com perfis e unidades",
+    "Garantir visibilidade de módulos no frontend conforme perfis",
+    "Proteger o operador master (admin.master) contra alterações"
+  ],
+  "stakeholders": ["Administrador do Sistema", "Operadores (UPA/Recepção/etc.)", "Equipe de TI"],
+  "assumptions": [
+    "Banco de dados com perfis e unidades previamente cadastrados",
+    "Operador master (admin.master / Admin@123) existe e está ativo",
+    "Front-end acessível em http://localhost:5173",
+    "Back-end acessível em http://localhost:8080"
+  ],
+  "out_of_scope": [
+    "Fluxo de aceite de Termo de Uso obrigatório (atualmente não bloqueia)",
+    "Restrição por unidade no momento do login (apenas perfis/módulos)"
+  ],
+  "non_functional_requirements": [
+    "Autenticação via Spring Security com emissão de JWT",
+    "Respostas de API em menos de 2 segundos com ambientes locais",
+    "Logs adequados de autenticação e validações"
+  ],
+  "user_roles": [
+    {"role": "ADMINISTRADOR_SISTEMA", "description": "Acesso completo ao sistema"},
+    {"role": "UPA", "description": "Acesso a módulos da UPA"},
+    {"role": "RECEPCIONISTA_UPA", "description": "Recepção da UPA"},
+    {"role": "OPERADOR_PADRAO", "description": "Operações gerais conforme perfis"}
+  ],
+  "functional_requirements": [
+    {
+      "id": "FR1_AUTH_LOGIN",
+      "title": "Login de Operadores",
+      "details": {
+        "rules": [
+          "Validar credenciais (login/senha)",
+          "Operador deve estar ativo",
+          "Master ignora restrições de horário",
+          "Com horários definidos: validar janela (APENAS se AcessoValidator estiver presente)",
+          "Gerar token JWT com dados do operador"
+        ],
+        "endpoints": [
+          {"method": "POST", "path": "/api/auth/login", "desc": "Autenticação e emissão de JWT"}
+        ]
+      },
+      "test_mapping": {
+        "plan_file": "testsprite_tests/testsprite_frontend_test_plan.json",
+        "cases": ["T1", "T2", "T3", "T4", "T5", "T6", "T7"]
+      }
+    },
+    {
+      "id": "FR2_OPERATOR_CRUD",
+      "title": "Criação e Gestão de Operadores",
+      "details": {
+        "rules": [
+          "Campos obrigatórios: nome>=3, login>=4 (único), senha>=6, cpf=11 (único), email válido (único)",
+          "Deve selecionar pelo menos 1 perfil",
+          "Deve selecionar pelo menos 1 unidade",
+          "Deve definir 1 unidade principal",
+          "NÃO permitir criar/alterar admin.master"
+        ],
+        "endpoints": [
+          {"method": "POST", "path": "/api/operadores", "desc": "Criar operador"},
+          {"method": "PUT", "path": "/api/operadores/{id}/perfis", "desc": "Vincular perfis"},
+          {"method": "PUT", "path": "/api/operadores/{id}/unidades", "desc": "Vincular unidades e principal"}
+        ]
+      },
+      "test_mapping": {
+        "plan_file": "testsprite_tests/testsprite_backend_test_plan.json",
+        "cases": ["T8_API", "T9_API", "T10_API", "T11_API", "T12_API", "T13_API", "T14_API", "T15_API"]
+      }
+    },
+    {
+      "id": "FR3_UI_VISIBILITY",
+      "title": "Visibilidade de Módulos/Menus por Perfil",
+      "details": {
+        "rules": [
+          "Menus e módulos exibidos conforme perfis do operador logado",
+          "ADMINISTRADOR_SISTEMA enxerga módulos administrativos",
+          "UPA/RECEPCIONISTA_UPA enxergam módulos pertinentes"
+        ],
+        "frontend_files": [
+          "frontend/src/Layout.tsx",
+          "frontend/src/router/**",
+          "frontend/src/services/ConfiguracaoService.ts"
+        ]
+      },
+      "test_mapping": {
+        "plan_file": "testsprite_tests/testsprite_frontend_test_plan.json",
+        "cases": ["T8_UI", "T9_UI"]
+      }
+    }
+  ],
+  "constraints": [
+    "É terminantemente proibido alterar ou excluir o operador master (admin.master)",
+    "Para testes de duplicidade, utilizar logins/CPFs/emails únicos por execução"
+  ]
+}

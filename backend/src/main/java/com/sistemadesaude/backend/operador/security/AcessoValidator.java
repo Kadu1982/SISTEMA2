@@ -29,7 +29,7 @@ import java.util.List;
  *   via reflexão (tentando getUnidadeId / getIdUnidade / getUnidadeCodigo). Se não existir,
  *   o horário é considerado GLOBAL (sem vínculo de unidade).
  * - O repositório OperadorHorarioAcessoRepository deve possuir o método
- *     findByOperadorIdAndDiaSemana(Long, Integer)
+ *     findByOperadorIdAndDiaSemana(Long, Short)
  *   (que já sugerimos anteriormente). Se não existir, me avise que troco por um fallback.
  * - Para vínculos de unidades usamos OperadorUnidadeRepository.findUnidadeIds(operadorId),
  *   que você já possui.
@@ -48,14 +48,18 @@ public class AcessoValidator {
         if (operador == null) throw new AccessDeniedException("Operador inválido.");
         if (Boolean.TRUE.equals(operador.getIsMaster())) return; // master ignora restrições
 
-        final int dia = mapDia(agora.getDayOfWeek());
+        final short dia = mapDia(agora.getDayOfWeek());
         final LocalTime hora = agora.toLocalTime();
 
         var horariosDoDia = horarioRepo.findByOperadorIdAndDiaSemana(operador.getId(), dia);
         if (horariosDoDia == null || horariosDoDia.isEmpty()) return; // sem regras → permite
+        var ativos = horariosDoDia.stream()
+                .filter(h -> Boolean.TRUE.equals(h.getAtivo()))
+                .toList();
+        if (ativos.isEmpty()) return; // sem regras ativas
 
         // Só contam horários GLOBAIS (sem unidade) para o login sem unidade
-        boolean permitido = horariosDoDia.stream()
+        boolean permitido = ativos.stream()
                 .filter(h -> tryGetLong(h, "getUnidadeId", "getIdUnidade", "getUnidadeCodigo") == null)
                 .anyMatch(h -> contem(h.getHoraInicio(), h.getHoraFim(), hora));
 
@@ -71,25 +75,29 @@ public class AcessoValidator {
     public boolean isHorarioPermitido(Operador operador, LocalDateTime dataHora, Long unidadeId) {
         if (operador == null || Boolean.TRUE.equals(operador.getIsMaster())) return true;
 
-        final int dia = mapDia(dataHora.getDayOfWeek());
+        final short dia = mapDia(dataHora.getDayOfWeek());
         final LocalTime hora = dataHora.toLocalTime();
 
         var horariosDoDia = horarioRepo.findByOperadorIdAndDiaSemana(operador.getId(), dia);
         if (horariosDoDia == null || horariosDoDia.isEmpty()) return true; // sem regras → permite
+        var ativos = horariosDoDia.stream()
+                .filter(h -> Boolean.TRUE.equals(h.getAtivo()))
+                .toList();
+        if (ativos.isEmpty()) return true;
 
-        boolean possuiAlgumComUnidade = horariosDoDia.stream()
+        boolean possuiAlgumComUnidade = ativos.stream()
                 .anyMatch(h -> tryGetLong(h, "getUnidadeId", "getIdUnidade", "getUnidadeCodigo") != null);
 
         if (possuiAlgumComUnidade && unidadeId != null) {
             // há regras por unidade → avalia apenas as da unidade informada
-            return horariosDoDia.stream()
+            return ativos.stream()
                     .filter(h -> unidadeId.equals(
                             tryGetLong(h, "getUnidadeId", "getIdUnidade", "getUnidadeCodigo")))
                     .anyMatch(h -> contem(h.getHoraInicio(), h.getHoraFim(), hora));
         }
 
         // não há regras por unidade → avalia apenas as GLOBAIS
-        return horariosDoDia.stream()
+        return ativos.stream()
                 .filter(h -> tryGetLong(h, "getUnidadeId", "getIdUnidade", "getUnidadeCodigo") == null)
                 .anyMatch(h -> contem(h.getHoraInicio(), h.getHoraFim(), hora));
     }
@@ -130,8 +138,8 @@ public class AcessoValidator {
         return !hora.isBefore(inicio) || !hora.isAfter(fim);
     }
 
-    /** Converte DayOfWeek (MON..SUN) para seu padrão 1..7. */
-    private int mapDia(DayOfWeek d) {
+    /** Converte DayOfWeek (MON..SUN) para o padrão usado na tabela (0=domingo, 1=segunda ... 6=sábado). */
+    private short mapDia(DayOfWeek d) {
         return switch (d) {
             case MONDAY -> 1;
             case TUESDAY -> 2;
@@ -139,7 +147,7 @@ public class AcessoValidator {
             case THURSDAY -> 4;
             case FRIDAY -> 5;
             case SATURDAY -> 6;
-            case SUNDAY -> 7;
+            case SUNDAY -> 0; // Modelagem atual usa 0 = domingo
         };
     }
 

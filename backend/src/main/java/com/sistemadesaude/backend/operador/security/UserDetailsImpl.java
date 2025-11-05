@@ -37,19 +37,56 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Tenta obter perfis/cargos como lista de String; se vier nulo, retorna vazio
+        // ✅ CORRIGIDO: Adiciona ROLE_ADMINISTRADOR_SISTEMA para admin.master (bypass)
+        java.util.List<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+
+        // Verifica se é admin.master (tem acesso total)
+        // Verifica tanto pelo login quanto pelo flag isMaster
+        boolean isMaster = false;
+        try {
+            String login = operador.getLogin();
+            if (login != null) {
+                String loginTrimmed = login.trim();
+                isMaster = "admin.master".equalsIgnoreCase(loginTrimmed) || 
+                          "admin".equalsIgnoreCase(loginTrimmed);
+            }
+            
+            // Verifica também pelo flag isMaster se existir
+            if (!isMaster) {
+                try {
+                    Object isMasterObj = operador.getClass().getMethod("getIsMaster").invoke(operador);
+                    if (isMasterObj instanceof Boolean && Boolean.TRUE.equals(isMasterObj)) {
+                        isMaster = true;
+                    }
+                } catch (Exception ignored) { }
+            }
+            
+            if (isMaster) {
+                // Admin master tem TODAS as permissões
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMINISTRADOR_SISTEMA"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                authorities.add(new SimpleGrantedAuthority("ROLE_MASTER"));
+            }
+        } catch (Exception e) {
+            // Log apenas em caso de erro crítico (não ignorar completamente)
+            System.err.println("⚠️ Erro ao verificar se é admin.master: " + e.getMessage());
+        }
+
+        // Adiciona perfis do operador
         try {
             Object v = operador.getClass().getMethod("getPerfis").invoke(operador);
             if (v instanceof List<?> lista) {
-                return lista.stream()
+                List<SimpleGrantedAuthority> perfilAuthorities = lista.stream()
                         .map(String::valueOf)
                         .filter(s -> !s.isBlank())
                         .map(s -> s.startsWith("ROLE_") ? s : "ROLE_" + s)
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
+                authorities.addAll(perfilAuthorities);
             }
         } catch (Exception ignored) { }
-        return Collections.emptyList();
+
+        return authorities.isEmpty() ? Collections.emptyList() : authorities;
     }
 
     @Override
