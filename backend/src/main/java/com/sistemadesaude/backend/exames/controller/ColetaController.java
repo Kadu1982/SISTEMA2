@@ -9,6 +9,7 @@ import com.sistemadesaude.backend.operador.entity.Operador;
 import com.sistemadesaude.backend.operador.security.UserDetailsImpl;
 import com.sistemadesaude.backend.response.ApiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/laboratorio/coleta")
 @RequiredArgsConstructor
@@ -32,7 +34,7 @@ public class ColetaController {
             List<RecepcaoExame> pacientes = coletaService.listarPacientesAguardandoColeta(unidadeId);
             return ResponseEntity.ok(ApiResponse.success(pacientes));
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Erro ao listar pacientes aguardando coleta para unidadeId: {}", unidadeId, e);
             return ResponseEntity.ok(ApiResponse.success(List.of(), "Erro: " + e.getMessage()));
         }
     }

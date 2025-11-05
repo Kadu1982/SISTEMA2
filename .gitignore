@@ -22,8 +22,33 @@ Thumbs.db
 logs/
 
 # Environment
+.env
 .env.local
+.env.*.local
+.env.production
 .env.production.local
+!.env.example
+!frontend/.env.example
+
+# Security - Application Properties (use .example files instead)
+backend/src/main/resources/application.properties
+backend/src/main/resources/application-dev.properties
+backend/src/main/resources/application-prod.properties
+backend/src/main/resources/application-staging.properties
+backend/src/main/resources/application-test.properties
+backend/src/main/resources/application-instance*.properties
+backend/src/main/resources/application-loadtest.properties
+!backend/src/main/resources/application*.properties.example
+
+# Credentials and Secrets
+**/credentials.json
+**/secrets.json
+**/secrets.yml
+**/*.key
+**/*.pem
+**/*.p12
+**/*.jks
+**/keystore.*
 
 # Database
 *.backup

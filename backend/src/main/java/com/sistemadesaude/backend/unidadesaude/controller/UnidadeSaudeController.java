@@ -2,11 +2,13 @@ package com.sistemadesaude.backend.unidadesaude.controller;
 
 import com.sistemadesaude.backend.unidadesaude.dto.UnidadeSaudeDTO;
 import com.sistemadesaude.backend.unidadesaude.service.UnidadeSaudeService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/unidades")
 public class UnidadeSaudeController {
@@ -29,10 +31,7 @@ public class UnidadeSaudeController {
         try {
             return unidadeService.criar(dto);
         } catch (Exception e) {
-            // Log do erro para debug
-            System.err.println("Erro ao criar unidade: " + e.getMessage());
-            System.err.println("DTO recebido: " + dto);
-            e.printStackTrace();
+            log.error("Erro ao criar unidade. DTO recebido: {}", dto, e);
             throw e;
         }
     }

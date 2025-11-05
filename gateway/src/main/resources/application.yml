@@ -57,18 +57,10 @@ spring:
               firstBackoff: 50ms
               maxBackoff: 500ms
 
-      # Configuração de rotas para load balancing
+      # Configuração de rotas - single backend instance
       routes:
-        - id: backend-route-1
+        - id: backend-route
           uri: http://localhost:8080
-          predicates:
-            - Path=/api/**
-        - id: backend-route-2
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/**
-        - id: backend-route-3
-          uri: http://localhost:8082
           predicates:
             - Path=/api/**
 
@@ -116,15 +108,9 @@ logging:
 info:
   app:
     name: Sistema de Saúde - API Gateway
-    description: Gateway para distribuição de carga e roteamento
+    description: Gateway para roteamento e segurança
     version: 1.0.0
     instances:
-      - name: backend-instance1
+      - name: backend-instance
         url: http://localhost:8080
-        weight: 40
-      - name: backend-instance2
-        url: http://localhost:8081
-        weight: 30
-      - name: backend-instance3
-        url: http://localhost:8082
-        weight: 30
+        status: active

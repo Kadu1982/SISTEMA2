@@ -1,13 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, FileText, Stethoscope, UserCheck } from 'lucide-react';
+import { Building2, FileText, Stethoscope, UserCheck, Activity } from 'lucide-react';
 import { useOperador } from '@/contexts/OperadorContext';
 
 // Componentes das diferentes abas
 import NovaOcorrenciaUPA from '@/components/upa/NovaOcorrenciaUPA';
 import TriagemUPA from '@/components/upa/TriagemUPA';
 import AtendimentoUPA from '@/components/upa/AtendimentoUPA';
+import AtendimentoEnfermagemUPA from '@/components/enfermagem/AtendimentoEnfermagemUPA';
 
 const Upa: React.FC = () => {
     const { operador } = useOperador();
@@ -142,11 +143,38 @@ const Upa: React.FC = () => {
             perfil.includes('dentista');
     };
 
+    const podeAcessarEnfermagem = () => {
+        if (!operador) return false;
+
+        // ✅ MASTER TEM ACESSO IRRESTRITO
+        if (isMasterUser()) return true;
+
+        // Verificar pelos perfis (array)
+        if (operador.perfis?.length > 0) {
+            return operador.perfis.some(perfil => {
+                const p = perfil.toLowerCase();
+                return p.includes('enfermeiro') ||
+                    p.includes('enfermeira') ||
+                    p.includes('técnico em enfermagem') ||
+                    p.includes('tecnico') ||
+                    p.includes('auxiliar de enfermagem');
+            });
+        }
+
+        // Fallback: perfil principal
+        const perfil = operador.perfil?.toLowerCase() || '';
+        return perfil.includes('enfermeiro') ||
+            perfil.includes('enfermagem') ||
+            perfil.includes('técnico') ||
+            perfil.includes('tecnico');
+    };
+
     // Contar quantas abas o usuário tem acesso
     const totalAbas = [
         podeAcessarNovoAtendimento(),
         podeAcessarTriagem(),
-        podeAcessarAtendimento()
+        podeAcessarAtendimento(),
+        podeAcessarEnfermagem()
     ].filter(Boolean).length;
 
     // Se não tem acesso a nenhuma aba
@@ -262,6 +290,24 @@ const Upa: React.FC = () => {
                             <span>Atendimento</span>
                         </TabsTrigger>
                     )}
+
+                    {/* Aba Atendimentos de Enfermagem */}
+                    {podeAcessarEnfermagem() && (
+                        <TabsTrigger
+                            value="enfermagem"
+                            className="
+                                inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-medium
+                                ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2
+                                focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none
+                                disabled:opacity-50 data-[state=active]:bg-teal-600 data-[state=active]:text-white
+                                data-[state=active]:shadow-sm hover:bg-teal-50 hover:text-teal-700
+                                min-w-[180px] gap-2
+                            "
+                        >
+                            <Activity size={18} />
+                            <span>Atendimentos de Enfermagem</span>
+                        </TabsTrigger>
+                    )}
                 </TabsList>
 
                 {/* ✅ CONTEÚDO DAS ABAS */}
@@ -307,6 +353,24 @@ const Upa: React.FC = () => {
                                 )}
                             </div>
                             <AtendimentoUPA />
+                        </div>
+                    </TabsContent>
+                )}
+
+                {/* Aba Atendimentos de Enfermagem */}
+                {podeAcessarEnfermagem() && (
+                    <TabsContent value="enfermagem" className="mt-0">
+                        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <Activity className="h-5 w-5 text-teal-600" />
+                                <h2 className="text-xl font-semibold text-gray-800">Atendimentos de Enfermagem</h2>
+                                {isMasterUser() && (
+                                    <span className="text-xs bg-red-50 text-red-600 px-2 py-1 rounded-full">
+                                        Acesso Master
+                                    </span>
+                                )}
+                            </div>
+                            <AtendimentoEnfermagemUPA />
                         </div>
                     </TabsContent>
                 )}
