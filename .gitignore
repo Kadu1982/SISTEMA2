@@ -20,6 +20,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+!backend/src/main/java/com/sistemadesaude/backend/logs/
+!backend/src/main/java/com/sistemadesaude/backend/logs/**
 
 # Environment
 .env.local

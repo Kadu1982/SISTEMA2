@@ -25,6 +25,9 @@ public class OperadorHorarioAcesso {
     @Column(name = "operador_id", nullable = false)
     private Long operadorId;
 
+    @Column(name = "unidade_id")
+    private Long unidadeId;
+
     /**
      * 0=domingo, 1=segunda ... 6=sábado
      */
