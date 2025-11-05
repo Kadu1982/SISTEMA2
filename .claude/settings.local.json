@@ -70,7 +70,20 @@
       "Bash(move:*)",
       "Bash(del \"C:\\Users\\okdur\\Desktop\\sistema2\\backend\\src\\main\\resources\\db\\migration\\V202510111500__create_beneficios_tables.sql\")",
       "Bash(npx vite:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "mcp__TestSprite__testsprite_generate_code_summary",
+      "Bash(mkdir:*)",
+      "mcp__TestSprite__testsprite_generate_standardized_prd",
+      "Bash(ss:*)",
+      "mcp__TestSprite__testsprite_bootstrap_tests",
+      "mcp__TestSprite__testsprite_generate_frontend_test_plan",
+      "Bash(./node_modules/.bin/vite:*)",
+      "Bash(node:*)",
+      "Bash(rm:*)",
+      "Bash(tee:*)",
+      "Bash(npx playwright install:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)"
     ],
     "deny": [],
     "ask": []

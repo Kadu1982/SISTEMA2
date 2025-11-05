@@ -1,5 +1,6 @@
 package com.sistemadesaude.backend.perfilacesso.entity;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
 /**
@@ -30,6 +31,14 @@ public enum Perfil {
         this.codigo = codigo;
         this.descricao = descricao;
         this.nivel = nivel;
+    }
+
+    /**
+     * Serializa o enum como string (nome do enum) no JSON
+     */
+    @JsonValue
+    public String toValue() {
+        return name();
     }
 
     /**

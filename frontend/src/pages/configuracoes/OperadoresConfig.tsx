@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { Separator } from "@/components/ui/separator";
 import { Users, Edit, Plus, Save, X, Loader2 } from "lucide-react";
 import operadoresService, { OperadorDetalhe, OperadorResumo, HorarioAcesso } from "@/services/operadoresService";
+import { CriarOperadorDialog } from "./CriarOperadorDialog";
 
 /**
  * Tela de Operadores (configurações) — COMPLETA
@@ -29,6 +30,7 @@ const OperadoresConfig: React.FC = () => {
     const [busca, setBusca] = useState("");
     const [carregandoLista, setCarregandoLista] = useState(false);
     const [lista, setLista] = useState<OperadorResumo[]>([]);
+    const [dialogCriarAberto, setDialogCriarAberto] = useState(false);
 
     const carregarLista = async () => {
         setCarregandoLista(true);
@@ -91,14 +93,19 @@ const OperadoresConfig: React.FC = () => {
                 </CardHeader>
 
                 <CardContent className="space-y-3">
-                    {/* Barra de busca */}
+                    {/* Barra de busca e ações */}
                     <div className="flex items-center gap-2">
                         <Input
                             placeholder="Buscar por nome ou login…"
                             value={busca}
                             onChange={(e) => setBusca(e.target.value)}
+                            className="flex-1"
                         />
                         <Button variant="outline" onClick={carregarLista}>Atualizar</Button>
+                        <Button onClick={() => setDialogCriarAberto(true)}>
+                            <Plus className="h-4 w-4 mr-2" />
+                            Novo Operador
+                        </Button>
                     </div>
 
                     {/* Tabela simples (identidade minimalista) */}
@@ -231,6 +238,13 @@ const OperadoresConfig: React.FC = () => {
                     </div>
                 </SheetContent>
             </Sheet>
+
+            {/* Dialog de Criar Operador */}
+            <CriarOperadorDialog
+                aberto={dialogCriarAberto}
+                onFechar={() => setDialogCriarAberto(false)}
+                onCriado={carregarLista}
+            />
         </div>
     );
 };
