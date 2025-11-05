@@ -39,8 +39,8 @@ public class SecurityConfig {
                     .contentTypeOptions(contentType -> contentType.disable()) // Previne MIME sniffing
                     .contentSecurityPolicy(csp -> csp
                         .policyDirectives("default-src 'self'; " +
-                            "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-                            "style-src 'self' 'unsafe-inline'; " +
+                            "script-src 'self'; " + // Removed 'unsafe-inline' and 'unsafe-eval' for better security
+                            "style-src 'self'; " +  // Removed 'unsafe-inline' - move inline styles to CSS files if needed
                             "img-src 'self' data: https:; " +
                             "font-src 'self' data:; " +
                             "connect-src 'self' http://localhost:* https://*.trycloudflare.com https://*.cloudflare.com; " +
