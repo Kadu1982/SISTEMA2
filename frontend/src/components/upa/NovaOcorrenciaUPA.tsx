@@ -22,7 +22,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
             setUpas(dados);
         } catch (error) {
             console.error('❌ Erro ao carregar UPAs:', error);
-            alert('Erro ao carregar as ocorrências. Tente novamente.');
+            alert('Erro ao carregar os atendimentos. Tente novamente.');
         } finally {
             setIsLoading(false);
         }
@@ -35,7 +35,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
     };
 
     const handleDelete = async (id: number) => {
-        if (!confirm('Deseja realmente excluir esta ocorrência?')) {
+        if (!confirm('Deseja realmente excluir este atendimento?')) {
             return;
         }
 
@@ -46,7 +46,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
             await carregarUpas();
         } catch (error) {
             console.error('❌ Erro ao deletar UPA:', error);
-            alert('Erro ao excluir a ocorrência. Tente novamente.');
+            alert('Erro ao excluir o atendimento. Tente novamente.');
         }
     };
 
@@ -63,7 +63,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
         carregarUpas();
 
         if (pacienteCriado) {
-            alert(`Ocorrência registrada com sucesso para o paciente: ${pacienteCriado.nomeCompleto}`);
+            alert(`Atendimento registrado com sucesso para o paciente: ${pacienteCriado.nomeCompleto}`);
         }
     };
 
@@ -74,7 +74,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-64">
-                <div className="text-lg">Carregando ocorrências...</div>
+                <div className="text-lg">Carregando atendimentos...</div>
             </div>
         );
     }
@@ -84,33 +84,22 @@ const NovaOcorrenciaUPA: React.FC = () => {
             <div className="flex justify-between items-center mb-6">
                 <div>
                     <h3 className="text-lg font-semibold text-gray-800">
-                        Gestão de Ocorrências UPA
+                        Histórico de Atendimentos
                     </h3>
-                    <p className="text-sm text-gray-600">
-                        Registre e gerencie ocorrências da Unidade de Pronto Atendimento
-                    </p>
                 </div>
                 <Button
                     onClick={handleNova}
                     className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 >
                     <PlusCircle size={18} />
-                    Nova Ocorrência
+                    Nova Ficha
                 </Button>
             </div>
 
             {upas.length === 0 ? (
                 <div className="text-center py-12 bg-gray-50 rounded-lg">
                     <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-500 text-lg mb-4">Nenhuma ocorrência registrada.</p>
-                    <Button
-                        onClick={handleNova}
-                        variant="outline"
-                        className="flex items-center gap-2 mx-auto"
-                    >
-                        <PlusCircle size={16} />
-                        Criar primeira ocorrência
-                    </Button>
+                    <p className="text-gray-500 text-lg">Nenhum atendimento registrado.</p>
                 </div>
             ) : (
                 <div className="space-y-3">
@@ -124,10 +113,10 @@ const NovaOcorrenciaUPA: React.FC = () => {
                                     <div className="flex items-center gap-2 mb-2">
                                         <Building2 size={20} className="text-blue-600" />
                                         <p className="font-semibold text-lg">
-                                            <PacienteIdNome id={upa.pacienteId} prefixo="Paciente" />
+                                            {upa.pacienteNome || `Paciente ${upa.pacienteId}`}
                                         </p>
                                         <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                            #{upa.id}
+                                            Ficha #{upa.id}
                                         </span>
                                     </div>
                                     <p className="text-sm text-gray-600 mb-1">
@@ -150,7 +139,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
                                         variant="outline"
                                         size="sm"
                                         onClick={() => handleEdit(upa)}
-                                        title="Editar ocorrência"
+                                        title="Editar atendimento"
                                         className="hover:bg-blue-50 hover:border-blue-300"
                                     >
                                         <Pencil size={16} />
@@ -159,7 +148,7 @@ const NovaOcorrenciaUPA: React.FC = () => {
                                         variant="destructive"
                                         size="sm"
                                         onClick={() => handleDelete(upa.id!)}
-                                        title="Excluir ocorrência"
+                                        title="Excluir atendimento"
                                     >
                                         <Trash size={16} />
                                     </Button>

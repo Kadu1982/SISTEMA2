@@ -414,21 +414,19 @@ export function getEspecialidadesPorTipo(tipoAtendimento: string): Especialidade
 export function getExamesPorTipo(tipoExame: string): EspecialidadeDisponivel[] {
     console.log('🔍 getExamesPorTipo chamada:', tipoExame);
 
-    switch (tipoExame) {
-        case TipoAtendimento.EXAME_LABORATORIAL:
-        case 'exame_laboratorial':
-            console.log('📋 Retornando exames laboratoriais:', EXAMES_LABORATORIAIS.length);
-            return [...EXAMES_LABORATORIAIS]; // ✅ RETORNA CÓPIA DO ARRAY
-
-        case TipoAtendimento.EXAME_IMAGEM:
-        case 'exame_imagem':
-            console.log('📋 Retornando exames de imagem:', EXAMES_IMAGEM.length);
-            return [...EXAMES_IMAGEM]; // ✅ RETORNA CÓPIA DO ARRAY
-
-        default:
-            console.warn('⚠️ Tipo de exame não encontrado:', tipoExame);
-            return [];
+    // ✅ CORREÇÃO: Remove cases duplicados usando if-else
+    if (tipoExame === TipoAtendimento.EXAME_LABORATORIAL || tipoExame === 'exame_laboratorial') {
+        console.log('📋 Retornando exames laboratoriais:', EXAMES_LABORATORIAIS.length);
+        return [...EXAMES_LABORATORIAIS]; // ✅ RETORNA CÓPIA DO ARRAY
     }
+
+    if (tipoExame === TipoAtendimento.EXAME_IMAGEM || tipoExame === 'exame_imagem') {
+        console.log('📋 Retornando exames de imagem:', EXAMES_IMAGEM.length);
+        return [...EXAMES_IMAGEM]; // ✅ RETORNA CÓPIA DO ARRAY
+    }
+
+    console.warn('⚠️ Tipo de exame não encontrado:', tipoExame);
+    return [];
 }
 
 /**

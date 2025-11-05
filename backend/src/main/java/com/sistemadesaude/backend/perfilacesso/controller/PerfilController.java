@@ -16,7 +16,7 @@ import java.util.List;
 
 /**
  * Controller para gerenciamento de perfis de acesso
- * Apenas usuários com perfil ADMINISTRADOR_SISTEMA ou admin.master podem acessar
+ * ✅ CORRIGIDO: PreAuthorize agora funciona porque UserDetailsImpl adiciona ROLE_ADMINISTRADOR_SISTEMA para admin.master
  */
 @RestController
 @RequestMapping("/api/perfis")
@@ -42,6 +42,12 @@ public class PerfilController {
     public ResponseEntity<ApiResponse<List<PerfilDTO>>> listarTodos() {
         log.info("Requisição para listar todos os perfis");
         List<PerfilDTO> perfis = perfilService.listarTodos();
+        log.info("Total de perfis encontrados: {}", perfis.size());
+        if (perfis.isEmpty()) {
+            log.warn("⚠️ Nenhum perfil encontrado no banco de dados");
+        } else {
+            log.info("Perfis encontrados: {}", perfis.stream().map(p -> p.getNome() + " (" + p.getTipo() + ")").collect(java.util.stream.Collectors.joining(", ")));
+        }
         return ResponseEntity.ok(new ApiResponse<>(true, "Perfis listados com sucesso", perfis));
     }
 
