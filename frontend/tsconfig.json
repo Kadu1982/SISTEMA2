@@ -11,10 +11,12 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "strict": false,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noFallthroughCasesInSwitch": false,
+    // Type safety improvements - enable these gradually to fix existing code
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    // TODO: Enable after fixing 419+ 'any' types in codebase
     "noImplicitAny": false,
     "baseUrl": ".",
     "paths": {

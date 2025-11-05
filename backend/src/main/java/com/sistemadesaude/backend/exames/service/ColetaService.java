@@ -8,6 +8,7 @@ import com.sistemadesaude.backend.exception.BusinessException;
 import com.sistemadesaude.backend.exception.ResourceNotFoundException;
 import com.sistemadesaude.backend.operador.entity.Operador;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ColetaService {
@@ -29,14 +31,12 @@ public class ColetaService {
     @Transactional(readOnly = true)
     public List<RecepcaoExame> listarPacientesAguardandoColeta(Long unidadeId) {
         try {
-            System.out.println("=== DEBUG ColetaService.listarPacientesAguardandoColeta ===");
-            System.out.println("unidadeId: " + unidadeId);
+            log.debug("Listando pacientes aguardando coleta para unidadeId: {}", unidadeId);
             List<RecepcaoExame> result = recepcaoRepository.findByStatusAndUnidade(RecepcaoExame.StatusRecepcao.AGUARDANDO_COLETA, unidadeId);
-            System.out.println("Resultado: " + (result != null ? result.size() + " registros" : "NULL"));
+            log.debug("Encontrados {} pacientes aguardando coleta", result != null ? result.size() : 0);
             return result;
         } catch (Exception e) {
-            System.err.println("ERRO no ColetaService: " + e.getMessage());
-            e.printStackTrace();
+            log.error("Erro ao listar pacientes aguardando coleta para unidadeId: {}", unidadeId, e);
             throw e;
         }
     }
