@@ -15,12 +15,14 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 import { useToast } from '@/components/ui/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 
 import configuracaoService from '@/services/ConfiguracaoService';
 import * as opSvc from '@/services/operadoresService';
+import { formatCpf, unformatCpf } from '@/common/utils/formatCpf';
 
 /* ================= Tipos ================= */
 interface Perfil {
@@ -50,7 +52,9 @@ interface Operador {
 const operatorFormSchema = z.object({
     nome: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
     login: z.string().min(4, { message: 'O login deve ter pelo menos 4 caracteres.' }),
-    cpf: z.string().min(11, { message: 'CPF é obrigatório (11 caracteres).' }),
+    cpf: z.string().refine((val) => unformatCpf(val).length === 11, { 
+        message: 'CPF deve ter 11 dígitos.' 
+    }),
     cns: z.string().optional(),
     senha: z.string().min(6, { message: 'A senha deve ter pelo menos 6 caracteres.' }),
     email: z.string().email({ message: 'Formato de e-mail inválido.' }),
@@ -68,6 +72,7 @@ export default function OperatorManagement() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [search, setSearch] = useState<string>('');
     const [statusChangingId, setStatusChangingId] = useState<number | null>(null);
+    const [perfisPopoverOpen, setPerfisPopoverOpen] = useState(false);
     const { toast } = useToast();
 
     // Edição (novo): dialog com abas
@@ -84,7 +89,13 @@ export default function OperatorManagement() {
     const profileOptions = useMemo<{ value: string; label: string }[]>(() => {
         return (profiles || [])
             .filter(p => (p.nome?.trim().length ?? 0) > 0 && p.ativo !== false)
-            .map(p => ({ value: p.nome!.trim(), label: (p.nomeExibicao || p.nome || p.nomeCustomizado || '').trim() || p.nome!.trim() }))
+            .map(p => {
+                // Usa o tipo do perfil como valor (compatível com backend)
+                // Se não tiver tipo, usa o nome como fallback
+                const valor = p.tipo || p.nome!.trim();
+                const label = (p.nomeExibicao || p.nome || p.nomeCustomizado || '').trim() || p.nome!.trim();
+                return { value: valor, label };
+            })
             .sort((a,b)=>a.label.localeCompare(b.label));
     }, [profiles]);
 
@@ -145,7 +156,7 @@ export default function OperatorManagement() {
             const payload = {
                 nome: data.nome.trim(),
                 login: data.login.trim(),
-                cpf: data.cpf.trim(),
+                cpf: unformatCpf(data.cpf.trim()), // Remove formatação antes de enviar
                 cns: data.cns?.trim() || undefined,
                 email: data.email.trim(),
                 senha: data.senha,
@@ -160,6 +171,7 @@ export default function OperatorManagement() {
                 setOperators(prev => [added, ...prev]);
                 toast({ title: 'Sucesso!', description: `Operador "${added.nome}" criado.` });
                 setIsDialogOpen(false);
+                setPerfisPopoverOpen(false);
                 form.reset();
             } else {
                 toast({ title: 'Erro ao criar', description: 'Resposta do servidor inválida.', variant: 'destructive' });
@@ -202,7 +214,9 @@ export default function OperatorManagement() {
             ? currentPerfis.filter(p => p !== profileValue)
             : [...currentPerfis, profileValue];
     };
-    const removerPerfil = (profileValue: string, currentPerfis: string[]) => currentPerfis.filter(p => p !== profileValue);
+    const removerPerfil = (profileValue: string, currentPerfis: string[]) => {
+        return currentPerfis.filter(p => p !== profileValue);
+    };
 
     return (
         <Card>
@@ -214,7 +228,13 @@ export default function OperatorManagement() {
 
                 <div className="flex w-full sm:w-auto items-center gap-2">
                     <Input placeholder="Buscar por nome ou login..." value={search} onChange={(e) => setSearch(e.target.value)} className="w-full sm:w-64" />
-                    <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <Dialog open={isDialogOpen} onOpenChange={(open) => {
+                        setIsDialogOpen(open);
+                        if (!open) {
+                            setPerfisPopoverOpen(false);
+                            form.reset();
+                        }
+                    }}>
                         <DialogTrigger asChild>
                             <Button><PlusCircle className="mr-2 h-4 w-4" />Novo Operador</Button>
                         </DialogTrigger>
@@ -232,9 +252,28 @@ export default function OperatorManagement() {
                                         <FormItem><FormLabel>Login *</FormLabel><FormControl><Input placeholder="Login" {...field} /></FormControl><FormMessage /></FormItem>
                                     )}/>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <FormField name="cpf" control={form.control} render={({ field }) => (
-                                            <FormItem><FormLabel>CPF *</FormLabel><FormControl><Input placeholder="000.000.000-00" {...field} /></FormControl><FormMessage /></FormItem>
-                                        )}/>
+                                        <FormField 
+                                            name="cpf" 
+                                            control={form.control} 
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>CPF *</FormLabel>
+                                                    <FormControl>
+                                                        <Input 
+                                                            placeholder="000.000.000-00" 
+                                                            {...field}
+                                                            value={formatCpf(field.value || '')}
+                                                            onChange={(e) => {
+                                                                const formatted = formatCpf(e.target.value);
+                                                                field.onChange(formatted);
+                                                            }}
+                                                            maxLength={14}
+                                                        />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
                                         <FormField name="cns" control={form.control} render={({ field }) => (
                                             <FormItem><FormLabel>CNS (opcional)</FormLabel><FormControl><Input placeholder="Número do CNS" {...field} /></FormControl><FormMessage /></FormItem>
                                         )}/>
@@ -267,7 +306,7 @@ export default function OperatorManagement() {
                                                 </div>
                                             )}
 
-                                            <Popover>
+                                            <Popover open={perfisPopoverOpen} onOpenChange={setPerfisPopoverOpen}>
                                                 <PopoverTrigger asChild>
                                                     <FormControl>
                                                         <Button variant="outline" role="combobox" className={cn('w-full justify-between', !field.value?.length && 'text-muted-foreground')}>
@@ -276,7 +315,9 @@ export default function OperatorManagement() {
                                                         </Button>
                                                     </FormControl>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
+                                                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" onInteractOutside={(e) => {
+                                                    // Permite fechar apenas clicando fora
+                                                }}>
                                                     <Command>
                                                         <CommandInput placeholder="Buscar perfil..." />
                                                         <CommandList>
@@ -286,7 +327,21 @@ export default function OperatorManagement() {
                                                                     {profileOptions.map((opt, idx) => {
                                                                         const selected = field.value?.includes(opt.value) ?? false;
                                                                         return (
-                                                                            <CommandItem key={`perfil-${opt.value}-${idx}`} onSelect={() => field.onChange(togglePerfil(opt.value, field.value || []))} className="cursor-pointer">
+                                                                            <CommandItem 
+                                                                                key={`perfil-${opt.value}-${idx}`} 
+                                                                                value={opt.value}
+                                                                                onSelect={() => {
+                                                                                    // Não faz nada aqui - o onClick vai tratar
+                                                                                }}
+                                                                                onClick={(e) => {
+                                                                                    e.preventDefault();
+                                                                                    e.stopPropagation();
+                                                                                    const novosPerfis = togglePerfil(opt.value, field.value || []);
+                                                                                    field.onChange(novosPerfis);
+                                                                                    // Não fecha o popover - permite seleção múltipla
+                                                                                }}
+                                                                                className="cursor-pointer"
+                                                                            >
                                                                                 <Check className={cn('mr-2 h-4 w-4', selected ? 'opacity-100' : 'opacity-0')} />
                                                                                 {opt.label}
                                                                             </CommandItem>
@@ -303,7 +358,11 @@ export default function OperatorManagement() {
                                     )}/>
 
                                     <DialogFooter className="flex flex-col sm:flex-row gap-2">
-                                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+                                        <Button type="button" variant="outline" onClick={() => {
+                                            setIsDialogOpen(false);
+                                            setPerfisPopoverOpen(false);
+                                            form.reset();
+                                        }}>Cancelar</Button>
                                         <Button type="submit" disabled={form.formState.isSubmitting}>
                                             {form.formState.isSubmitting ? 'Salvando...' : 'Salvar Operador'}
                                         </Button>
@@ -667,78 +726,238 @@ function AbaSetores({ operadorId }: { operadorId: number }) {
     );
 }
 
+// Lista de módulos disponíveis no sistema
+const MODULOS_DISPONIVEIS = [
+    { codigo: 'RECEPCAO', nome: 'Recepção' },
+    { codigo: 'TRIAGEM', nome: 'Acolhimento Ambulatorial' },
+    { codigo: 'ATENDIMENTO_MEDICO', nome: 'Atendimento Ambulatorial' },
+    { codigo: 'PROCEDIMENTOS_RAPIDOS', nome: 'Cuidados de Enfermagem' },
+    { codigo: 'ODONTOLOGIA', nome: 'Odontologia' },
+    { codigo: 'LABORATORIO', nome: 'Laboratório' },
+    { codigo: 'IMUNIZACAO', nome: 'Imunização' },
+    { codigo: 'FARMACIA', nome: 'Farmácia' },
+    { codigo: 'ESTOQUE', nome: 'Estoque' },
+    { codigo: 'TRANSPORTE', nome: 'Transporte' },
+    { codigo: 'FATURAMENTO', nome: 'Faturamento' },
+    { codigo: 'EPIDEMIOLOGIA', nome: 'Epidemiologia' },
+    { codigo: 'VIGILANCIA_SANITARIA', nome: 'Vig. Sanitária' },
+    { codigo: 'VIGILANCIA_AMBIENTAL', nome: 'Vig. Ambiental' },
+    { codigo: 'OUVIDORIA', nome: 'Ouvidoria' },
+    { codigo: 'ASSISTENCIA_SOCIAL', nome: 'Assistência Social' },
+    { codigo: 'SAMU', nome: 'SAMU' },
+    { codigo: 'UPA', nome: 'UPA' },
+    { codigo: 'HOSPITALAR', nome: 'Hospitalar' },
+    { codigo: 'ESF', nome: 'ESF' },
+];
+
 /* MÓDULOS (override) */
 function AbaModulos({ operadorId }: { operadorId: number }) {
     const { toast } = useToast();
-    const [texto, setTexto] = useState('');
     const [modulos, setModulos] = useState<string[]>([]);
+    const [salvando, setSalvando] = useState(false);
 
     const carregar = async ()=> {
-        try { setModulos(await opSvc.listarModulosDoOperador(operadorId)); }
-        catch(e:any){ toast({ title:'Erro', description:e?.message || 'Falha ao listar módulos.', variant:'destructive' }); }
+        try { 
+            const modulosCarregados = await opSvc.listarModulosDoOperador(operadorId);
+            setModulos(modulosCarregados);
+        }
+        catch(e:any){ 
+            toast({ title:'Erro', description:e?.message || 'Falha ao listar módulos.', variant:'destructive' }); 
+        }
     };
     useEffect(()=>{ carregar(); }, [operadorId]);
 
-    const adicionar = ()=>{
-        const m = texto.trim().toUpperCase();
-        if(!m) return;
-        if(!modulos.includes(m)) setModulos([...modulos, m]);
-        setTexto('');
+    const toggleModulo = (codigo: string) => {
+        if (modulos.includes(codigo)) {
+            setModulos(modulos.filter(m => m !== codigo));
+        } else {
+            setModulos([...modulos, codigo]);
+        }
     };
-    const remover = (m:string)=> setModulos(modulos.filter(x=>x!==m));
+
+    const salvar = async () => {
+        setSalvando(true);
+        try {
+            await opSvc.salvarModulosDoOperador(operadorId, modulos);
+            toast({ title: 'Sucesso', description: 'Módulos salvos com sucesso.' });
+        } catch(e:any) {
+            toast({ title:'Erro', description:e?.message || 'Falha ao salvar módulos.', variant:'destructive' });
+        } finally {
+            setSalvando(false);
+        }
+    };
 
     return (
-        <div className="space-y-3">
-            <div className="flex gap-2">
-                <Input placeholder="Ex.: FARMACIA" value={texto} onChange={e=>setTexto(e.target.value)} />
-                <Button onClick={adicionar}>Adicionar</Button>
+        <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+                Selecione os módulos que este operador pode acessar. Os módulos selecionados aqui sobrescrevem os módulos do perfil.
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto border rounded p-3">
+                {MODULOS_DISPONIVEIS.map(modulo => {
+                    const selecionado = modulos.includes(modulo.codigo);
+                    return (
+                        <label 
+                            key={modulo.codigo}
+                            className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
+                        >
+                            <Checkbox 
+                                checked={selecionado}
+                                onCheckedChange={() => toggleModulo(modulo.codigo)}
+                            />
+                            <span className="text-sm">{modulo.nome}</span>
+                        </label>
+                    );
+                })}
             </div>
-            <div className="flex flex-wrap gap-2">
-                {modulos.map(m=>(
-                    <span key={m} className="px-2 py-1 bg-muted rounded inline-flex items-center gap-2">
-            {m}
-                        <button className="text-xs opacity-70 hover:opacity-100" onClick={()=>remover(m)}>x</button>
-          </span>
-                ))}
-                {modulos.length===0 && <span className="opacity-60 text-sm">Sem overrides; módulos virão apenas do Perfil.</span>}
-            </div>
+
+            {modulos.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-2 bg-muted rounded">
+                    <span className="text-sm font-medium">Módulos selecionados:</span>
+                    {modulos.map(m => {
+                        const modulo = MODULOS_DISPONIVEIS.find(mod => mod.codigo === m);
+                        return (
+                            <Badge key={m} variant="secondary" className="flex items-center gap-1">
+                                {modulo?.nome || m}
+                                <X 
+                                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                                    onClick={() => toggleModulo(m)}
+                                />
+                            </Badge>
+                        );
+                    })}
+                </div>
+            )}
+
+            {modulos.length === 0 && (
+                <p className="text-sm text-muted-foreground italic">
+                    Nenhum módulo selecionado. Os módulos virão apenas do Perfil do operador.
+                </p>
+            )}
+
             <div>
-                <Button onClick={async()=>{ await opSvc.salvarModulosDoOperador(operadorId, modulos); toast({title:'Módulos salvos'}); }}>Salvar</Button>
+                <Button onClick={salvar} disabled={salvando}>
+                    {salvando ? 'Salvando...' : 'Salvar Módulos'}
+                </Button>
             </div>
         </div>
     );
 }
 
-/* UNIDADES — entrada simples por IDs (podemos evoluir para autocomplete) */
+/* UNIDADES — seleção com dropdown */
 function AbaUnidades({ operadorId }: { operadorId: number }) {
     const { toast } = useToast();
-    const [idsTexto, setIdsTexto] = useState('');
+    const [unidadesSelecionadas, setUnidadesSelecionadas] = useState<number[]>([]);
+    const [unidadesDisponiveis, setUnidadesDisponiveis] = useState<Array<{id: number, nome: string}>>([]);
     const [carregado, setCarregado] = useState(false);
+    const [salvando, setSalvando] = useState(false);
+
+    const carregarUnidades = async () => {
+        try {
+            const { listarUnidades } = await import('@/services/unidadesService');
+            const unidades = await listarUnidades();
+            setUnidadesDisponiveis(unidades.map(u => ({ id: u.id!, nome: u.nome })));
+        } catch(e:any) {
+            toast({ title:'Erro', description:'Falha ao carregar lista de unidades.', variant:'destructive' });
+        }
+    };
 
     const carregar = async ()=>{
         try {
             const ids = await opSvc.listarUnidadesDoOperador(operadorId);
-            setIdsTexto(ids.join(', '));
+            setUnidadesSelecionadas(ids);
             setCarregado(true);
         } catch(e:any){
-            toast({ title:'Erro', description:e?.message || 'Falha ao carregar unidades.', variant:'destructive' });
+            toast({ title:'Erro', description:e?.message || 'Falha ao carregar unidades do operador.', variant:'destructive' });
+            setCarregado(true); // Permite continuar mesmo com erro
         }
     };
-    useEffect(()=>{ carregar(); }, [operadorId]);
+
+    useEffect(()=>{ 
+        carregarUnidades();
+        carregar(); 
+    }, [operadorId]);
+
+    const toggleUnidade = (id: number) => {
+        if (unidadesSelecionadas.includes(id)) {
+            setUnidadesSelecionadas(unidadesSelecionadas.filter(uid => uid !== id));
+        } else {
+            setUnidadesSelecionadas([...unidadesSelecionadas, id]);
+        }
+    };
 
     const salvar = async ()=>{
-        const ids = idsTexto.split(',').map(s=>Number(String(s).trim())).filter(n=>!Number.isNaN(n));
-        try { await opSvc.salvarUnidadesDoOperador(operadorId, ids); toast({ title:'Unidades salvas' }); }
-        catch(e:any){ toast({ title:'Erro', description:e?.message || 'Falha ao salvar unidades.', variant:'destructive' }); }
+        if (unidadesSelecionadas.length === 0) {
+            toast({ title:'Atenção', description:'Selecione pelo menos uma unidade.', variant:'destructive' });
+            return;
+        }
+        setSalvando(true);
+        try { 
+            await opSvc.salvarUnidadesDoOperador(operadorId, unidadesSelecionadas); 
+            toast({ title:'Sucesso', description:'Unidades salvas com sucesso.' }); 
+        }
+        catch(e:any){ 
+            toast({ title:'Erro', description:e?.message || 'Falha ao salvar unidades.', variant:'destructive' }); 
+        } finally {
+            setSalvando(false);
+        }
     };
 
     if(!carregado) return <div className="text-sm text-muted-foreground">Carregando...</div>;
 
     return (
-        <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Informe os IDs das unidades (separados por vírgula). Depois clique em Salvar.</p>
-            <textarea className="w-full border rounded p-2 h-28" value={idsTexto} onChange={e=>setIdsTexto(e.target.value)} />
-            <Button onClick={salvar}>Salvar</Button>
+        <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+                Selecione as unidades de saúde onde este operador pode atuar. O operador deve ter acesso a pelo menos uma unidade.
+            </p>
+            
+            <div className="border rounded p-3 max-h-96 overflow-y-auto">
+                {unidadesDisponiveis.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Nenhuma unidade disponível.</p>
+                ) : (
+                    <div className="space-y-2">
+                        {unidadesDisponiveis.map(unidade => {
+                            const selecionada = unidadesSelecionadas.includes(unidade.id);
+                            return (
+                                <label 
+                                    key={unidade.id}
+                                    className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
+                                >
+                                    <Checkbox 
+                                        checked={selecionada}
+                                        onCheckedChange={() => toggleUnidade(unidade.id)}
+                                    />
+                                    <span className="text-sm">{unidade.nome}</span>
+                                </label>
+                            );
+                        })}
+                    </div>
+                )}
+            </div>
+
+            {unidadesSelecionadas.length > 0 && (
+                <div className="flex flex-wrap gap-2 p-2 bg-muted rounded">
+                    <span className="text-sm font-medium">Unidades selecionadas:</span>
+                    {unidadesSelecionadas.map(id => {
+                        const unidade = unidadesDisponiveis.find(u => u.id === id);
+                        return (
+                            <Badge key={id} variant="secondary" className="flex items-center gap-1">
+                                {unidade?.nome || `ID: ${id}`}
+                                <X 
+                                    className="h-3 w-3 cursor-pointer hover:text-destructive" 
+                                    onClick={() => toggleUnidade(id)}
+                                />
+                            </Badge>
+                        );
+                    })}
+                </div>
+            )}
+
+            <div>
+                <Button onClick={salvar} disabled={salvando || unidadesSelecionadas.length === 0}>
+                    {salvando ? 'Salvando...' : 'Salvar Unidades'}
+                </Button>
+            </div>
         </div>
     );
 }

@@ -12,6 +12,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,6 +36,7 @@ public class OperadorServiceImpl implements OperadorService {
 
     private final OperadorRepository operadorRepository;
     private final OperadorMapper operadorMapper;
+    private final PasswordEncoder passwordEncoder;
 
     // ====================================================
     // LISTAGEM / BUSCA
@@ -92,10 +94,29 @@ public class OperadorServiceImpl implements OperadorService {
     public OperadorDTO criar(OperadorDTO dto) {
         log.info("Criando operador: {}", dto != null ? dto.getLogin() : "null");
 
+        // Validações de negócio
+        if (dto.getLogin() != null && operadorRepository.existsByLogin(dto.getLogin())) {
+            throw new IllegalArgumentException("Login já existe: " + dto.getLogin());
+        }
+        if (dto.getCpf() != null && !dto.getCpf().isBlank() && operadorRepository.existsByCpf(dto.getCpf())) {
+            throw new IllegalArgumentException("CPF já existe: " + dto.getCpf());
+        }
+        if (dto.getEmail() != null && !dto.getEmail().isBlank() && operadorRepository.existsByEmail(dto.getEmail())) {
+            throw new IllegalArgumentException("Email já existe: " + dto.getEmail());
+        }
+
         Operador entity = operadorMapper.toEntity(dto);
+
+        // Codificar senha com BCrypt se fornecida
+        if (dto.getSenha() != null && !dto.getSenha().isBlank()) {
+            entity.setSenha(passwordEncoder.encode(dto.getSenha()));
+        } else {
+            throw new IllegalArgumentException("Senha é obrigatória");
+        }
 
         // Defaults seguros
         if (entity.getAtivo() == null) entity.setAtivo(Boolean.TRUE);
+        if (entity.getIsMaster() == null) entity.setIsMaster(Boolean.FALSE);
 
         Operador salvo = operadorRepository.save(entity);
         return operadorMapper.toDTO(salvo);

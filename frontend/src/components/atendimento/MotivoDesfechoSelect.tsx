@@ -30,9 +30,11 @@ export interface MotivoDesfechoSelectProps {
     // Valores controlados
     motivoValue?: string;                 // ex.: "01", "02", "03", ...
     especialidadeValue?: string;          // ex.: "CARDIOLOGIA", "PEDIATRIA", ...
+    tiposCuidadosValue?: string[];        // ex.: ["VACINAS", "MEDICACAO"]
     // Callbacks para o form pai (react-hook-form)
     onMotivoChange?: (value: string) => void;
     onEspecialidadeChange?: (value: string) => void;
+    onTiposCuidadosChange?: (value: string[]) => void;
 
     // Estado geral
     disabled?: boolean;
@@ -50,14 +52,12 @@ export interface MotivoDesfechoSelectProps {
 // Motivos oficiais (exemplo compatível com seu back; mantenha conforme seu domínio)
 const MOTIVOS_PADRAO: MotivoDesfecho[] = [
     { codigo: "01", nome: "Alta", descricao: "Saída do paciente com alta" },
-    { codigo: "02", nome: "Óbito", descricao: "Ocorrência de óbito" },
     { codigo: "03", nome: "Encaminhamento", descricao: "Encaminhamento para outro serviço" },
-    { codigo: "04", nome: "Evasão", descricao: "Saída do paciente sem alta" },
     { codigo: "05", nome: "Internação", descricao: "Internação no hospital" },
     { codigo: "06", nome: "Contra-referência", descricao: "Retorno ao serviço de origem" },
-    { codigo: "07", nome: "Permanência", descricao: "Permanece em cuidado" },
     { codigo: "08", nome: "Retorno", descricao: "Retorno para continuidade" },
     { codigo: "09", nome: "Transferência", descricao: "Transferência para outro serviço" },
+    { codigo: "10", nome: "Cuidados de Enfermagem", descricao: "Encaminhamento para procedimentos rápidos de enfermagem" },
     { codigo: "99", nome: "Sem registro", descricao: "Não consta no modelo de origem" },
 ];
 
@@ -82,6 +82,15 @@ const ESPECIALIDADES_PADRAO = [
     "PNEUMOLOGIA",
     "REUMATOLOGIA",
     "UROLOGIA",
+];
+
+// Tipos de Cuidados de Enfermagem
+const TIPOS_CUIDADOS_ENFERMAGEM = [
+    { value: "VACINAS", label: "Aplicação de Vacinas" },
+    { value: "INALACAO", label: "Inalação" },
+    { value: "MEDICACAO", label: "Medicação" },
+    { value: "EXAMES", label: "Exames" },
+    { value: "CURATIVOS", label: "Curativos" },
 ];
 
 // Helper para formatar rótulos bonitos a partir de constantes COM_UNDERSCORE

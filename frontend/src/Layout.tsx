@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useOperador } from '@/contexts/OperadorContext';
+import { listarUnidadesDoOperador } from '@/services/operadoresService';
+import { listarUnidades, UnidadeDTO } from '@/services/unidadesService';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import {
     ChevronRight, Menu, X,
     LogOut, LayoutDashboard, Users, Stethoscope, Smile, Boxes,
     ClipboardCheck, Pill, DollarSign, MessageSquare, Truck, Syringe,
     Leaf, ShieldCheck, Biohazard, Filter, Settings, Ambulance, Building2, Microscope,
-    Hospital, Bed, AlertTriangle, Monitor, UserCheck, Calendar, BedDouble
+    Hospital, Bed, AlertTriangle, Monitor, UserCheck, Calendar, BedDouble, Activity
 } from 'lucide-react';
 
 // =====================================================
@@ -25,11 +28,48 @@ interface MenuItem {
 }
 
 const Layout: React.FC = () => {
-    const { operador, logout } = useOperador();
+    const { operador, logout, updateCurrentUnit } = useOperador();
     const [openMenus, setOpenMenus] = useState<Record<string, boolean>>({});
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
     const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+    const [unidadesPermitidas, setUnidadesPermitidas] = useState<number[]>([]);
+    const [unidadesDetalhes, setUnidadesDetalhes] = useState<UnidadeDTO[]>([]);
+    const [carregandoUnidades, setCarregandoUnidades] = useState(false);
     const { pathname } = useLocation();
+
+    // Carrega unidades permitidas do operador quando ele faz login ou muda de unidade
+    useEffect(() => {
+        const carregarUnidades = async () => {
+            if (operador?.id && typeof operador.id === 'number') {
+                setCarregandoUnidades(true);
+                try {
+                    const idsPermitidos = await listarUnidadesDoOperador(operador.id);
+                    setUnidadesPermitidas(idsPermitidos);
+                    
+                    // Carrega detalhes das unidades permitidas
+                    if (idsPermitidos.length > 0) {
+                        const todasUnidades = await listarUnidades();
+                        const unidadesFiltradas = todasUnidades.filter(u => 
+                            u.id && idsPermitidos.includes(u.id)
+                        );
+                        setUnidadesDetalhes(unidadesFiltradas);
+                    } else {
+                        setUnidadesDetalhes([]);
+                    }
+                } catch (err) {
+                    console.error('Erro ao carregar unidades permitidas:', err);
+                    setUnidadesPermitidas([]);
+                    setUnidadesDetalhes([]);
+                } finally {
+                    setCarregandoUnidades(false);
+                }
+            } else {
+                setUnidadesPermitidas([]);
+                setUnidadesDetalhes([]);
+            }
+        };
+        carregarUnidades();
+    }, [operador?.id, operador?.unidadeId]); // Re-carrega quando unidadeId muda
 
     // =====================================================
     // 🔄 TOGGLE DE MENU (EXPANDIR/RECOLHER SUB-ITENS)
@@ -46,6 +86,7 @@ const Layout: React.FC = () => {
         { path: '/recepcao', label: 'Recepção', icon: Users },
         { path: '/triagem', label: 'Acolhimento Ambulatorial', icon: Filter },
         { path: '/atendimento-medico', label: 'Atendimento Ambulatorial', icon: Stethoscope },
+        { path: '/procedimentos-rapidos', label: 'Cuidados de Enfermagem', icon: Activity },
         { path: '/atendimento-odontologico', label: 'Odontologia', icon: Smile },
         { path: '/laboratorio', label: 'Laboratório', icon: Microscope },
         { path: '/imunizacao', label: 'Imunização', icon: Syringe },
@@ -98,11 +139,41 @@ const Layout: React.FC = () => {
     ];
 
     // =====================================================
-    // 🔐 VERIFICAÇÃO DE PERMISSÕES (CORRIGIDA)
+    // 🗺️ MAPEAMENTO DE MÓDULOS PARA LABELS DO MENU
+    // =====================================================
+    const moduloToLabelMap: Record<string, string> = {
+        'RECEPCAO': 'Recepção',
+        'TRIAGEM': 'Acolhimento Ambulatorial',
+        'ATENDIMENTO_MEDICO': 'Atendimento Ambulatorial',
+        'PROCEDIMENTOS_RAPIDOS': 'Cuidados de Enfermagem',
+        'ODONTOLOGIA': 'Odontologia',
+        'ATENDIMENTO_ODONTOLOGICO': 'Odontologia',
+        'LABORATORIO': 'Laboratório',
+        'IMUNIZACAO': 'Imunização',
+        'FARMACIA': 'Farmácia',
+        'ESTOQUE': 'Estoque',
+        'TRANSPORTE': 'Transporte',
+        'FATURAMENTO': 'Faturamento',
+        'EPIDEMIOLOGIA': 'Epidemiologia',
+        'VIGILANCIA_SANITARIA': 'Vig. Sanitária',
+        'VIGILANCIA_AMBIENTAL': 'Vig. Ambiental',
+        'OUVIDORIA': 'Ouvidoria',
+        'ASSISTENCIA_SOCIAL': 'Assistência Social',
+        'SAMU': 'SAMU',
+        'UPA': 'UPA',
+        'HOSPITALAR': 'Hospitalar',
+        'ESF': 'ESF',
+    };
+
+    // =====================================================
+    // 🔐 VERIFICAÇÃO DE PERMISSÕES (COM REGRAS DE PERFIL E UNIDADE)
     // =====================================================
     const checkPermission = (item: MenuItem): boolean => {
         // Se não há operador logado, nega acesso
         if (!operador) return false;
+
+        // Dashboard sempre aparece para qualquer operador logado
+        if (item.path === '/dashboard') return true;
 
         // ✅ CORREÇÃO: Verifica se é admin
         // O campo 'perfis' é um array de strings
@@ -113,8 +184,106 @@ const Layout: React.FC = () => {
         // Se o item é somente para admin, retorna se é admin
         if (item.adminOnly) return Boolean(isAdmin);
 
-        // Se é admin, tem acesso a tudo
+        // Se é admin, tem acesso a tudo (NÃO aplica regras específicas abaixo)
         if (isAdmin) return true;
+
+        // =====================================================
+        // 🏥 VERIFICAÇÃO CRÍTICA: Operador só vê módulos na unidade configurada
+        // =====================================================
+        const unidadeAtualId = operador.unidadeId;
+        const unidadesPermitidasOperador = unidadesPermitidas.length > 0 
+            ? unidadesPermitidas 
+            : (operador.unidadesPermitidas || []);
+        
+        // Se o operador tem unidades configuradas, DEVE estar logado em uma delas para ver módulos
+        if (unidadesPermitidasOperador.length > 0) {
+            if (!unidadeAtualId) {
+                // Operador não tem unidade selecionada → não vê módulos
+                return false;
+            }
+            const estaNaUnidadePermitida = unidadesPermitidasOperador.includes(unidadeAtualId);
+            if (!estaNaUnidadePermitida) {
+                // Operador não está logado em uma unidade permitida → não vê módulos
+                return false;
+            }
+        }
+
+        // =====================================================
+        // 🏥 REGRAS ESPECÍFICAS POR PERFIL E TIPO DE UNIDADE
+        // ⚠️ IMPORTANTE: Estas regras se aplicam a TODOS os operadores,
+        //    EXCETO admin.master e outros administradores (verificados acima)
+        // =====================================================
+        const unidadeTipo = operador.unidadeTipo?.toUpperCase();
+        
+        // Verifica se tem perfil de Médico ESF (deve ter "ESF" explicitamente)
+        // NÃO considera "Médico" genérico como ESF
+        const temPerfilMedicoESF = operador.perfis?.some(p => {
+            const perfilUpper = p.toUpperCase();
+            // Só considera ESF se tiver "ESF" no nome do perfil
+            return perfilUpper === 'MEDICO_ESF' ||
+                   (perfilUpper.includes('MEDICO') && perfilUpper.includes('ESF')) ||
+                   p.includes('Médico ESF');
+        });
+        
+        // Verifica se tem perfil de Médico UPA (deve ter "UPA" explicitamente)
+        const temPerfilMedicoUPA = operador.perfis?.some(p => {
+            const perfilUpper = p.toUpperCase();
+            return perfilUpper === 'MEDICO_UPA' ||
+                   (perfilUpper.includes('MEDICO') && perfilUpper.includes('UPA')) ||
+                   p.includes('Médico UPA');
+        });
+
+        // Regra 1: Médico ESF em unidade UBS/CENTRO_ESPECIALIDADES → só vê "Atendimento Ambulatorial"
+        if (temPerfilMedicoESF && (unidadeTipo === 'UBS' || unidadeTipo === 'CENTRO_ESPECIALIDADES')) {
+            // Permite apenas o módulo "Atendimento Ambulatorial"
+            if (item.label === 'Atendimento Ambulatorial') {
+                return true;
+            }
+            // Bloqueia todos os outros módulos (exceto Dashboard que já foi permitido acima)
+            return false;
+        }
+
+        // Regra 2: Médico UPA em unidade UPA → só vê "UPA"
+        if (temPerfilMedicoUPA && unidadeTipo === 'UPA') {
+            // Permite apenas o módulo "UPA"
+            if (item.label === 'UPA') {
+                return true;
+            }
+            // Bloqueia todos os outros módulos (exceto Dashboard que já foi permitido acima)
+            return false;
+        }
+
+        // Regra 3: Se está em UPA mas NÃO tem perfil Médico UPA → não vê módulos (exceto Dashboard)
+        // Isso previne que operadores vejam "Acolhimento Ambulatorial" quando estão em UPA
+        // IMPORTANTE: Esta regra só se aplica se a unidade UPA estiver configurada para o operador
+        if (unidadeTipo === 'UPA' && !temPerfilMedicoUPA) {
+            // Se não tem perfil Médico UPA e está em UPA, não deve ver nenhum módulo
+            // (exceto Dashboard que já foi permitido acima)
+            // Esta regra bloqueia TODOS os módulos quando está em UPA sem perfil adequado
+            console.log(`🚫 Bloqueando ${item.label} - Operador em UPA sem perfil Médico UPA`);
+            return false;
+        }
+
+        // =====================================================
+        // ✅ VERIFICAÇÃO DE MÓDULOS CONFIGURADOS
+        // =====================================================
+        // Se o operador tem módulos configurados, verifica se o módulo corresponde ao item do menu
+        if (operador.modulos && operador.modulos.length > 0) {
+            // Encontra o código do módulo que corresponde ao label do menu
+            const moduloCorrespondente = Object.entries(moduloToLabelMap).find(
+                ([_, label]) => label === item.label
+            )?.[0];
+            
+            if (moduloCorrespondente) {
+                // Verifica se o operador tem acesso a este módulo
+                const temAcessoAoModulo = operador.modulos.some(modulo => 
+                    modulo.toUpperCase() === moduloCorrespondente.toUpperCase()
+                );
+                if (temAcessoAoModulo) {
+                    return true;
+                }
+            }
+        }
 
         // ✅ CORREÇÃO: Verifica perfis específicos permitidos
         if (item.allowedProfiles && item.allowedProfiles.length > 0) {
@@ -209,6 +378,64 @@ const Layout: React.FC = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Seletor de Unidade */}
+                {operador && (
+                    <div className={`mb-4 ${sidebarCollapsed ? 'px-2' : 'px-0'}`}>
+                        {sidebarCollapsed ? (
+                            <div className="flex items-center justify-center">
+                                <Building2 className="w-5 h-5 text-gray-400" />
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold text-gray-400 uppercase tracking-widest block">
+                                    Unidade Atual
+                                </label>
+                                {carregandoUnidades ? (
+                                    <div className="text-xs text-gray-500 text-center py-2">Carregando...</div>
+                                ) : unidadesDetalhes.length > 0 ? (
+                                    <Select
+                                        value={operador.unidadeId?.toString() || ''}
+                                        onValueChange={(value) => {
+                                            const unidadeId = Number(value);
+                                            const unidadeSelecionada = unidadesDetalhes.find(u => u.id === unidadeId);
+                                            if (unidadeSelecionada) {
+                                                updateCurrentUnit(
+                                                    unidadeId,
+                                                    unidadeSelecionada.nome,
+                                                    unidadeSelecionada.tipo
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full bg-gray-800/50 border-gray-700 text-white text-sm h-9">
+                                            <SelectValue placeholder="Selecione a unidade">
+                                                {operador.unidadeAtual || operador.unidadeId 
+                                                    ? unidadesDetalhes.find(u => u.id === operador.unidadeId)?.nome || `Unidade ${operador.unidadeId}`
+                                                    : 'Selecione a unidade'}
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent className="bg-gray-800 border-gray-700">
+                                            {unidadesDetalhes.map((unidade) => (
+                                                <SelectItem
+                                                    key={unidade.id}
+                                                    value={unidade.id?.toString() || ''}
+                                                    className="text-white hover:bg-gray-700 focus:bg-gray-700"
+                                                >
+                                                    {unidade.nome} {unidade.tipo ? `(${unidade.tipo})` : ''}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                ) : (
+                                    <div className="text-xs text-gray-500 text-center py-2">
+                                        {operador.unidadeAtual || `Unidade ${operador.unidadeId || 'N/A'}`}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Título Módulos */}
                 {!sidebarCollapsed && (

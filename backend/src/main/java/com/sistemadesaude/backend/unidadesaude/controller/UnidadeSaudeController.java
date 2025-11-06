@@ -37,6 +37,11 @@ public class UnidadeSaudeController {
         }
     }
 
+    @PutMapping("/{id}")
+    public UnidadeSaudeDTO atualizar(@PathVariable Long id, @RequestBody UnidadeSaudeDTO dto) {
+        return unidadeService.atualizar(id, dto);
+    }
+
     @DeleteMapping("/{id}")
     public void excluir(@PathVariable Long id) {
         unidadeService.deletar(id);

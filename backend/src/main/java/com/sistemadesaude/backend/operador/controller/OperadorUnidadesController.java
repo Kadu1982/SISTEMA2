@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Aba "UNIDADES" do Operador.
@@ -71,21 +72,34 @@ public class OperadorUnidadesController {
        PUT: salvar unidades
        ======================= */
 
+    /**
+     * Salva as unidades vinculadas ao operador.
+     * 
+     * Regra de negócio: Operador deve ter pelo menos 1 unidade.
+     */
     @PutMapping("/unidades")
     @Transactional
     public ResponseEntity<Void> salvar(@PathVariable Long operadorId, @RequestBody UnidadesPayload payload) {
+        // Validação: pelo menos 1 unidade é obrigatória
+        if (payload == null || payload.getUnidadeIds() == null || payload.getUnidadeIds().isEmpty()) {
+            throw new IllegalArgumentException("Operador deve ter pelo menos 1 unidade de saúde");
+        }
+        
+        // Filtrar IDs válidos (não nulos)
+        List<Long> unidadesValidas = payload.getUnidadeIds().stream()
+                .filter(id -> id != null)
+                .distinct()
+                .collect(java.util.stream.Collectors.toList());
+        
+        if (unidadesValidas.isEmpty()) {
+            throw new IllegalArgumentException("Operador deve ter pelo menos 1 unidade de saúde válida");
+        }
+        
         // Apaga vínculos atuais (query específica do seu repo)
         repo.deleteByOperadorId(operadorId);
 
-        // Nada para salvar? encerra
-        if (payload == null || payload.getUnidadeIds() == null || payload.getUnidadeIds().isEmpty()) {
-            log.info("Operador {}: unidades esvaziadas.", operadorId);
-            return ResponseEntity.noContent().build();
-        }
-
         // ✅ Caminho tipado (recomendado): cria a entidade real e salva
-        for (Long unidadeId : payload.getUnidadeIds()) {
-            if (unidadeId == null) continue;
+        for (Long unidadeId : unidadesValidas) {
 
             OperadorUnidadeKey key = new OperadorUnidadeKey();
             key.setOperadorId(operadorId);

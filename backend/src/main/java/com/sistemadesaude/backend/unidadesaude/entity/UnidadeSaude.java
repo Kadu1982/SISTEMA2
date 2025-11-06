@@ -10,7 +10,9 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entidade que representa uma Unidade de Saúde no sistema
@@ -174,6 +176,18 @@ public class UnidadeSaude {
     @OneToMany(mappedBy = "unidade", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<DocumentoUnidade> documentos = new ArrayList<>();
+
+    /**
+     * Perfis que podem ter acesso a esta unidade
+     */
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(
+            name = "unidade_perfis_permitidos",
+            joinColumns = @JoinColumn(name = "unidade_id")
+    )
+    @Column(name = "perfil_tipo")
+    @Builder.Default
+    private Set<String> perfisPermitidos = new HashSet<>();
 
     /**
      * Data de criação do registro

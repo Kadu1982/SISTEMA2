@@ -1,0 +1,2180 @@
+[
+  {
+    "id": 1,
+    "nome": "Aciclovir",
+    "apresentacao": "200 mg",
+    "concentracao": "200 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Aciclovir",
+    "ativo": true
+  },
+  {
+    "id": 2,
+    "nome": "Aciclovir creme - bisnaga",
+    "apresentacao": "10 g",
+    "concentracao": "10 g",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Aciclovir",
+    "ativo": true
+  },
+  {
+    "id": 3,
+    "nome": "Ácido Acetil Salicílico",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 4,
+    "nome": "Ácido Fólico",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 5,
+    "nome": "Ácido Fólico solução oral 0,",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Solução",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 6,
+    "nome": "Ácidos Graxos Essenciais - AGE - frasco",
+    "apresentacao": "200 ml",
+    "concentracao": "200 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácidos",
+    "ativo": true
+  },
+  {
+    "id": 7,
+    "nome": "Albendazol",
+    "apresentacao": "400 mg",
+    "concentracao": "400 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Albendazol",
+    "ativo": true
+  },
+  {
+    "id": 8,
+    "nome": "Alendronato de sódio",
+    "apresentacao": "70 mg",
+    "concentracao": "70 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Alendronato",
+    "ativo": true
+  },
+  {
+    "id": 9,
+    "nome": "Algestona acetofenida",
+    "apresentacao": "150 mg",
+    "concentracao": "150 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Algestona",
+    "ativo": true
+  },
+  {
+    "id": 10,
+    "nome": "Alopurinol",
+    "apresentacao": "300 mg",
+    "concentracao": "300 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Alopurinol",
+    "ativo": true
+  },
+  {
+    "id": 11,
+    "nome": "Ambroxol, cloridrato",
+    "apresentacao": "3 mg",
+    "concentracao": "3 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ambroxol,",
+    "ativo": true
+  },
+  {
+    "id": 12,
+    "nome": "Amiodarona, cloridrato",
+    "apresentacao": "200 mg",
+    "concentracao": "200 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Amiodarona,",
+    "ativo": true
+  },
+  {
+    "id": 13,
+    "nome": "Amoxicilina",
+    "apresentacao": "250 mg",
+    "concentracao": "250 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Amoxicilina",
+    "ativo": true
+  },
+  {
+    "id": 14,
+    "nome": "Anlodipino, besilato",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Anlodipino,",
+    "ativo": true
+  },
+  {
+    "id": 15,
+    "nome": "Atenolol",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Atenolol",
+    "ativo": true
+  },
+  {
+    "id": 16,
+    "nome": "Azitromicina",
+    "apresentacao": "500 mg",
+    "concentracao": "500 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Azitromicina",
+    "ativo": true
+  },
+  {
+    "id": 17,
+    "nome": "Azitromicina suspensão oral",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Azitromicina",
+    "ativo": true
+  },
+  {
+    "id": 18,
+    "nome": "Beclometasona",
+    "apresentacao": "50 mcg",
+    "concentracao": "50 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Beclometasona",
+    "ativo": true
+  },
+  {
+    "id": 19,
+    "nome": "Benzoilmetronidazol 4%  suspensão oral - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Benzoilmetronidazol",
+    "ativo": true
+  },
+  {
+    "id": 20,
+    "nome": "Bromoprida",
+    "apresentacao": "4 mg",
+    "concentracao": "4 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Bromoprida",
+    "ativo": true
+  },
+  {
+    "id": 21,
+    "nome": "Budesonida",
+    "apresentacao": "32mcg",
+    "concentracao": "32mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Budesonida",
+    "ativo": true
+  },
+  {
+    "id": 22,
+    "nome": "Captopril",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Captopril",
+    "ativo": true
+  },
+  {
+    "id": 23,
+    "nome": "Carbocisteína",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Solução",
+    "principioAtivo": "Carbocisteína",
+    "ativo": true
+  },
+  {
+    "id": 24,
+    "nome": "Carvedilol 12,",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Carvedilol",
+    "ativo": true
+  },
+  {
+    "id": 25,
+    "nome": "Carvedilol 3,",
+    "apresentacao": "125 mg",
+    "concentracao": "125 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Carvedilol",
+    "ativo": true
+  },
+  {
+    "id": 26,
+    "nome": "Cefalexina",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Cefalexina",
+    "ativo": true
+  },
+  {
+    "id": 27,
+    "nome": "Cetoconazol 2% xampu - frasco",
+    "apresentacao": "100ml",
+    "concentracao": "100ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cetoconazol",
+    "ativo": true
+  },
+  {
+    "id": 28,
+    "nome": "Cinarizina",
+    "apresentacao": "75 mg",
+    "concentracao": "75 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cinarizina",
+    "ativo": true
+  },
+  {
+    "id": 29,
+    "nome": "Ciprofloxacino, cloridrato de",
+    "apresentacao": "500 mg",
+    "concentracao": "500 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ciprofloxacino,",
+    "ativo": true
+  },
+  {
+    "id": 30,
+    "nome": "Claritromicina",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Claritromicina",
+    "ativo": true
+  },
+  {
+    "id": 31,
+    "nome": "Clindamicina",
+    "apresentacao": "300 mg",
+    "concentracao": "300 mg",
+    "formaFarmaceutica": "Cápsula",
+    "principioAtivo": "Clindamicina",
+    "ativo": true
+  },
+  {
+    "id": 32,
+    "nome": "Cloreto de sódio 0,9% sistema twist off - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cloreto",
+    "ativo": true
+  },
+  {
+    "id": 33,
+    "nome": "Clotrimazol creme - bisnaga",
+    "apresentacao": "20 g",
+    "concentracao": "20 g",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Clotrimazol",
+    "ativo": true
+  },
+  {
+    "id": 34,
+    "nome": "Colagenase com Cloranfenicol 0,",
+    "apresentacao": "01 g",
+    "concentracao": "01 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Colagenase",
+    "ativo": true
+  },
+  {
+    "id": 35,
+    "nome": "Colagenase sem Cloranfenicol - bisnaga",
+    "apresentacao": "30g",
+    "concentracao": "30g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Colagenase",
+    "ativo": true
+  },
+  {
+    "id": 36,
+    "nome": "Colecalciferol (Vit D3) + Retinol acetato (Vit A) - frasco",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Colecalciferol",
+    "ativo": true
+  },
+  {
+    "id": 37,
+    "nome": "Dexametasona, Acetato",
+    "apresentacao": "1 mg",
+    "concentracao": "1 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dexametasona,",
+    "ativo": true
+  },
+  {
+    "id": 38,
+    "nome": "Dexclorfeniramina 0,4% -  frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dexclorfeniramina",
+    "ativo": true
+  },
+  {
+    "id": 39,
+    "nome": "Dexclorfeniramina",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dexclorfeniramina",
+    "ativo": true
+  },
+  {
+    "id": 40,
+    "nome": "Diclofenaco Sódico",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Diclofenaco",
+    "ativo": true
+  },
+  {
+    "id": 41,
+    "nome": "Digoxina 0,",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Digoxina",
+    "ativo": true
+  },
+  {
+    "id": 42,
+    "nome": "Dipirona",
+    "apresentacao": "500 mg",
+    "concentracao": "500 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dipirona",
+    "ativo": true
+  },
+  {
+    "id": 43,
+    "nome": "Dipirona Sódica",
+    "apresentacao": "500 mg",
+    "concentracao": "500 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dipirona",
+    "ativo": true
+  },
+  {
+    "id": 44,
+    "nome": "Doxazosina",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Doxazosina",
+    "ativo": true
+  },
+  {
+    "id": 45,
+    "nome": "Enalapril, maleato",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Enalapril,",
+    "ativo": true
+  },
+  {
+    "id": 46,
+    "nome": "Estradiol, valerato",
+    "apresentacao": "5mg",
+    "concentracao": "5mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Estradiol,",
+    "ativo": true
+  },
+  {
+    "id": 47,
+    "nome": "Enoxaparina",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Enoxaparina",
+    "ativo": true
+  },
+  {
+    "id": 48,
+    "nome": "Espironolactona",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Espironolactona",
+    "ativo": true
+  },
+  {
+    "id": 49,
+    "nome": "Finasterida",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Finasterida",
+    "ativo": true
+  },
+  {
+    "id": 50,
+    "nome": "Fluconazol",
+    "apresentacao": "150 mg",
+    "concentracao": "150 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fluconazol",
+    "ativo": true
+  },
+  {
+    "id": 51,
+    "nome": "Furosemida",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Furosemida",
+    "ativo": true
+  },
+  {
+    "id": 52,
+    "nome": "Glibenclamida",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Glibenclamida",
+    "ativo": true
+  },
+  {
+    "id": 53,
+    "nome": "Gliclazida",
+    "apresentacao": "30 mg",
+    "concentracao": "30 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Gliclazida",
+    "ativo": true
+  },
+  {
+    "id": 54,
+    "nome": "Hidralazina",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Hidralazina",
+    "ativo": true
+  },
+  {
+    "id": 55,
+    "nome": "Hidroclorotiazida",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Hidroclorotiazida",
+    "ativo": true
+  },
+  {
+    "id": 56,
+    "nome": "Hidrocortisona, acetato 1% creme - bisnaga",
+    "apresentacao": "30 g",
+    "concentracao": "30 g",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Hidrocortisona,",
+    "ativo": true
+  },
+  {
+    "id": 57,
+    "nome": "Hidróxido de Alumínio - frasco",
+    "apresentacao": "150 ml",
+    "concentracao": "150 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Hidróxido",
+    "ativo": true
+  },
+  {
+    "id": 58,
+    "nome": "Hipromelose colírio 0,3% - frasco",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Hipromelose",
+    "ativo": true
+  },
+  {
+    "id": 59,
+    "nome": "Ibuprofeno",
+    "apresentacao": "600 mg",
+    "concentracao": "600 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ibuprofeno",
+    "ativo": true
+  },
+  {
+    "id": 60,
+    "nome": "Ibuprofeno suspensão oral",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Ibuprofeno",
+    "ativo": true
+  },
+  {
+    "id": 61,
+    "nome": "Insulina NPH",
+    "apresentacao": "100UI",
+    "concentracao": "100UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Insulina",
+    "ativo": true
+  },
+  {
+    "id": 62,
+    "nome": "Insulina Regular Humana",
+    "apresentacao": "100UI",
+    "concentracao": "100UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Insulina",
+    "ativo": true
+  },
+  {
+    "id": 63,
+    "nome": "Isossorbida, mononitrato",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Isossorbida,",
+    "ativo": true
+  },
+  {
+    "id": 64,
+    "nome": "Isoxsuprina, cloridrato",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Isoxsuprina,",
+    "ativo": true
+  },
+  {
+    "id": 65,
+    "nome": "Ivermectina",
+    "apresentacao": "6 mg",
+    "concentracao": "6 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ivermectina",
+    "ativo": true
+  },
+  {
+    "id": 66,
+    "nome": "Lactulose xarope - frasco",
+    "apresentacao": "120 ml",
+    "concentracao": "120 ml",
+    "formaFarmaceutica": "Xarope",
+    "principioAtivo": "Lactulose",
+    "ativo": true
+  },
+  {
+    "id": 67,
+    "nome": "Levodopa",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Cápsula",
+    "principioAtivo": "Levodopa",
+    "ativo": true
+  },
+  {
+    "id": 68,
+    "nome": "Levonorgestrel 0,",
+    "apresentacao": "15 mg",
+    "concentracao": "15 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Levonorgestrel",
+    "ativo": true
+  },
+  {
+    "id": 69,
+    "nome": "Levotiroxina",
+    "apresentacao": "100 mcg",
+    "concentracao": "100 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Levotiroxina",
+    "ativo": true
+  },
+  {
+    "id": 70,
+    "nome": "Levotiroxina 12,",
+    "apresentacao": "5 mcg",
+    "concentracao": "5 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Levotiroxina",
+    "ativo": true
+  },
+  {
+    "id": 71,
+    "nome": "Lidocaína, cloridrato 2% geléia - tubo",
+    "apresentacao": "30 ml",
+    "concentracao": "30 ml",
+    "formaFarmaceutica": "Gel",
+    "principioAtivo": "Lidocaína,",
+    "ativo": true
+  },
+  {
+    "id": 72,
+    "nome": "Loperamida",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Loperamida",
+    "ativo": true
+  },
+  {
+    "id": 73,
+    "nome": "Loratadina",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Loratadina",
+    "ativo": true
+  },
+  {
+    "id": 74,
+    "nome": "Loratadina xarope",
+    "apresentacao": "1 mg",
+    "concentracao": "1 mg",
+    "formaFarmaceutica": "Xarope",
+    "principioAtivo": "Loratadina",
+    "ativo": true
+  },
+  {
+    "id": 75,
+    "nome": "Losartana Potássica",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Losartana",
+    "ativo": true
+  },
+  {
+    "id": 76,
+    "nome": "Medroxiprogesterona, acetato",
+    "apresentacao": "150 mg",
+    "concentracao": "150 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Medroxiprogesterona,",
+    "ativo": true
+  },
+  {
+    "id": 77,
+    "nome": "Medroxiprogesterona",
+    "apresentacao": "25mg",
+    "concentracao": "25mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Medroxiprogesterona",
+    "ativo": true
+  },
+  {
+    "id": 78,
+    "nome": "Metformina, cloridrato",
+    "apresentacao": "500 mg",
+    "concentracao": "500 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metformina,",
+    "ativo": true
+  },
+  {
+    "id": 79,
+    "nome": "Metildopa",
+    "apresentacao": "250 mg",
+    "concentracao": "250 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metildopa",
+    "ativo": true
+  },
+  {
+    "id": 80,
+    "nome": "Metoprolol, succinato",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metoprolol,",
+    "ativo": true
+  },
+  {
+    "id": 81,
+    "nome": "Metronidazol",
+    "apresentacao": "250 mg",
+    "concentracao": "250 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metronidazol",
+    "ativo": true
+  },
+  {
+    "id": 82,
+    "nome": "Metronidazol 10 % (",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Metronidazol",
+    "ativo": true
+  },
+  {
+    "id": 83,
+    "nome": "Neomicina, sulfato + Bacitracina - bisnaga",
+    "apresentacao": "10g",
+    "concentracao": "10g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Neomicina,",
+    "ativo": true
+  },
+  {
+    "id": 84,
+    "nome": "Nistatina suspensão 100.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Nistatina",
+    "ativo": true
+  },
+  {
+    "id": 85,
+    "nome": "Nitrato de miconazol 2% (",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Nitrato",
+    "ativo": true
+  },
+  {
+    "id": 86,
+    "nome": "Nitrofurantoína",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Cápsula",
+    "principioAtivo": "Nitrofurantoína",
+    "ativo": true
+  },
+  {
+    "id": 87,
+    "nome": "Noretisterona 0,",
+    "apresentacao": "35 mg",
+    "concentracao": "35 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Noretisterona",
+    "ativo": true
+  },
+  {
+    "id": 88,
+    "nome": "Óleo Mineral - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Óleo",
+    "ativo": true
+  },
+  {
+    "id": 89,
+    "nome": "Omeprazol",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Omeprazol",
+    "ativo": true
+  },
+  {
+    "id": 90,
+    "nome": "Ondansetrona, cloridrato",
+    "apresentacao": "4 mg",
+    "concentracao": "4 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ondansetrona,",
+    "ativo": true
+  },
+  {
+    "id": 91,
+    "nome": "Oseltamivir",
+    "apresentacao": "30 mg",
+    "concentracao": "30 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Oseltamivir",
+    "ativo": true
+  },
+  {
+    "id": 92,
+    "nome": "Óxido de Zinco + Vitamina AD - bisnaga",
+    "apresentacao": "45 g",
+    "concentracao": "45 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Óxido",
+    "ativo": true
+  },
+  {
+    "id": 93,
+    "nome": "Paracetamol",
+    "apresentacao": "200 mg",
+    "concentracao": "200 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Paracetamol",
+    "ativo": true
+  },
+  {
+    "id": 94,
+    "nome": "Permetrina 5%  loção - frasco",
+    "apresentacao": "60 ml",
+    "concentracao": "60 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Permetrina",
+    "ativo": true
+  },
+  {
+    "id": 95,
+    "nome": "Prednisolona",
+    "apresentacao": "3 mg",
+    "concentracao": "3 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Prednisolona",
+    "ativo": true
+  },
+  {
+    "id": 96,
+    "nome": "Prednisona",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Prednisona",
+    "ativo": true
+  },
+  {
+    "id": 97,
+    "nome": "Progesterona",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Cápsula",
+    "principioAtivo": "Progesterona",
+    "ativo": true
+  },
+  {
+    "id": 98,
+    "nome": "Prometazina, cloridrato",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Prometazina,",
+    "ativo": true
+  },
+  {
+    "id": 99,
+    "nome": "Propafenona, cloridrato",
+    "apresentacao": "300 mg",
+    "concentracao": "300 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Propafenona,",
+    "ativo": true
+  },
+  {
+    "id": 100,
+    "nome": "Propranolol, cloridrato",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Propranolol,",
+    "ativo": true
+  },
+  {
+    "id": 101,
+    "nome": "Rivaroxabana",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Rivaroxabana",
+    "ativo": true
+  },
+  {
+    "id": 102,
+    "nome": "Sais para Reidratação Oral - envelope",
+    "apresentacao": "27 g",
+    "concentracao": "27 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sais",
+    "ativo": true
+  },
+  {
+    "id": 103,
+    "nome": "Salbutamol",
+    "apresentacao": "100 mcg",
+    "concentracao": "100 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Salbutamol",
+    "ativo": true
+  },
+  {
+    "id": 104,
+    "nome": "Secnidazol",
+    "apresentacao": "1g",
+    "concentracao": "1g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Secnidazol",
+    "ativo": true
+  },
+  {
+    "id": 105,
+    "nome": "Sinvastatina",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sinvastatina",
+    "ativo": true
+  },
+  {
+    "id": 106,
+    "nome": "Sulfadiazina de Prata",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sulfadiazina",
+    "ativo": true
+  },
+  {
+    "id": 107,
+    "nome": "Sulfametoxazol 4% + Trimetoprima 0,8% suspensão - frasco",
+    "apresentacao": "100ml",
+    "concentracao": "100ml",
+    "formaFarmaceutica": "Suspensão",
+    "principioAtivo": "Sulfametoxazol",
+    "ativo": true
+  },
+  {
+    "id": 108,
+    "nome": "Sulfametoxazol",
+    "apresentacao": "400 mg",
+    "concentracao": "400 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sulfametoxazol",
+    "ativo": true
+  },
+  {
+    "id": 109,
+    "nome": "Sulfato Ferroso (",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sulfato",
+    "ativo": true
+  },
+  {
+    "id": 110,
+    "nome": "Sulfato Ferroso",
+    "apresentacao": "125 mg",
+    "concentracao": "125 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sulfato",
+    "ativo": true
+  },
+  {
+    "id": 111,
+    "nome": "Tiamazol",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tiamazol",
+    "ativo": true
+  },
+  {
+    "id": 112,
+    "nome": "Tiamina",
+    "apresentacao": "300 mg",
+    "concentracao": "300 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tiamina",
+    "ativo": true
+  },
+  {
+    "id": 113,
+    "nome": "Timolol, maleato",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Timolol,",
+    "ativo": true
+  },
+  {
+    "id": 114,
+    "nome": "Tobramicina sol. oftálmica - frasco",
+    "apresentacao": "5 ml",
+    "concentracao": "5 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tobramicina",
+    "ativo": true
+  },
+  {
+    "id": 115,
+    "nome": "Varfarina sódica",
+    "apresentacao": "5mg",
+    "concentracao": "5mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Varfarina",
+    "ativo": true
+  },
+  {
+    "id": 116,
+    "nome": "Verapamil, cloridrato",
+    "apresentacao": "80mg",
+    "concentracao": "80mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Verapamil,",
+    "ativo": true
+  },
+  {
+    "id": 117,
+    "nome": "Ácido Valpróico",
+    "apresentacao": "250 mg",
+    "concentracao": "250 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 118,
+    "nome": "Amitriptilina, cloridrato",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Amitriptilina,",
+    "ativo": true
+  },
+  {
+    "id": 119,
+    "nome": "Biperideno, cloridrato",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Biperideno,",
+    "ativo": true
+  },
+  {
+    "id": 120,
+    "nome": "Buspirona, cloridrato",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Buspirona,",
+    "ativo": true
+  },
+  {
+    "id": 121,
+    "nome": "Carbamazepina",
+    "apresentacao": "200 mg",
+    "concentracao": "200 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Carbamazepina",
+    "ativo": true
+  },
+  {
+    "id": 122,
+    "nome": "Carbamazepina xarope",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Xarope",
+    "principioAtivo": "Carbamazepina",
+    "ativo": true
+  },
+  {
+    "id": 123,
+    "nome": "Clomipramina",
+    "apresentacao": "25mg",
+    "concentracao": "25mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clomipramina",
+    "ativo": true
+  },
+  {
+    "id": 124,
+    "nome": "Clonazepam",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clonazepam",
+    "ativo": true
+  },
+  {
+    "id": 125,
+    "nome": "Clorpromazina",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clorpromazina",
+    "ativo": true
+  },
+  {
+    "id": 126,
+    "nome": "Diazepam",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Diazepam",
+    "ativo": true
+  },
+  {
+    "id": 127,
+    "nome": "Fenitoína",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fenitoína",
+    "ativo": true
+  },
+  {
+    "id": 128,
+    "nome": "Fenobarbital",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fenobarbital",
+    "ativo": true
+  },
+  {
+    "id": 129,
+    "nome": "Fenobarbital 4% gotas - frasco",
+    "apresentacao": "20 ml",
+    "concentracao": "20 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fenobarbital",
+    "ativo": true
+  },
+  {
+    "id": 130,
+    "nome": "Fluoxetina",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fluoxetina",
+    "ativo": true
+  },
+  {
+    "id": 131,
+    "nome": "Haloperidol",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Haloperidol",
+    "ativo": true
+  },
+  {
+    "id": 132,
+    "nome": "Haloperidol, decanoato 70,",
+    "apresentacao": "52 mg",
+    "concentracao": "52 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Haloperidol,",
+    "ativo": true
+  },
+  {
+    "id": 133,
+    "nome": "Imipramina, cloridrato",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Imipramina,",
+    "ativo": true
+  },
+  {
+    "id": 134,
+    "nome": "Levomepromazina",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Levomepromazina",
+    "ativo": true
+  },
+  {
+    "id": 135,
+    "nome": "Levomepromazina 4% (",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Levomepromazina",
+    "ativo": true
+  },
+  {
+    "id": 136,
+    "nome": "Lítio, carbonato",
+    "apresentacao": "300 mg",
+    "concentracao": "300 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Lítio,",
+    "ativo": true
+  },
+  {
+    "id": 137,
+    "nome": "Metilfenidato, cloridrato",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Cápsula",
+    "principioAtivo": "Metilfenidato,",
+    "ativo": true
+  },
+  {
+    "id": 138,
+    "nome": "Naltrexona",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Naltrexona",
+    "ativo": true
+  },
+  {
+    "id": 139,
+    "nome": "Nitrazepan",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Nitrazepan",
+    "ativo": true
+  },
+  {
+    "id": 140,
+    "nome": "Nortriptilina",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Nortriptilina",
+    "ativo": true
+  },
+  {
+    "id": 141,
+    "nome": "Sertralina",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sertralina",
+    "ativo": true
+  },
+  {
+    "id": 142,
+    "nome": "Tioridazina",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tioridazina",
+    "ativo": true
+  },
+  {
+    "id": 143,
+    "nome": "Valproato de Sódio 57,",
+    "apresentacao": "624 mg",
+    "concentracao": "624 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Valproato",
+    "ativo": true
+  },
+  {
+    "id": 144,
+    "nome": "xarope - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Xarope",
+    "principioAtivo": "xarope",
+    "ativo": true
+  },
+  {
+    "id": 145,
+    "nome": "Seringas",
+    "apresentacao": "50UI",
+    "concentracao": "50UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Seringas",
+    "ativo": true
+  },
+  {
+    "id": 146,
+    "nome": "Acetilcisteína",
+    "apresentacao": "100mg",
+    "concentracao": "100mg",
+    "formaFarmaceutica": "Solução",
+    "principioAtivo": "Acetilcisteína",
+    "ativo": true
+  },
+  {
+    "id": 147,
+    "nome": "Ácido Acético 5% - frasco",
+    "apresentacao": "30 ml",
+    "concentracao": "30 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 148,
+    "nome": "Ácido Ascórbico",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 149,
+    "nome": "Ácido Tranexâmico",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 150,
+    "nome": "Ácido Tricloroacético 35% - frasco",
+    "apresentacao": "15 ml",
+    "concentracao": "15 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 151,
+    "nome": "Ácido Tricloroacético 90% - frasco",
+    "apresentacao": "15 ml",
+    "concentracao": "15 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ácido",
+    "ativo": true
+  },
+  {
+    "id": 152,
+    "nome": "Adenosina",
+    "apresentacao": "6 mg",
+    "concentracao": "6 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Adenosina",
+    "ativo": true
+  },
+  {
+    "id": 153,
+    "nome": "Água Destilada - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Água",
+    "ativo": true
+  },
+  {
+    "id": 154,
+    "nome": "Alcool 70%  em gel - frasco",
+    "apresentacao": "500 ml",
+    "concentracao": "500 ml",
+    "formaFarmaceutica": "Gel",
+    "principioAtivo": "Alcool",
+    "ativo": true
+  },
+  {
+    "id": 155,
+    "nome": "Aminofilina",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Aminofilina",
+    "ativo": true
+  },
+  {
+    "id": 156,
+    "nome": "Amoxicilina 500+ Clavulanato",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Amoxicilina",
+    "ativo": true
+  },
+  {
+    "id": 157,
+    "nome": "Atropina 0,",
+    "apresentacao": "25 mg",
+    "concentracao": "25 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Atropina",
+    "ativo": true
+  },
+  {
+    "id": 158,
+    "nome": "Benzilpenicilina + Potássica 5.000.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Benzilpenicilina",
+    "ativo": true
+  },
+  {
+    "id": 159,
+    "nome": "Benzilpenicilina 1.200.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Benzilpenicilina",
+    "ativo": true
+  },
+  {
+    "id": 160,
+    "nome": "Benzilpenicilina 600.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Benzilpenicilina",
+    "ativo": true
+  },
+  {
+    "id": 161,
+    "nome": "Benzilpenicilina Procaína 300.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Benzilpenicilina",
+    "ativo": true
+  },
+  {
+    "id": 162,
+    "nome": "Betametasona, Acetato",
+    "apresentacao": "3 mg",
+    "concentracao": "3 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Betametasona,",
+    "ativo": true
+  },
+  {
+    "id": 163,
+    "nome": "Bicarbonato de Sódio 8,4% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Bicarbonato",
+    "ativo": true
+  },
+  {
+    "id": 164,
+    "nome": "Bicarbonato de Sódio 8,4% - bolsa",
+    "apresentacao": "250 ml",
+    "concentracao": "250 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Bicarbonato",
+    "ativo": true
+  },
+  {
+    "id": 165,
+    "nome": "Biperideno, Lactato",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Biperideno,",
+    "ativo": true
+  },
+  {
+    "id": 166,
+    "nome": "Carvão ativado – envelope",
+    "apresentacao": "10 g",
+    "concentracao": "10 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Carvão",
+    "ativo": true
+  },
+  {
+    "id": 167,
+    "nome": "Cefalotina Sódica",
+    "apresentacao": "1 g",
+    "concentracao": "1 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cefalotina",
+    "ativo": true
+  },
+  {
+    "id": 168,
+    "nome": "Cefotaxima sódica",
+    "apresentacao": "500mg",
+    "concentracao": "500mg",
+    "formaFarmaceutica": "Solução",
+    "principioAtivo": "Cefotaxima",
+    "ativo": true
+  },
+  {
+    "id": 169,
+    "nome": "Ceftriaxona IV",
+    "apresentacao": "1g",
+    "concentracao": "1g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ceftriaxona",
+    "ativo": true
+  },
+  {
+    "id": 170,
+    "nome": "Cetoprofeno IV",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cetoprofeno",
+    "ativo": true
+  },
+  {
+    "id": 171,
+    "nome": "Cianocobalamina (Vitamina B12)",
+    "apresentacao": "500 mcg",
+    "concentracao": "500 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cianocobalamina",
+    "ativo": true
+  },
+  {
+    "id": 172,
+    "nome": "Clonidina, cloridrato 0,",
+    "apresentacao": "150 mg",
+    "concentracao": "150 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clonidina,",
+    "ativo": true
+  },
+  {
+    "id": 173,
+    "nome": "Clonidina, cloridrato",
+    "apresentacao": "150 mcg",
+    "concentracao": "150 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clonidina,",
+    "ativo": true
+  },
+  {
+    "id": 174,
+    "nome": "Clopidogrel",
+    "apresentacao": "75 mg",
+    "concentracao": "75 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clopidogrel",
+    "ativo": true
+  },
+  {
+    "id": 175,
+    "nome": "Cloreto de Potássio 19,1% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cloreto",
+    "ativo": true
+  },
+  {
+    "id": 176,
+    "nome": "Cloreto de sódio 20%  - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Cloreto",
+    "ativo": true
+  },
+  {
+    "id": 177,
+    "nome": "Clorexidina 2% aquosa (gliconato) - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clorexidina",
+    "ativo": true
+  },
+  {
+    "id": 178,
+    "nome": "Clorexidina 2% degermante - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clorexidina",
+    "ativo": true
+  },
+  {
+    "id": 179,
+    "nome": "Clorexidina 5% alcoolica - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Clorexidina",
+    "ativo": true
+  },
+  {
+    "id": 180,
+    "nome": "Creme de Arnica 5% com Cânfora 3% - pote",
+    "apresentacao": "500 g",
+    "concentracao": "500 g",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Creme",
+    "ativo": true
+  },
+  {
+    "id": 181,
+    "nome": "Dexametasona, fosfato dissódico",
+    "apresentacao": "4 mg",
+    "concentracao": "4 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dexametasona,",
+    "ativo": true
+  },
+  {
+    "id": 182,
+    "nome": "Dimenidrato",
+    "apresentacao": "30 mg",
+    "concentracao": "30 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dimenidrato",
+    "ativo": true
+  },
+  {
+    "id": 183,
+    "nome": "Dobutamina, cloridrato",
+    "apresentacao": "250mg",
+    "concentracao": "250mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dobutamina,",
+    "ativo": true
+  },
+  {
+    "id": 184,
+    "nome": "Dopamina, Cloridrato",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Dopamina,",
+    "ativo": true
+  },
+  {
+    "id": 185,
+    "nome": "Epinefrina",
+    "apresentacao": "1 mg",
+    "concentracao": "1 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Epinefrina",
+    "ativo": true
+  },
+  {
+    "id": 186,
+    "nome": "Escopolamina, butilbrometo",
+    "apresentacao": "20 mg",
+    "concentracao": "20 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Escopolamina,",
+    "ativo": true
+  },
+  {
+    "id": 187,
+    "nome": "Etomidato",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Etomidato",
+    "ativo": true
+  },
+  {
+    "id": 188,
+    "nome": "Etonogestrel subcutâneo",
+    "apresentacao": "68 mg",
+    "concentracao": "68 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Etonogestrel",
+    "ativo": true
+  },
+  {
+    "id": 189,
+    "nome": "Fenitoína Sódica",
+    "apresentacao": "250 mg",
+    "concentracao": "250 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fenitoína",
+    "ativo": true
+  },
+  {
+    "id": 190,
+    "nome": "Fentanila, citrato",
+    "apresentacao": "50 mcg",
+    "concentracao": "50 mcg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fentanila,",
+    "ativo": true
+  },
+  {
+    "id": 191,
+    "nome": "Fitomenadiona",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fitomenadiona",
+    "ativo": true
+  },
+  {
+    "id": 192,
+    "nome": "Flumazenil 0,",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Flumazenil",
+    "ativo": true
+  },
+  {
+    "id": 193,
+    "nome": "Fluoresceína sodica",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fluoresceína",
+    "ativo": true
+  },
+  {
+    "id": 194,
+    "nome": "Fosfomicina Trometamol 5,",
+    "apresentacao": "631 g",
+    "concentracao": "631 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Fosfomicina",
+    "ativo": true
+  },
+  {
+    "id": 195,
+    "nome": "Gentamicina",
+    "apresentacao": "40 mg",
+    "concentracao": "40 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Gentamicina",
+    "ativo": true
+  },
+  {
+    "id": 196,
+    "nome": "Glicerol",
+    "apresentacao": "120mg",
+    "concentracao": "120mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Glicerol",
+    "ativo": true
+  },
+  {
+    "id": 197,
+    "nome": "Glicose 25% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Glicose",
+    "ativo": true
+  },
+  {
+    "id": 198,
+    "nome": "Glicose 50% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Glicose",
+    "ativo": true
+  },
+  {
+    "id": 199,
+    "nome": "Gluconato de Cálcio 10% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Gluconato",
+    "ativo": true
+  },
+  {
+    "id": 200,
+    "nome": "Heparina Sódica 5.",
+    "apresentacao": "000 UI",
+    "concentracao": "000 UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Heparina",
+    "ativo": true
+  },
+  {
+    "id": 201,
+    "nome": "Hidrocortisona, Succinato Sódico",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Hidrocortisona,",
+    "ativo": true
+  },
+  {
+    "id": 202,
+    "nome": "Iodofórmio 5% - bisnaga",
+    "apresentacao": "25 g",
+    "concentracao": "25 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Iodofórmio",
+    "ativo": true
+  },
+  {
+    "id": 203,
+    "nome": "Insulina Humana NPH",
+    "apresentacao": "100UI",
+    "concentracao": "100UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Insulina",
+    "ativo": true
+  },
+  {
+    "id": 204,
+    "nome": "Insulina Regular",
+    "apresentacao": "100UI",
+    "concentracao": "100UI",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Insulina",
+    "ativo": true
+  },
+  {
+    "id": 205,
+    "nome": "Isossorbida, dinitrato",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Isossorbida,",
+    "ativo": true
+  },
+  {
+    "id": 206,
+    "nome": "Lanactosídeo 0,",
+    "apresentacao": "2 mg",
+    "concentracao": "2 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Lanactosídeo",
+    "ativo": true
+  },
+  {
+    "id": 207,
+    "nome": "Lidocaína, Cloridrato 2% sem vasoconstrictor - frasco ampola",
+    "apresentacao": "20 ml",
+    "concentracao": "20 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Lidocaína,",
+    "ativo": true
+  },
+  {
+    "id": 208,
+    "nome": "Lidocaína, Cloridrato 5% pomada – bisnaga",
+    "apresentacao": "25g",
+    "concentracao": "25g",
+    "formaFarmaceutica": "Pomada",
+    "principioAtivo": "Lidocaína,",
+    "ativo": true
+  },
+  {
+    "id": 209,
+    "nome": "Lubrificante Intimo Gel - Sachê",
+    "apresentacao": "5g",
+    "concentracao": "5g",
+    "formaFarmaceutica": "Gel",
+    "principioAtivo": "Lubrificante",
+    "ativo": true
+  },
+  {
+    "id": 210,
+    "nome": "Lugol 5% - frasco",
+    "apresentacao": "30 ml",
+    "concentracao": "30 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Lugol",
+    "ativo": true
+  },
+  {
+    "id": 211,
+    "nome": "Magnésio, Sulfato 50% - ampola",
+    "apresentacao": "10 ml",
+    "concentracao": "10 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Magnésio,",
+    "ativo": true
+  },
+  {
+    "id": 212,
+    "nome": "Manitol 20% - frasco",
+    "apresentacao": "250 ml",
+    "concentracao": "250 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Manitol",
+    "ativo": true
+  },
+  {
+    "id": 213,
+    "nome": "Metilprednisolona",
+    "apresentacao": "500mg",
+    "concentracao": "500mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metilprednisolona",
+    "ativo": true
+  },
+  {
+    "id": 214,
+    "nome": "Metoprolol, tartarato",
+    "apresentacao": "1mg",
+    "concentracao": "1mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Metoprolol,",
+    "ativo": true
+  },
+  {
+    "id": 215,
+    "nome": "Midazolan",
+    "apresentacao": "15mg",
+    "concentracao": "15mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Midazolan",
+    "ativo": true
+  },
+  {
+    "id": 216,
+    "nome": "Morfina, sulfato",
+    "apresentacao": "10mg",
+    "concentracao": "10mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Morfina,",
+    "ativo": true
+  },
+  {
+    "id": 217,
+    "nome": "Naloxona 0,",
+    "apresentacao": "4 mg",
+    "concentracao": "4 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Naloxona",
+    "ativo": true
+  },
+  {
+    "id": 218,
+    "nome": "Nitroglicerina",
+    "apresentacao": "50mg",
+    "concentracao": "50mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Nitroglicerina",
+    "ativo": true
+  },
+  {
+    "id": 219,
+    "nome": "Nitroprussiato de Sódio",
+    "apresentacao": "50mg",
+    "concentracao": "50mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Nitroprussiato",
+    "ativo": true
+  },
+  {
+    "id": 220,
+    "nome": "Norepinefrina, Hemitartarato",
+    "apresentacao": "2mg",
+    "concentracao": "2mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Norepinefrina,",
+    "ativo": true
+  },
+  {
+    "id": 221,
+    "nome": "Omeprazol sódico",
+    "apresentacao": "40mg",
+    "concentracao": "40mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Omeprazol",
+    "ativo": true
+  },
+  {
+    "id": 222,
+    "nome": "Papaína em pó – envelope",
+    "apresentacao": "1 g",
+    "concentracao": "1 g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Papaína",
+    "ativo": true
+  },
+  {
+    "id": 223,
+    "nome": "Peróxido de Hidrogênio 10 volumes - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Peróxido",
+    "ativo": true
+  },
+  {
+    "id": 224,
+    "nome": "Prilocaína, cloridrato",
+    "apresentacao": "30 mg",
+    "concentracao": "30 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Prilocaína,",
+    "ativo": true
+  },
+  {
+    "id": 225,
+    "nome": "Propofol",
+    "apresentacao": "10mg",
+    "concentracao": "10mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Propofol",
+    "ativo": true
+  },
+  {
+    "id": 226,
+    "nome": "Protetor solar FPS 30 creme - frasco de",
+    "apresentacao": "120ml",
+    "concentracao": "120ml",
+    "formaFarmaceutica": "Creme",
+    "principioAtivo": "Protetor",
+    "ativo": true
+  },
+  {
+    "id": 227,
+    "nome": "Protetor solar labial FPS 30 bastão",
+    "apresentacao": "4g",
+    "concentracao": "4g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Protetor",
+    "ativo": true
+  },
+  {
+    "id": 228,
+    "nome": "Proximetacaína , cloridrato 0,5% sol. oftálmica - frasco",
+    "apresentacao": "5 ml",
+    "concentracao": "5 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Proximetacaína",
+    "ativo": true
+  },
+  {
+    "id": 229,
+    "nome": "Retinol (Vit A); Cloranfenicol; Aminoacidos; Metionina - bisnaga 3,",
+    "apresentacao": "5g",
+    "concentracao": "5g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Retinol",
+    "ativo": true
+  },
+  {
+    "id": 230,
+    "nome": "Ringer com Lactato de Sódio - frasco",
+    "apresentacao": "500 ml",
+    "concentracao": "500 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Ringer",
+    "ativo": true
+  },
+  {
+    "id": 231,
+    "nome": "Rocurônio, brometo",
+    "apresentacao": "10 mg",
+    "concentracao": "10 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Rocurônio,",
+    "ativo": true
+  },
+  {
+    "id": 232,
+    "nome": "Sacarato de óxido férrico",
+    "apresentacao": "20mg",
+    "concentracao": "20mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Sacarato",
+    "ativo": true
+  },
+  {
+    "id": 233,
+    "nome": "Soro Fisiológico a 0,9%  - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Soro",
+    "ativo": true
+  },
+  {
+    "id": 234,
+    "nome": "Soro Glicofisiológico - frasco",
+    "apresentacao": "250 ml",
+    "concentracao": "250 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Soro",
+    "ativo": true
+  },
+  {
+    "id": 235,
+    "nome": "Soro Glicosado a 5% - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Soro",
+    "ativo": true
+  },
+  {
+    "id": 236,
+    "nome": "Suxametônio",
+    "apresentacao": "100 mg",
+    "concentracao": "100 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Suxametônio",
+    "ativo": true
+  },
+  {
+    "id": 237,
+    "nome": "Tenecteplase",
+    "apresentacao": "50 mg",
+    "concentracao": "50 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tenecteplase",
+    "ativo": true
+  },
+  {
+    "id": 238,
+    "nome": "Terbutalina, Sulfato 0,",
+    "apresentacao": "5 mg",
+    "concentracao": "5 mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Terbutalina,",
+    "ativo": true
+  },
+  {
+    "id": 239,
+    "nome": "Tiopental sódico",
+    "apresentacao": "1g",
+    "concentracao": "1g",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tiopental",
+    "ativo": true
+  },
+  {
+    "id": 240,
+    "nome": "Tramadol, cloridrato",
+    "apresentacao": "50mg",
+    "concentracao": "50mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tramadol,",
+    "ativo": true
+  },
+  {
+    "id": 241,
+    "nome": "Tropicamida",
+    "apresentacao": "10mg",
+    "concentracao": "10mg",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Tropicamida",
+    "ativo": true
+  },
+  {
+    "id": 242,
+    "nome": "Vaselina Líquida - frasco",
+    "apresentacao": "100 ml",
+    "concentracao": "100 ml",
+    "formaFarmaceutica": "Comprimido",
+    "principioAtivo": "Vaselina",
+    "ativo": true
+  }
+]

@@ -96,6 +96,9 @@ export interface UnidadeDTO {
 
     // Backwards compatibility
     cnes?: string | null;
+
+    // Perfis que podem ter acesso a esta unidade
+    perfisPermitidos?: string[];
 }
 
 export interface Page<T> {

@@ -26,6 +26,7 @@ public interface OperadorMapper {
     @Mapping(target = "nomeUnidade", constant = "")
     @Mapping(target = "nomeUnidadeAtual", constant = "")
     @Mapping(source = "perfis", target = "perfis")
+    @Mapping(target = "modulos", ignore = true) // Será preenchido manualmente no service
     OperadorDTO toDTO(Operador operador);
 
     @Mapping(source = "unidadeSaudeId", target = "unidadeId")

@@ -6,7 +6,7 @@ import com.sistemadesaude.backend.operador.entity.Operador;
 import com.sistemadesaude.backend.operador.repository.OperadorRepository;
 import com.sistemadesaude.backend.operador.security.AcessoValidator;
 import com.sistemadesaude.backend.operador.service.AuthenticationService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,12 +23,18 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationService authenticationService;
     private final OperadorRepository operadorRepository;
-    private final AcessoValidator acessoValidator;
+    
+    @Autowired(required = false)
+    private AcessoValidator acessoValidator;
+    
+    public AuthController(AuthenticationService authenticationService, OperadorRepository operadorRepository) {
+        this.authenticationService = authenticationService;
+        this.operadorRepository = operadorRepository;
+    }
 
     /** Autenticação por login/senha. */
     @PostMapping("/login")
@@ -47,6 +53,10 @@ public class AuthController {
             @RequestBody List<Long> candidatas
     ) {
         Operador op = operadorRepository.findById(operadorId).orElseThrow();
+        if (acessoValidator == null) {
+            // Se AcessoValidator não estiver disponível, retorna todas as unidades candidatas
+            return ResponseEntity.ok(candidatas);
+        }
         List<Long> filtradas = acessoValidator.filtrarUnidadesPermitidas(op, candidatas);
         return ResponseEntity.ok(filtradas);
     }
