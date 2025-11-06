@@ -1,0 +1,17 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:5173",
+  "backendAuthType": "public",
+  "executionArgs": {
+    "projectName": "sistema2",
+    "projectPath": "D:\\IntelliJ\\sistema2",
+    "testIds": [],
+    "additionalInstruction": "Execute os testes de login de operadores. Teste 1: Login com admin.master / Admin@123. Teste 2: Login bloqueado para operador inativo. O frontend está em http://localhost:5173 e backend em http://localhost:8080. NÃO alterar o operador master.",
+    "envs": {
+      "API_KEY": "sk-user-vloMJHwsyOWizLwSyBJjGCPI0l5mPBRUV1goKIG0cpitIs1YjjYZMB10ItGQIpV2SbCEa0BPJy_sHKSx_Xh83gxsFcjGnjrMX-3ZX-_vUXqDgqB5qrhxZTz2tYeByl76RDo"
+    }
+  },
+  "proxy": "http://fea93077-25bc-4560-b9ef-3bf5c55d9af5:Qu6ubvEMVRVNI8zrsajOHPWpQdrTYBlJ@tun.testsprite.com:8080"
+}

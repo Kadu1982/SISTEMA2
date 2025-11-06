@@ -5,6 +5,7 @@ gateway/node_modules/
 
 # Build outputs
 backend/target/
+backend/bin/
 frontend/dist/
 gateway/target/
 
@@ -12,6 +13,13 @@ gateway/target/
 .idea/
 .vscode/
 *.iml
+.project
+.classpath
+.settings/
+
+# Claude AI
+.claude/settings.local.json
+.continue/
 
 # OS
 .DS_Store
@@ -32,3 +40,9 @@ backup_saude_db.backup
 # Temporary files
 _nul
 temp_*.sql
+
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Package locks (opcional, dependendo da estratégia)
+package-lock.json

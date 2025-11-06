@@ -1,0 +1,104 @@
+{
+  "testPlan": {
+    "id": "FRONTEND_OPERADORES_V1",
+    "title": "Frontend - Login e Visibilidade de Módulos",
+    "description": "Plano baseado em PLANO_TESTES_LOGIN_OPERADORES.md e REGAS_LOGIN_OPERADORES.md",
+    "testType": "frontend",
+    "app": {
+      "baseUrl": "http://localhost:5173",
+      "loginPath": "/login"
+    },
+    "notes": [
+      "NÃO modificar o operador admin.master (login: admin.master, senha: Admin@123)",
+      "Validar visibilidade de módulos/menus conforme perfis do operador",
+      "Se o app não estiver executando em 5173, os testes de UI irão falhar na execução; ainda assim manteremos os casos descritos"
+    ],
+    "requirements": [
+      {
+        "id": "R1_LOGIN",
+        "title": "Autenticação de Operadores",
+        "description": "Casos de login conforme PLANO_TESTES_LOGIN_OPERADORES.md e REGAS_LOGIN_OPERADORES.md",
+        "testCases": [
+          {
+            "id": "T1",
+            "title": "Login com Operador Master (admin.master)",
+            "preconditions": ["Operador admin.master existe; senha Admin@123; isMaster=true; ativo=true"],
+            "steps": [
+              "Abrir /login",
+              "Preencher login admin.master e senha Admin@123",
+              "Clicar Entrar"
+            ],
+            "expectedResults": [
+              "Login bem-sucedido e redireciona para dashboard",
+              "Token JWT gerado",
+              "Operador tem perfil ADMINISTRADOR_SISTEMA",
+              "isMaster=true e ignora restrições de horário"
+            ]
+          },
+          {
+            "id": "T2",
+            "title": "Login operador normal sem horários definidos",
+            "preconditions": ["Operador de teste criado, ativo=true, isMaster=false, sem horários"],
+            "steps": ["Abrir /login", "Inserir credenciais do operador", "Entrar"],
+            "expectedResults": ["Login bem-sucedido", "Token gerado", "Redirecionamento conforme perfil"]
+          },
+          {
+            "id": "T3",
+            "title": "Login operador com horários definidos (dentro do horário)",
+            "preconditions": ["Operador de teste criado com janela 08:00-18:00 seg-sex", "Execução dentro do horário"],
+            "steps": ["Abrir /login", "Inserir credenciais", "Entrar"],
+            "expectedResults": ["Login bem-sucedido"]
+          },
+          {
+            "id": "T4",
+            "title": "Login operador com horários definidos (fora do horário)",
+            "preconditions": ["Operador de teste criado com janela 08:00-18:00 seg-sex", "Execução fora do horário"],
+            "steps": ["Abrir /login", "Inserir credenciais", "Entrar"],
+            "expectedResults": ["Login bloqueado", "Mensagem 'Acesso fora do horário permitido'", "Sem token e sem redirecionamento"]
+          },
+          {
+            "id": "T5",
+            "title": "Login com operador inativo",
+            "preconditions": ["Operador de teste criado, ativo=false"],
+            "steps": ["Abrir /login", "Inserir credenciais", "Entrar"],
+            "expectedResults": ["Login bloqueado", "Mensagem de erro de autenticação"]
+          },
+          {
+            "id": "T6",
+            "title": "Login com credenciais inválidas",
+            "steps": ["Abrir /login", "Login operador.inexistente", "Senha qualquer", "Entrar"],
+            "expectedResults": ["Login bloqueado", "Mensagem de erro 'Credenciais inválidas' ou 'Operador não encontrado'"]
+          },
+          {
+            "id": "T7",
+            "title": "Master ignora restrições mesmo com horários definidos",
+            "preconditions": ["admin.master com horários definidos fora do horário atual"],
+            "steps": ["Abrir /login", "Login admin.master", "Senha Admin@123", "Entrar"],
+            "expectedResults": ["Login bem-sucedido mesmo fora do horário"]
+          }
+        ]
+      },
+      {
+        "id": "R2_VISIBILIDADE_MODULOS",
+        "title": "Visibilidade de módulos/menus por perfil",
+        "description": "Validar menus renderizados em Layout.tsx conforme perfis (UPA, RECEPCIONISTA_UPA, ADMINISTRADOR_SISTEMA)",
+        "testCases": [
+          {
+            "id": "T8_UI",
+            "title": "Menu para ADMINISTRADOR_SISTEMA",
+            "preconditions": ["Login como admin.master"],
+            "steps": ["Autenticar-se", "Verificar itens de menu do administrador"],
+            "expectedResults": ["Módulos administrativos visíveis"]
+          },
+          {
+            "id": "T9_UI",
+            "title": "Menu para UPA",
+            "preconditions": ["Operador com perfil UPA"],
+            "steps": ["Autenticar-se", "Validar que módulos da UPA estão visíveis e outros não"],
+            "expectedResults": ["Apenas módulos pertinentes ao perfil visíveis"]
+          }
+        ]
+      }
+    ]
+  }
+}

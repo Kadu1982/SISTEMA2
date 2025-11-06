@@ -162,6 +162,16 @@ export async function salvarLocais(id: number, ids: number[]): Promise<void> {
     });
 }
 
+/**
+ * Salva as unidades de saúde vinculadas ao operador
+ * Usa o endpoint /operadores/{id}/unidades que espera { unidadeIds: [...] }
+ */
+export async function salvarUnidadesOperador(id: number, unidadeIds: number[]): Promise<void> {
+    await api.put(`/operadores/${id}/unidades`, { unidadeIds }, {
+        headers: { "Content-Type": "application/json" },
+    });
+}
+
 // -----------------------------------------------------------------------------
 // Horários (array de janelas)
 // -----------------------------------------------------------------------------
@@ -211,6 +221,114 @@ export async function salvarPerfis(id: number, vals: string[]): Promise<void> {
 }
 
 // -----------------------------------------------------------------------------
+// Restrições individuais (CRUD)
+// -----------------------------------------------------------------------------
+
+export async function criarRestricao(
+    id: number,
+    restricao: Record<string, any>
+): Promise<Record<string, any>> {
+    const restricoes = await listarRestricoes(id);
+    const novasRestricoes = { ...restricoes, ...restricao };
+    return salvarRestricoes(id, novasRestricoes);
+}
+
+export async function atualizarRestricao(
+    id: number,
+    restricao: Record<string, any>
+): Promise<Record<string, any>> {
+    return criarRestricao(id, restricao);
+}
+
+export async function removerRestricao(
+    id: number,
+    chave: string
+): Promise<Record<string, any>> {
+    const restricoes = await listarRestricoes(id);
+    delete restricoes[chave];
+    return salvarRestricoes(id, restricoes);
+}
+
+// -----------------------------------------------------------------------------
+// Horários individuais (CRUD)
+// -----------------------------------------------------------------------------
+
+export async function criarHorario(
+    id: number,
+    horario: HorarioAcesso
+): Promise<void> {
+    const horarios = await listarHorarios(id);
+    horarios.push(horario);
+    return salvarHorarios(id, horarios);
+}
+
+export async function atualizarHorario(
+    id: number,
+    index: number,
+    horario: HorarioAcesso
+): Promise<void> {
+    const horarios = await listarHorarios(id);
+    horarios[index] = horario;
+    return salvarHorarios(id, horarios);
+}
+
+export async function removerHorario(
+    id: number,
+    index: number
+): Promise<void> {
+    const horarios = await listarHorarios(id);
+    horarios.splice(index, 1);
+    return salvarHorarios(id, horarios);
+}
+
+// -----------------------------------------------------------------------------
+// Aliases para compatibilidade com OperatorManagement.tsx
+// -----------------------------------------------------------------------------
+
+export const listarPerfisDoOperador = listarPerfis;
+export const salvarPerfisDoOperador = salvarPerfis;
+export const listarSetoresDoOperador = listarSetores;
+export const salvarSetoresDoOperador = salvarSetores;
+export const listarModulosDoOperador = listarModulos;
+export const salvarModulosDoOperador = salvarModulos;
+export const listarUnidadesDoOperador = listarLocais;
+export const salvarUnidadesDoOperador = salvarUnidadesOperador;
+
+// -----------------------------------------------------------------------------
+// Domínios e Termos de Uso
+// -----------------------------------------------------------------------------
+
+export async function listarDominioSetores(): Promise<any[]> {
+    const { data } = await api.get('/dominios/setores');
+    return unwrap<any[]>(data) || [];
+}
+
+export async function listarTermos(id: number): Promise<any[]> {
+    const { data } = await api.get(`/operadores/${id}/termos`);
+    return unwrap<any[]>(data) || [];
+}
+
+export async function aceitarTermo(
+    id: number,
+    termoId: number
+): Promise<void> {
+    await api.post(`/operadores/${id}/termos/${termoId}/aceitar`);
+}
+
+// -----------------------------------------------------------------------------
+// Auditoria de Login
+// -----------------------------------------------------------------------------
+
+export async function listarAuditoriaLogin(filtros?: {
+    operadorId?: number;
+    dataInicio?: string;
+    dataFim?: string;
+}): Promise<any[]> {
+    const { data } = await api.get('/operadores/auditoria/login', { params: filtros });
+    return unwrap<any[]>(data) || [];
+}
+
+// -----------------------------------------------------------------------------
 // Export default — facilita import como objeto
 // -----------------------------------------------------------------------------
 const operadoresService = {
@@ -221,16 +339,35 @@ const operadoresService = {
     alterarAtivo,
     listarRestricoes,
     salvarRestricoes,
+    criarRestricao,
+    atualizarRestricao,
+    removerRestricao,
     listarSetores,
     salvarSetores,
     listarLocais,
     salvarLocais,
+    salvarUnidadesOperador,
     listarHorarios,
     salvarHorarios,
+    criarHorario,
+    atualizarHorario,
+    removerHorario,
     listarModulos,
     salvarModulos,
     listarPerfis,
     salvarPerfis,
+    listarPerfisDoOperador,
+    salvarPerfisDoOperador,
+    listarSetoresDoOperador,
+    salvarSetoresDoOperador,
+    listarModulosDoOperador,
+    salvarModulosDoOperador,
+    listarUnidadesDoOperador,
+    salvarUnidadesDoOperador,
+    listarDominioSetores,
+    listarTermos,
+    aceitarTermo,
+    listarAuditoriaLogin,
 };
 
 export default operadoresService;
