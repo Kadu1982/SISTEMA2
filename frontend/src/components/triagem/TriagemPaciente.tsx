@@ -25,6 +25,9 @@ import {
 // ⚠️ Import sem extensão para evitar erro de resolução (.tsx)
 import { CalendarWithIndicators } from "@/components/ui/CalendarWithIndicators";
 
+// Feature flag para habilitar/desabilitar a consulta ao status de vacinas
+const HABILITAR_STATUS_VACINAS = false;
+
 // -----------------------------------------------------------------------------
 // Linhas de Cuidado (Ministério da Saúde) — conjunto consolidado
 // -----------------------------------------------------------------------------
@@ -121,7 +124,13 @@ export const TriagemPaciente: React.FC = () => {
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        
+        // Campo de alergias sempre em maiúsculas
+        if (name === "alergias") {
+            setFormData((prev) => ({ ...prev, [name]: value.toUpperCase() }));
+        } else {
+            setFormData((prev) => ({ ...prev, [name]: value }));
+        }
     };
 
     const handleSelectChange = (name: string, value: string) => {
@@ -198,22 +207,36 @@ export const TriagemPaciente: React.FC = () => {
             }
 
             // Status de vacinas (se o endpoint existir)
-            try {
-                const resp = await apiService.get(
-                    `/vacinas/status/${pacienteSelecionado.pacienteId}`
-                );
-                const status = (resp as any)?.data?.status ?? (resp as any)?.status;
-                const upper = String(status || "").toUpperCase();
-                if (upper === "EM_DIA") setStatusVacinas("EM_DIA");
-                else if (
-                    upper === "ATRASADA" ||
-                    upper === "ATRASADO" ||
-                    upper === "FORA_DO_PRAZO"
-                )
-                    setStatusVacinas("ATRASADA");
-                else setStatusVacinas("INDISPONIVEL");
-            } catch {
+            // Desabilitado por padrão - endpoint pode não estar disponível
+            if (!HABILITAR_STATUS_VACINAS) {
                 setStatusVacinas("INDISPONIVEL");
+            } else {
+                try {
+                    const resp = await apiService.get(
+                        `/vacinas/status/${pacienteSelecionado.pacienteId}`
+                    ).catch(() => {
+                        // Erro já tratado no interceptor - retorna null silenciosamente
+                        return { data: null };
+                    });
+                    
+                    if (resp && resp.data) {
+                        const status = (resp as any)?.data?.status ?? (resp as any)?.status;
+                        const upper = String(status || "").toUpperCase();
+                        if (upper === "EM_DIA") setStatusVacinas("EM_DIA");
+                        else if (
+                            upper === "ATRASADA" ||
+                            upper === "ATRASADO" ||
+                            upper === "FORA_DO_PRAZO"
+                        )
+                            setStatusVacinas("ATRASADA");
+                        else setStatusVacinas("INDISPONIVEL");
+                    } else {
+                        setStatusVacinas("INDISPONIVEL");
+                    }
+                } catch (error: any) {
+                    // Erro silencioso - endpoint pode não estar disponível
+                    setStatusVacinas("INDISPONIVEL");
+                }
             }
         };
         carregarInfoPaciente();
@@ -229,40 +252,197 @@ export const TriagemPaciente: React.FC = () => {
         if (!valor || valor.trim() === "") return "";
 
         switch (campo) {
+            case "pressaoArterial": {
+                // Formato: 120/80
+                // Remove tudo exceto números e barra
+                let pressao = valor.replace(/[^0-9/]/g, "");
+                
+                // Se não tem barra ainda, adiciona automaticamente após 3 dígitos
+                if (!pressao.includes("/")) {
+                    if (pressao.length > 3) {
+                        pressao = pressao.slice(0, 3) + "/" + pressao.slice(3);
+                    }
+                } else {
+                    // Se já tem barra, garante que só tenha uma e limita tamanho
+                    const partes = pressao.split("/");
+                    if (partes.length > 2) {
+                        pressao = partes[0] + "/" + partes.slice(1).join("");
+                    }
+                }
+                
+                // Limita tamanho (ex: 220/120 = 7 caracteres)
+                const partes = pressao.split("/");
+                let sistolica = partes[0].slice(0, 3);
+                let diastolica = partes[1] ? partes[1].slice(0, 3) : "";
+                
+                // Valida valores razoáveis
+                const sistolicaNum = parseInt(sistolica);
+                const diastolicaNum = diastolica ? parseInt(diastolica) : null;
+                
+                if (sistolicaNum > 0 && sistolicaNum <= 300) {
+                    if (diastolicaNum === null) {
+                        return sistolica + (pressao.includes("/") ? "/" : "");
+                    } else if (diastolicaNum > 0 && diastolicaNum <= 200) {
+                        return sistolica + "/" + diastolica;
+                    }
+                    return sistolica + "/" + diastolica.slice(0, 2);
+                }
+                return pressao.slice(0, 7);
+            }
             case "temperatura": {
-                let temp = valor.replace(/[^0-9.,]/g, "").replace(",", ".");
-                const tempNum = parseFloat(temp);
-                if (!isNaN(tempNum) && tempNum >= 30 && tempNum <= 50) return temp;
-                return temp.slice(0, 4);
+                // Formato: 36.5 ou 36,5 (aceita até 2 casas decimais)
+                // Remove tudo exceto números, vírgula e ponto
+                let temp = valor.replace(/[^0-9.,]/g, "");
+                
+                // Converte vírgula para ponto
+                temp = temp.replace(",", ".");
+                
+                // Se tem mais de 2 dígitos sem ponto, insere ponto antes dos últimos dígitos
+                // Ex: "368" -> "36.8", "365" -> "36.5"
+                if (!temp.includes(".") && temp.length > 2) {
+                    const parteInteira = temp.slice(0, -1);
+                    const parteDecimal = temp.slice(-1);
+                    temp = parteInteira + "." + parteDecimal;
+                }
+                
+                // Permite apenas um ponto decimal
+                const partes = temp.split(".");
+                if (partes.length > 2) {
+                    temp = partes[0] + "." + partes.slice(1).join("");
+                }
+                
+                // Limita casas decimais a 2
+                if (partes.length === 2 && partes[1].length > 2) {
+                    temp = partes[0] + "." + partes[1].slice(0, 2);
+                }
+                
+                // Limita tamanho total (ex: 50.99 = 5 caracteres)
+                if (temp.length > 5) {
+                    temp = temp.slice(0, 5);
+                }
+                
+                // Garante que a parte inteira não tenha mais de 2 dígitos antes do ponto
+                if (partes.length >= 1 && partes[0].length > 2) {
+                    const parteInteira = partes[0].slice(0, 2);
+                    const parteDecimal = partes.length > 1 ? "." + partes[1].slice(0, 2) : "";
+                    temp = parteInteira + parteDecimal;
+                }
+                
+                return temp;
             }
             case "peso": {
-                let peso = valor.replace(/[^0-9.,]/g, "").replace(",", ".");
-                const pesoNum = parseFloat(peso);
-                if (!isNaN(pesoNum) && pesoNum >= 0.5 && pesoNum <= 999) return peso;
-                return peso.slice(0, 5);
+                // Formato: 70.5 ou 70,5 (aceita até 2 casas decimais)
+                // Remove tudo exceto números, vírgula e ponto
+                let peso = valor.replace(/[^0-9.,]/g, "");
+                
+                // Converte vírgula para ponto
+                peso = peso.replace(",", ".");
+                
+                // Se tem 3 ou mais dígitos sem ponto, insere ponto antes do último dígito
+                // Ex: "754" -> "75.4", "7545" -> "754.5" (mas depois limita)
+                if (!peso.includes(".") && peso.length >= 3) {
+                    const parteInteira = peso.slice(0, -1);
+                    const parteDecimal = peso.slice(-1);
+                    peso = parteInteira + "." + parteDecimal;
+                }
+                
+                // Permite apenas um ponto decimal
+                const partes = peso.split(".");
+                if (partes.length > 2) {
+                    peso = partes[0] + "." + partes.slice(1).join("");
+                }
+                
+                // Limita casas decimais a 2
+                if (partes.length === 2 && partes[1].length > 2) {
+                    peso = partes[0] + "." + partes[1].slice(0, 2);
+                }
+                
+                // Garante que a parte inteira não tenha mais de 3 dígitos antes do ponto
+                if (partes.length >= 1 && partes[0].length > 3) {
+                    const parteInteira = partes[0].slice(0, 3);
+                    const parteDecimal = partes.length > 1 ? "." + partes[1].slice(0, 2) : "";
+                    peso = parteInteira + parteDecimal;
+                }
+                
+                // Limita tamanho total (ex: 999.99 = 6 caracteres)
+                if (peso.length > 6) {
+                    peso = peso.slice(0, 6);
+                }
+                
+                return peso;
             }
             case "altura": {
-                let altura = valor.replace(/[^0-9.,]/g, "").replace(",", ".");
-                const alturaNum = parseFloat(altura);
-                if (!isNaN(alturaNum) && alturaNum >= 0.3 && alturaNum <= 3.0) return altura;
-                return altura.slice(0, 4);
+                // Formato: 1.70 ou 1,70 (aceita até 2 casas decimais)
+                // Remove tudo exceto números, vírgula e ponto
+                let altura = valor.replace(/[^0-9.,]/g, "");
+                
+                // Converte vírgula para ponto
+                altura = altura.replace(",", ".");
+                
+                // Se tem 2 ou mais dígitos sem ponto, insere ponto após o primeiro dígito
+                // Ex: "15" -> "1.5", "158" -> "1.58", "175" -> "1.75"
+                if (!altura.includes(".") && altura.length >= 2) {
+                    const primeiro = altura[0];
+                    const resto = altura.slice(1);
+                    altura = primeiro + "." + resto;
+                }
+                
+                // Permite apenas um ponto decimal
+                const partes = altura.split(".");
+                if (partes.length > 2) {
+                    altura = partes[0] + "." + partes.slice(1).join("");
+                }
+                
+                // Limita casas decimais a 2
+                if (partes.length === 2 && partes[1].length > 2) {
+                    altura = partes[0] + "." + partes[1].slice(0, 2);
+                }
+                
+                // Limita tamanho total (ex: 3.00 = 4 caracteres)
+                if (altura.length > 5) {
+                    altura = altura.slice(0, 5);
+                }
+                
+                // Após inserir ponto e limitar, garante que a parte inteira tenha apenas 1 dígito
+                // Isso só executa depois da formatação inicial
+                const partesFinais = altura.split(".");
+                if (partesFinais.length >= 1 && partesFinais[0].length > 1 && partesFinais[0] !== "0") {
+                    // Se ainda tem mais de 1 dígito na parte inteira, ajusta
+                    const parteInteira = partesFinais[0].slice(0, 1);
+                    const parteDecimal = partesFinais.length > 1 ? "." + partesFinais[1].slice(0, 2) : "";
+                    altura = parteInteira + parteDecimal;
+                }
+                
+                return altura;
             }
             case "frequenciaCardiaca": {
+                // Apenas números inteiros (30-220 bpm)
                 let fc = valor.replace(/[^0-9]/g, "");
                 const fcNum = parseInt(fc);
                 if (!isNaN(fcNum) && fcNum >= 30 && fcNum <= 220) return fc;
+                
+                // Se ainda está digitando números válidos, permite
+                if (fc.length <= 3 && (fcNum === 0 || fcNum >= 30)) return fc;
                 return fc.slice(0, 3);
             }
             case "saturacaoOxigenio": {
+                // Apenas números inteiros (70-100%)
                 let sat = valor.replace(/[^0-9]/g, "");
                 const satNum = parseInt(sat);
                 if (!isNaN(satNum) && satNum >= 70 && satNum <= 100) return sat;
+                
+                // Se ainda está digitando números válidos, permite
+                if (sat.length <= 3 && (satNum === 0 || satNum >= 70)) return sat;
                 return sat.slice(0, 3);
             }
             case "frequenciaRespiratoria": {
+                // Apenas números inteiros (6-60 rpm)
                 let fr = valor.replace(/[^0-9]/g, "");
                 const frNum = parseInt(fr);
                 if (!isNaN(frNum) && frNum >= 6 && frNum <= 60) return fr;
+                
+                // Se ainda está digitando números válidos, permite
+                if (fr.length <= 2 && (frNum === 0 || frNum >= 6)) return fr;
                 return fr.slice(0, 2);
             }
             default:
@@ -274,6 +454,7 @@ export const TriagemPaciente: React.FC = () => {
         const { name, value } = e.target;
         if (
             [
+                "pressaoArterial",
                 "temperatura",
                 "peso",
                 "altura",
@@ -359,9 +540,51 @@ export const TriagemPaciente: React.FC = () => {
             dataReferencia: formData.dataReferencia,
         };
 
+        // Processa alergias: separa por palavras e salva individualmente
+        const processarAlergias = async (pacienteId: number, alergiasTexto: string) => {
+            if (!alergiasTexto || alergiasTexto.trim() === "") return;
+            
+            try {
+                // Separa por espaços, vírgulas, ponto-e-vírgula ou quebra de linha
+                const palavrasAlergias = alergiasTexto
+                    .toUpperCase()
+                    .split(/[\s,;]+/)
+                    .map(p => p.trim())
+                    .filter(p => p.length > 0);
+                
+                if (palavrasAlergias.length === 0) return;
+                
+                // Busca paciente atual para obter alergias existentes
+                const pacienteAtual = await apiService.get(`/pacientes/${pacienteId}`);
+                const pacienteData = (pacienteAtual as any)?.data || pacienteAtual;
+                
+                // Obtém alergias existentes (se houver campo alergias no paciente)
+                const alergiasExistentes: string[] = pacienteData?.alergias 
+                    ? pacienteData.alergias.split(/[\s,;]+/).map((a: string) => a.trim().toUpperCase()).filter(Boolean)
+                    : [];
+                
+                // Combina alergias existentes com novas, removendo duplicatas
+                const todasAlergias = [...new Set([...alergiasExistentes, ...palavrasAlergias])];
+                
+                // Atualiza paciente com todas as alergias
+                await apiService.put(`/pacientes/${pacienteId}`, {
+                    ...pacienteData,
+                    alergias: todasAlergias.join(", "),
+                });
+            } catch (error) {
+                // Erro silencioso - não bloqueia o salvamento da triagem
+                console.warn("Não foi possível salvar alergias no histórico do paciente:", error);
+            }
+        };
+        
         // react-query mutate: aceita callbacks pontuais
         (salvarTriagem as any)(dadosParaApi, {
-            onSuccess: () => {
+            onSuccess: async () => {
+                // Processa e salva alergias no histórico do paciente
+                if (pacienteSelecionado?.pacienteId && formData.alergias) {
+                    await processarAlergias(pacienteSelecionado.pacienteId, formData.alergias);
+                }
+                
                 setPacienteSelecionado(null);
                 setFormData({
                     ...initialState,
@@ -567,9 +790,11 @@ export const TriagemPaciente: React.FC = () => {
                                 <Label htmlFor="pressaoArterial">Pressão Arterial</Label>
                                 <Input
                                     name="pressaoArterial"
+                                    type="text"
                                     placeholder="120/80"
                                     value={formData.pressaoArterial}
-                                    onChange={handleInputChange}
+                                    onChange={handleMaskedInputChange}
+                                    inputMode="numeric"
                                 />
                             </div>
                             <div>
@@ -580,6 +805,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="75"
                                     value={formData.frequenciaCardiaca}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="numeric"
                                 />
                             </div>
                         </div>
@@ -593,6 +819,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="36.5"
                                     value={formData.temperatura}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="decimal"
                                 />
                             </div>
                             <div>
@@ -603,6 +830,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="98"
                                     value={formData.saturacaoOxigenio}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="numeric"
                                 />
                             </div>
                         </div>
@@ -618,6 +846,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="16"
                                     value={formData.frequenciaRespiratoria}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="numeric"
                                 />
                             </div>
                         </div>
@@ -631,6 +860,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="70.5"
                                     value={formData.peso}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="decimal"
                                 />
                             </div>
                             <div>
@@ -641,6 +871,7 @@ export const TriagemPaciente: React.FC = () => {
                                     placeholder="1.75"
                                     value={formData.altura}
                                     onChange={handleMaskedInputChange}
+                                    inputMode="decimal"
                                 />
                             </div>
                         </div>

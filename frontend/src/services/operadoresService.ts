@@ -200,7 +200,7 @@ export async function listarModulos(id: number): Promise<string[]> {
 }
 
 export async function salvarModulos(id: number, vals: string[]): Promise<void> {
-    await api.put(`/operadores/${id}/modulos`, vals, {
+    await api.put(`/operadores/${id}/modulos`, { modulos: vals }, {
         headers: { "Content-Type": "application/json" },
     });
 }
@@ -215,7 +215,7 @@ export async function listarPerfis(id: number): Promise<string[]> {
 }
 
 export async function salvarPerfis(id: number, vals: string[]): Promise<void> {
-    await api.put(`/operadores/${id}/perfis`, vals, {
+    await api.put(`/operadores/${id}/perfis`, { perfis: vals }, {
         headers: { "Content-Type": "application/json" },
     });
 }
@@ -291,7 +291,10 @@ export const listarSetoresDoOperador = listarSetores;
 export const salvarSetoresDoOperador = salvarSetores;
 export const listarModulosDoOperador = listarModulos;
 export const salvarModulosDoOperador = salvarModulos;
-export const listarUnidadesDoOperador = listarLocais;
+export async function listarUnidadesDoOperador(id: number): Promise<number[]> {
+    const { data } = await api.get(`/operadores/${id}/unidades`);
+    return unwrap<number[]>(data) || [];
+}
 export const salvarUnidadesDoOperador = salvarUnidadesOperador;
 
 // -----------------------------------------------------------------------------

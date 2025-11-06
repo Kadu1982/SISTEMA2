@@ -41,14 +41,20 @@ public class PerfilController {
     @GetMapping
     public ResponseEntity<ApiResponse<List<PerfilDTO>>> listarTodos() {
         log.info("Requisição para listar todos os perfis");
-        List<PerfilDTO> perfis = perfilService.listarTodos();
-        log.info("Total de perfis encontrados: {}", perfis.size());
-        if (perfis.isEmpty()) {
-            log.warn("⚠️ Nenhum perfil encontrado no banco de dados");
-        } else {
-            log.info("Perfis encontrados: {}", perfis.stream().map(p -> p.getNome() + " (" + p.getTipo() + ")").collect(java.util.stream.Collectors.joining(", ")));
+        try {
+            List<PerfilDTO> perfis = perfilService.listarTodos();
+            log.info("Total de perfis encontrados: {}", perfis.size());
+            if (perfis.isEmpty()) {
+                log.warn("⚠️ Nenhum perfil encontrado no banco de dados");
+            } else {
+                log.info("Perfis encontrados: {}", perfis.stream().map(p -> p.getNome() + " (" + p.getTipo() + ")").collect(java.util.stream.Collectors.joining(", ")));
+            }
+            return ResponseEntity.ok(new ApiResponse<>(true, "Perfis listados com sucesso", perfis));
+        } catch (Exception e) {
+            log.error("❌ Erro ao listar perfis: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Erro interno do servidor: " + e.getMessage(), null));
         }
-        return ResponseEntity.ok(new ApiResponse<>(true, "Perfis listados com sucesso", perfis));
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.sistemadesaude.backend.operador.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -16,16 +18,32 @@ import java.util.List;
 public class OperadorDTO {
 
     private Long id;
+    
+    @NotBlank(message = "Login é obrigatório")
+    @Size(min = 4, message = "Login deve ter no mínimo 4 caracteres")
     private String login;
+    
+    @Size(min = 6, message = "Senha deve ter no mínimo 6 caracteres")
     private String senha; // Usado apenas para criação/atualização
+    
+    @NotBlank(message = "Nome é obrigatório")
+    @Size(min = 3, message = "Nome deve ter no mínimo 3 caracteres")
     private String nome;
+    
     private String cargo;
+    
     @NotBlank(message = "CPF é obrigatório")
+    @Size(min = 11, max = 11, message = "CPF deve ter exatamente 11 caracteres")
     private String cpf;
+    
     private String cns; // opcional
+    
+    @Email(message = "Email deve ter um formato válido")
     private String email;
+    
     private Boolean ativo;
     private List<String> perfis;
+    private List<String> modulos; // Módulos aos quais o operador tem acesso
     private Boolean isMaster;
 
     // Informações da unidade

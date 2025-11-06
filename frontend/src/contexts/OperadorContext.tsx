@@ -8,7 +8,12 @@ export interface Operador {
     nome: string;
     login: string;
     perfis?: string[]; // ✅ Array de strings, não objetos
+    modulos?: string[]; // ✅ Array de módulos aos quais o operador tem acesso
     isMaster?: boolean;
+    unidadeId?: number | null; // ID da unidade atual onde está logado
+    unidadeAtual?: string | null; // Nome da unidade atual
+    unidadeTipo?: string; // Tipo da unidade atual (UBS, UPA, etc.)
+    unidadesPermitidas?: number[]; // IDs das unidades permitidas para o operador
     [k: string]: any;
 }
 
@@ -17,6 +22,7 @@ interface OperadorContextType {
     token: string | null;
     login: (token: string, operador: Operador) => void;
     logout: () => void;
+    updateCurrentUnit: (unidadeId: number, nomeUnidade: string, tipoUnidade: string) => void;
 }
 
 const OperadorContext = createContext<OperadorContextType | undefined>(undefined);
@@ -88,8 +94,22 @@ export const OperadorProvider = ({ children }: { children: ReactNode }) => {
         navigate('/login');
     };
 
+    const updateCurrentUnit = (unidadeId: number, nomeUnidade: string, tipoUnidade: string) => {
+        if (!operador) return;
+        
+        const operadorAtualizado = {
+            ...operador,
+            unidadeId: unidadeId,
+            unidadeAtual: nomeUnidade,
+            unidadeTipo: tipoUnidade
+        };
+        
+        setOperador(operadorAtualizado);
+        localStorage.setItem('operadorData', JSON.stringify(operadorAtualizado));
+    };
+
     return (
-        <OperadorContext.Provider value={{ operador, token, login, logout }}>
+        <OperadorContext.Provider value={{ operador, token, login, logout, updateCurrentUnit }}>
             {children}
         </OperadorContext.Provider>
     );

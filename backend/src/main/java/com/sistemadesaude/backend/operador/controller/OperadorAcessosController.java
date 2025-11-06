@@ -47,25 +47,37 @@ public class OperadorAcessosController {
     /**
      * Substitui a lista de perfis do operador.
      * Estratégia simples: apaga os atuais e recria os enviados.
+     * 
+     * Regra de negócio: Operador deve ter pelo menos 1 perfil.
      */
     @PutMapping("/perfis")
     @Transactional
     public ResponseEntity<Void> salvarPerfis(@PathVariable Long operadorId, @RequestBody PerfisPayload payload) {
+        // Validação: pelo menos 1 perfil é obrigatório
+        if (payload == null || payload.getPerfis() == null || payload.getPerfis().isEmpty()) {
+            throw new IllegalArgumentException("Operador deve ter pelo menos 1 perfil");
+        }
+        
+        // Filtrar perfis válidos (não nulos e não vazios)
+        List<String> perfisValidos = payload.getPerfis().stream()
+                .filter(p -> p != null && !p.isBlank())
+                .toList();
+        
+        if (perfisValidos.isEmpty()) {
+            throw new IllegalArgumentException("Operador deve ter pelo menos 1 perfil válido");
+        }
+        
         perfilRepo.deleteByOperadorId(operadorId);
 
-        if (payload != null && payload.getPerfis() != null) {
-            for (String perfil : payload.getPerfis()) {
-                if (perfil == null || perfil.isBlank()) continue;
+        for (String perfil : perfisValidos) {
+            OperadorPerfilKey key = new OperadorPerfilKey();
+            key.setOperadorId(operadorId);
+            key.setPerfil(perfil);
 
-                OperadorPerfilKey key = new OperadorPerfilKey();
-                key.setOperadorId(operadorId);
-                key.setPerfil(perfil);
+            OperadorPerfil ent = new OperadorPerfil();
+            ent.setId(key);
 
-                OperadorPerfil ent = new OperadorPerfil();
-                ent.setId(key);
-
-                perfilRepo.save(ent);
-            }
+            perfilRepo.save(ent);
         }
         return ResponseEntity.noContent().build();
     }

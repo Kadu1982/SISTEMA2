@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { toast } from '@/components/ui/use-toast';
-import { Eye, EyeOff, User, Lock, Trash } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
+import { Eye, EyeOff, User, Lock, Trash, Loader2 } from 'lucide-react';
 import { login as authLogin } from '@/services/authService';
+import { listarUnidades, UnidadeDTO } from '@/services/unidadesService';
 // import { useOperador } from '@/contexts/OperadorContext'; // se quiser hidratar o contexto aqui
 
 /**
@@ -57,9 +58,12 @@ const Login: React.FC = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [bgUrl, setBgUrl] = useState<string | null>(null);
-    const [tipoUnidade, setTipoUnidade] = useState('UBS'); // 🏥 Novo campo
+    const [unidadeId, setUnidadeId] = useState<number | null>(null); // 🏥 ID da unidade selecionada
+    const [unidades, setUnidades] = useState<UnidadeDTO[]>([]);
+    const [carregandoUnidades, setCarregandoUnidades] = useState(true);
 
     const navigate = useNavigate();
+    const { toast } = useToast();
     // const { setOperador } = useOperador(); // se quiser popular contexto aqui
 
     // ---------- RESOLVE O FUNDO NA MONTAGEM ----------
@@ -68,6 +72,36 @@ const Login: React.FC = () => {
         (async () => {
             const url = await findFirstAvailable(CANDIDATES);
             if (mounted) setBgUrl(url);
+        })();
+        return () => { mounted = false; };
+    }, []);
+
+    // ---------- CARREGA UNIDADES DISPONÍVEIS ----------
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                setCarregandoUnidades(true);
+                const resultado = await listarUnidades();
+                // listarUnidades pode retornar array ou Page, normalizamos para array
+                const unidadesCarregadas = Array.isArray(resultado) ? resultado : (resultado as any).content || [];
+                if (mounted) {
+                    setUnidades(unidadesCarregadas);
+                    // Seleciona a primeira unidade por padrão se houver
+                    if (unidadesCarregadas.length > 0 && unidadesCarregadas[0].id) {
+                        setUnidadeId(unidadesCarregadas[0].id);
+                    }
+                }
+            } catch (error: any) {
+                console.error('Erro ao carregar unidades:', error);
+                toast({
+                    variant: 'destructive',
+                    title: 'Erro ao carregar unidades',
+                    description: 'Não foi possível carregar a lista de unidades. Tente novamente.',
+                });
+            } finally {
+                if (mounted) setCarregandoUnidades(false);
+            }
         })();
         return () => { mounted = false; };
     }, []);
@@ -102,10 +136,13 @@ const Login: React.FC = () => {
             // Persistência para interceptors/guard e tela do termo
             localStorage.setItem('token', token);
 
-            // 🏥 Modifica o operador para incluir o tipo de unidade selecionado
+            // 🏥 Modifica o operador para incluir a unidade selecionada
+            const unidadeSelecionada = unidades.find(u => u.id === unidadeId);
             const operadorComUnidade = {
                 ...operador,
-                unidadeAtual: tipoUnidade
+                unidadeId: unidadeId,
+                unidadeAtual: unidadeSelecionada?.nome || null,
+                unidadeTipo: unidadeSelecionada?.tipo || null
             };
             localStorage.setItem('operadorData', JSON.stringify(operadorComUnidade));
 
@@ -206,32 +243,45 @@ const Login: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* 🏥 Seletor de Tipo de Unidade */}
+                        {/* 🏥 Seletor de Unidade de Saúde */}
                         <div className="space-y-2">
-                            <Label htmlFor="tipoUnidade">Tipo de Unidade (Teste)</Label>
-                            <select
-                                id="tipoUnidade"
-                                value={tipoUnidade}
-                                onChange={(e) => setTipoUnidade(e.target.value)}
-                                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            >
-                                <option value="UBS">UBS - Unidade Básica de Saúde</option>
-                                <option value="PSF">PSF - Programa Saúde da Família</option>
-                                <option value="Hospital Regional">🏥 Hospital Regional</option>
-                                <option value="UPA Norte">🚑 UPA Norte</option>
-                                <option value="Pronto Socorro Central">🏥 Pronto Socorro Central</option>
-                                <option value="Hospital Municipal">🏥 Hospital Municipal</option>
-                                <option value="Clínica Especializada">🏥 Clínica Especializada</option>
-                                <option value="Maternidade Santa Casa">🏥 Maternidade Santa Casa</option>
-                                <option value="Secretaria de Saúde">🏛️ Secretaria de Saúde</option>
-                            </select>
-                            <p className="text-xs text-gray-500">
-                                💡 Selecione "Hospital" para testar o Módulo Hospitalar
-                            </p>
+                            <Label htmlFor="unidadeId">Unidade de Saúde</Label>
+                            {carregandoUnidades ? (
+                                <div className="flex items-center gap-2 p-2 border border-gray-300 rounded-md">
+                                    <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                                    <span className="text-sm text-gray-500">Carregando unidades...</span>
+                                </div>
+                            ) : unidades.length === 0 ? (
+                                <div className="p-2 border border-yellow-300 rounded-md bg-yellow-50">
+                                    <p className="text-sm text-yellow-800">
+                                        ⚠️ Nenhuma unidade cadastrada. Entre em contato com o administrador.
+                                    </p>
+                                </div>
+                            ) : (
+                                <select
+                                    id="unidadeId"
+                                    value={unidadeId || ''}
+                                    onChange={(e) => setUnidadeId(Number(e.target.value) || null)}
+                                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    required
+                                >
+                                    <option value="">Selecione uma unidade</option>
+                                    {unidades.map((unidade) => (
+                                        <option key={unidade.id} value={unidade.id}>
+                                            {unidade.nome} {unidade.tipo ? `(${unidade.tipo})` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            )}
+                            {unidades.length > 0 && (
+                                <p className="text-xs text-gray-500">
+                                    💡 Selecione a unidade onde você irá trabalhar
+                                </p>
+                            )}
                         </div>
 
                         <div className="flex gap-2">
-                            <Button type="submit" className="flex-1" disabled={loading}>
+                            <Button type="submit" className="flex-1" disabled={loading || !unidadeId || carregandoUnidades}>
                                 {loading ? 'Entrando...' : 'Entrar'}
                             </Button>
                             <Button

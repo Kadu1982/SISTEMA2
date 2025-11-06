@@ -58,6 +58,7 @@ const CidBusca: React.FC<CidBuscaProps> = ({
         if (cidSelecionado) {
             setBusca(`${cidSelecionado.codigo} - ${cidSelecionado.descricao}`);
             setShowResultados(false);
+            setResultados([]);
             setActiveIndex(-1);
         }
     }, [cidSelecionado]);
@@ -76,6 +77,11 @@ const CidBusca: React.FC<CidBuscaProps> = ({
 
     // Debounce de busca
     useEffect(() => {
+        // Não busca se já tem CID selecionado (evita loop)
+        if (cidSelecionado) {
+            return;
+        }
+
         // limpa último timer
         if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -94,7 +100,7 @@ const CidBusca: React.FC<CidBuscaProps> = ({
             if (debounceRef.current) clearTimeout(debounceRef.current);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [busca, minChars]);
+    }, [busca, minChars, cidSelecionado]);
 
     // --------------------------- utilidades -----------------------------------
 
@@ -237,7 +243,10 @@ const CidBusca: React.FC<CidBuscaProps> = ({
                     disabled={disabled}
                     className="pl-10 pr-10"
                     onFocus={() => {
-                        if (resultados.length > 0) setShowResultados(true);
+                        // Só mostra resultados se não houver CID selecionado
+                        if (!cidSelecionado && resultados.length > 0) {
+                            setShowResultados(true);
+                        }
                     }}
                 />
 
@@ -261,7 +270,7 @@ const CidBusca: React.FC<CidBuscaProps> = ({
             </div>
 
             {/* RESULTADOS */}
-            {showResultados && resultados.length > 0 && (
+            {showResultados && resultados.length > 0 && !cidSelecionado && (
                 <Card className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto shadow-lg">
                     <CardContent className="p-0">
                         {resultados.map((cid, idx) => {
@@ -296,7 +305,7 @@ const CidBusca: React.FC<CidBuscaProps> = ({
             )}
 
             {/* NADA ENCONTRADO */}
-            {showResultados && resultados.length === 0 && !isLoading && busca.trim().length >= minChars && (
+            {showResultados && resultados.length === 0 && !isLoading && busca.trim().length >= minChars && !cidSelecionado && (
                 <Card className="absolute top-full left-0 right-0 z-50 mt-1 shadow-lg">
                     <CardContent className="p-4 text-center text-gray-500">
                         <Search className="h-8 w-8 mx-auto mb-2 text-gray-300" />

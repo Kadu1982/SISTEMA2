@@ -64,6 +64,7 @@ export default function CiapFields({
             ...value,
             ciapRfe: [it.codigo], // mantém apenas 1
         });
+        setQRfe(""); // Limpa o campo de busca após seleção
     };
 
     const addDiag = (it: CiapItem) => {
@@ -72,6 +73,7 @@ export default function CiapFields({
             ...value,
             ciapDiagnosticos: addUnique(value.ciapDiagnosticos, it.codigo, maxDiag),
         });
+        setQDiag(""); // Limpa o campo de busca após seleção
     };
 
     const addProc = (it: CiapItem) => {
@@ -80,6 +82,7 @@ export default function CiapFields({
             ...value,
             ciapProcedimentos: addUnique(value.ciapProcedimentos, it.codigo, maxProc),
         });
+        setQProc(""); // Limpa o campo de busca após seleção
     };
 
     const remRfe = (code: string) => onChange({ ...value, ciapRfe: [] });

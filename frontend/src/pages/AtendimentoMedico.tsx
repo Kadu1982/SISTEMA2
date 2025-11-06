@@ -39,6 +39,7 @@ import { AtendimentoForm, AtendimentoFormData } from "@/components/atendimento/A
 import { HistoricoAtendimentos } from "@/components/atendimento/HistoricoAtendimentos";
 import DocumentosMedicos from "@/components/atendimento/DocumentosMedicos";
 import { atendimentoService } from "@/services/AtendimentoService";
+import { procedimentosRapidosService } from "@/services/procedimentosRapidosService";
 
 // =========================
 // Tipagens
@@ -362,12 +363,42 @@ const AtendimentoMedico: React.FC = () => {
                 setPacienteId(String(novoAtendimento.pacienteId ?? payload.pacienteId));
                 setAtendimentoId(String(novoAtendimento.id));
 
+                // Verificar se o motivo de desfecho é "Cuidados de Enfermagem" (código "10")
+                if (data.motivoDesfecho === "10") {
+                    try {
+                        // Encaminhar para Procedimentos Rápidos
+                        await procedimentosRapidosService.encaminharDeAtendimento({
+                            atendimentoId: novoAtendimento.id,
+                            pacienteId: pacienteAlvoId,
+                            medicoSolicitante: novoAtendimento.profissionalNome || "",
+                            especialidadeOrigem: data.especialidadeEncaminhamento || "",
+                            alergias: pacienteParaAtendimento?.observacoes || "",
+                            observacoes: data.observacoes || "",
+                            atividades: []
+                        });
+
+                        toast({
+                            title: "Sucesso!",
+                            description: "Atendimento salvo e paciente encaminhado para Cuidados de Enfermagem.",
+                        });
+                    } catch (error: any) {
+                        console.error("Erro ao encaminhar para Procedimentos Rápidos:", error);
+                        toast({
+                            title: "Atendimento salvo com ressalvas",
+                            description: `Atendimento salvo, mas houve erro ao encaminhar: ${error.message || "Erro desconhecido"}`,
+                            variant: "default",
+                        });
+                    }
+                }
+
                 if (pacienteParaAtendimento) {
                     try {
                         await atualizarStatusAgendamento(pacienteParaAtendimento.agendamentoId, "FINALIZADO");
                         await queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
                         setPacienteParaAtendimento(null);
-                        toast({ title: "Sucesso!", description: "Atendimento salvo e paciente finalizado." });
+                        if (data.motivoDesfecho !== "10") {
+                            toast({ title: "Sucesso!", description: "Atendimento salvo e paciente finalizado." });
+                        }
                     } catch {
                         toast({
                             title: "Atendimento salvo",
@@ -376,7 +407,9 @@ const AtendimentoMedico: React.FC = () => {
                         });
                     }
                 } else {
-                    toast({ title: "Sucesso!", description: "Atendimento salvo com sucesso." });
+                    if (data.motivoDesfecho !== "10") {
+                        toast({ title: "Sucesso!", description: "Atendimento salvo com sucesso." });
+                    }
                 }
 
                 setPacienteSelecionadoLivre(null);

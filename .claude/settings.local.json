@@ -83,7 +83,9 @@
       "Bash(tee:*)",
       "Bash(npx playwright install:*)",
       "Bash(awk:*)",
-      "Bash(xargs:*)"
+      "Bash(xargs:*)",
+      "Bash(ping:*)",
+      "Bash(nul)"
     ],
     "deny": [],
     "ask": []

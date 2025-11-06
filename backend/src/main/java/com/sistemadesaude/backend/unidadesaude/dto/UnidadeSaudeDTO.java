@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -101,6 +102,9 @@ public class UnidadeSaudeDTO {
 
     // Documentos vinculados
     private List<DocumentoUnidadeDTO> documentos;
+
+    // Perfis que podem ter acesso a esta unidade
+    private List<String> perfisPermitidos;
 
     private LocalDateTime dataCriacao;
     private LocalDateTime dataAtualizacao;

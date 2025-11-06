@@ -7,13 +7,17 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 import org.mapstruct.Named;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Mapper para conversão entre UnidadeSaude e UnidadeSaudeDTO
  * Utiliza MapStruct para geração automática das implementações
  */
-@Mapper(componentModel = "spring", uses = {DocumentoUnidadeMapper.class})
+@Mapper(componentModel = "spring")
 public interface UnidadeSaudeMapper {
 
     /**
@@ -23,6 +27,7 @@ public interface UnidadeSaudeMapper {
     @Named("toDTO")
     @Mapping(target = "tipoDescricao", expression = "java(entity.getTipo() != null ? entity.getTipo().getDescricao() : null)")
     @Mapping(target = "enderecoCompleto", expression = "java(buildEnderecoCompleto(entity))")
+    @Mapping(target = "perfisPermitidos", expression = "java(convertSetToStringList(entity.getPerfisPermitidos()))")
     UnidadeSaudeDTO toDTO(UnidadeSaude entity);
 
     /**
@@ -39,6 +44,7 @@ public interface UnidadeSaudeMapper {
     @Mapping(target = "dataCriacao", ignore = true)
     @Mapping(target = "dataAtualizacao", ignore = true)
     @Mapping(target = "documentos", ignore = true)
+    @Mapping(target = "perfisPermitidos", expression = "java(convertStringListToSet(dto.getPerfisPermitidos()))")
     @Mapping(target = "ativa", expression = "java(dto.getAtiva() != null ? dto.getAtiva() : true)")
     UnidadeSaude toEntity(UnidadeSaudeDTO dto);
 
@@ -51,6 +57,7 @@ public interface UnidadeSaudeMapper {
     @Mapping(target = "dataAtualizacao", ignore = true)
     @Mapping(target = "criadoPor", ignore = true)
     @Mapping(target = "documentos", ignore = true)
+    @Mapping(target = "perfisPermitidos", expression = "java(dto.getPerfisPermitidos() != null ? convertStringListToSet(dto.getPerfisPermitidos()) : entity.getPerfisPermitidos())")
     @Mapping(target = "ativa", expression = "java(dto.getAtiva() != null ? dto.getAtiva() : entity.getAtiva())")
     void updateEntityFromDTO(@MappingTarget UnidadeSaude entity, UnidadeSaudeDTO dto);
 
@@ -140,5 +147,27 @@ public interface UnidadeSaudeMapper {
         }
 
         return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    /**
+     * Converte Set<String> para List<String>
+     */
+    @Named("setToStringList")
+    default List<String> convertSetToStringList(Set<String> set) {
+        if (set == null || set.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(set);
+    }
+
+    /**
+     * Converte List<String> para Set<String>
+     */
+    @Named("stringListToSet")
+    default Set<String> convertStringListToSet(List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(list);
     }
 }

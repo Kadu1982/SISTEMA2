@@ -149,10 +149,12 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
             return;
         }
         
-        // Busca o perfil pelo ID ou valor
+        // O valor já é o tipo do perfil (ou ID como fallback)
+        // Busca o perfil pelo tipo ou ID
         const perfilEncontrado = perfisDisponiveis.find(p => {
-            const valorItem = p.id?.toString() || `${p.tipo}-${p.nome}`;
-            return valorItem === perfilParaAdicionar;
+            const tipo = p.tipo || '';
+            const id = p.id?.toString() || '';
+            return tipo === perfilParaAdicionar || id === perfilParaAdicionar;
         });
         
         if (!perfilEncontrado) {
@@ -160,8 +162,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
             console.warn('⚠️ Perfis disponíveis:', perfisDisponiveis.map(p => ({
                 id: p.id,
                 tipo: p.tipo,
-                nome: p.nome,
-                valorItem: p.id?.toString() || `${p.tipo}-${p.nome}`
+                nome: p.nome
             })));
             return;
         }
@@ -169,7 +170,8 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
         console.log('✅ Perfil encontrado:', perfilEncontrado);
         
         // Usa o tipo do perfil como identificador (compatibilidade com backend)
-        const perfilTipo = perfilEncontrado.tipo || perfilEncontrado.id?.toString() || '';
+        // Se não tiver tipo, usa o ID como fallback
+        const perfilTipo = perfilEncontrado.tipo || perfilEncontrado.id?.toString() || perfilParaAdicionar;
         
         if (!perfilTipo) {
             console.error('❌ Não foi possível determinar o tipo do perfil');
@@ -178,12 +180,13 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
         
         if (perfisSelecionados.includes(perfilTipo)) {
             console.warn('⚠️ Perfil já está selecionado:', perfilTipo);
+            setPerfilParaAdicionar(''); // Limpa a seleção mesmo assim
             return;
         }
         
         console.log('✅ Adicionando perfil:', perfilTipo);
         setPerfisSelecionados([...perfisSelecionados, perfilTipo]);
-        setPerfilParaAdicionar('');
+        setPerfilParaAdicionar(''); // Limpa o select após adicionar
         console.log('✅ Perfis selecionados atualizados:', [...perfisSelecionados, perfilTipo]);
     };
 
@@ -255,11 +258,34 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
 
     const criarOperador = async () => {
         // Validações com mensagens mais específicas
-        if (!nome || !login || !senha || !cpf) {
-            setErro('Preencha todos os campos obrigatórios (Nome, Login, Senha, CPF)');
+        if (!nome || nome.trim().length < 3) {
+            setErro('Nome é obrigatório e deve ter no mínimo 3 caracteres.');
             return;
         }
 
+        if (!login || login.trim().length < 4) {
+            setErro('Login é obrigatório e deve ter no mínimo 4 caracteres.');
+            return;
+        }
+
+        if (!senha || senha.length < 6) {
+            setErro('Senha é obrigatória e deve ter no mínimo 6 caracteres.');
+            return;
+        }
+
+        const cpfLimpo = removerMascaraCpf(cpf);
+        if (!cpfLimpo || cpfLimpo.length !== 11) {
+            setErro('CPF é obrigatório e deve ter 11 caracteres (apenas números).');
+            return;
+        }
+
+        // Validação de email (se fornecido)
+        if (email && email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            setErro('Email deve ter um formato válido (exemplo: usuario@exemplo.com).');
+            return;
+        }
+
+        // Validação de perfis
         if (perfisSelecionados.length === 0) {
             if (perfisDisponiveis.length === 0) {
                 setErro('Nenhum perfil disponível. Por favor, cadastre um perfil primeiro ou use os templates disponíveis.');
@@ -269,6 +295,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
             return;
         }
 
+        // Validação de unidades
         if (unidadesSelecionadas.length === 0) {
             if (unidadesDisponiveis.length === 0) {
                 setErro('Nenhuma unidade de saúde disponível. Por favor, cadastre uma unidade primeiro.');
@@ -287,16 +314,12 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
         setErro('');
 
         try {
-            // 1. Criar operador com unidade principal
-            // Remove máscara do CPF antes de enviar ao backend
-            const cpfLimpo = removerMascaraCpf(cpf);
-            
             const operadorCriado = await operadoresService.criar({
-                nome,
-                login,
+                nome: nome.trim(),
+                login: login.trim(),
                 senha,
                 cpf: cpfLimpo,
-                email: email || undefined,
+                email: email?.trim() || undefined,
                 ativo: true,
                 unidadeId: unidadePrincipal,
                 perfis: [],
@@ -319,7 +342,18 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
             onFechar();
 
         } catch (error: any) {
-            setErro(error.message || 'Erro ao criar operador');
+            // Tratamento de erros mais específico
+            let mensagemErro = 'Erro ao criar operador';
+            
+            if (error?.response?.data?.message) {
+                mensagemErro = error.response.data.message;
+            } else if (error?.message) {
+                mensagemErro = error.message;
+            } else if (typeof error === 'string') {
+                mensagemErro = error;
+            }
+            
+            setErro(mensagemErro);
         } finally {
             setSalvando(false);
         }
@@ -539,7 +573,7 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                 <Select 
                                     value={perfilParaAdicionar} 
                                     onValueChange={(value) => {
-                                        console.log('🔍 Perfil selecionado:', value);
+                                        console.log('🔍 Perfil selecionado no Select:', value);
                                         setPerfilParaAdicionar(value);
                                     }}
                                 >
@@ -558,15 +592,13 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                             </div>
                                         ) : (
                                             perfisDisponiveis.map((perfil) => {
-                                                // Usa o ID do perfil como valor, garantindo unicidade
-                                                const valorItem = perfil.id?.toString() || `${perfil.tipo}-${perfil.nome}`;
+                                                // Usa o tipo do perfil como valor principal (compatível com backend)
+                                                // Se não tiver tipo, usa o ID como fallback
+                                                const valorItem = perfil.tipo || perfil.id?.toString() || `${perfil.nome}`;
                                                 return (
                                                     <SelectItem 
                                                         key={perfil.id || valorItem} 
                                                         value={valorItem}
-                                                        onSelect={() => {
-                                                            console.log('🔍 SelectItem clicado:', valorItem);
-                                                        }}
                                                     >
                                                         {perfil.nomeExibicao || perfil.nomeCustomizado || perfil.nome}
                                                         {perfil.tipo && (
@@ -586,7 +618,9 @@ export function CriarOperadorDialog({ aberto, onFechar, onCriado }: CriarOperado
                                     </SelectContent>
                                 </Select>
                                 <Button 
-                                    onClick={() => {
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
                                         console.log('🔍 Botão adicionar clicado, perfilParaAdicionar:', perfilParaAdicionar);
                                         adicionarPerfil();
                                     }} 

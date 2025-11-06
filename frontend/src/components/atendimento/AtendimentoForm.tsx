@@ -18,13 +18,16 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Loader2, Save, AlertCircle } from "lucide-react";
 
 import CidBusca from "@/components/atendimento/CidBusca";
 import MotivoDesfechoSelect from "@/components/atendimento/MotivoDesfechoSelect";
+import RemumeBusca from "@/components/atendimento/RemumeBusca";
 
 import { Paciente } from "@/types/paciente/Paciente";
 import { Cid } from "@/types/Cid";
+import { MedicamentoRemume } from "@/types/Remume";
 
 import { toast } from "sonner";
 import apiService from "@/services/apiService";
@@ -68,6 +71,10 @@ const atendimentoSchema = z
         // 🔹 NOVOS: Motivo de desfecho
         motivoDesfecho: z.string().min(2, "O motivo de desfecho é obrigatório."),
         especialidadeEncaminhamento: z.string().optional(),
+
+        // 🔹 NOVO: Aprazamento de receitas
+        aprazamento: z.string().optional(),
+        diasTratamento: z.string().optional(),
     })
     .refine(
         (data) => {
@@ -140,6 +147,7 @@ export const AtendimentoForm = ({
     // ✅ ESTADOS LOCAIS
     const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
     const [cidSelecionado, setCidSelecionado] = useState<Cid | null>(null);
+    const [medicamentoRemumeSelecionado, setMedicamentoRemumeSelecionado] = useState<MedicamentoRemume | null>(null);
     const [dadosTriagem, setDadosTriagem] = useState<DadosTriagem | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(!atendimentoId);
@@ -153,6 +161,7 @@ export const AtendimentoForm = ({
     const [vinculoTerritorio, setVinculoTerritorio] = useState<string>("");
     const [statusVacinas, setStatusVacinas] = useState<"EM_DIA" | "ATRASADA" | "INDISPONIVEL">("INDISPONIVEL");
     const [alergiasTriagem, setAlergiasTriagem] = useState<string>("");
+    const [alergiasPaciente, setAlergiasPaciente] = useState<string[]>([]);
 
     // 🔹 Estado local da CIAP-2 (usado pelo componente visual)
     const [ciap, setCiap] = useState<CiapFieldsValue>({
@@ -191,6 +200,10 @@ export const AtendimentoForm = ({
         // 🔹 NOVOS: Defaults motivo de desfecho
         motivoDesfecho: (initialData as any)?.motivoDesfecho || "01", // Default: Alta
         especialidadeEncaminhamento: (initialData as any)?.especialidadeEncaminhamento || "",
+
+        // 🔹 NOVO: Default aprazamento
+        aprazamento: (initialData as any)?.aprazamento || "",
+        diasTratamento: (initialData as any)?.diasTratamento || "",
     });
 
     // ✅ INICIALIZAÇÃO DO FORMULÁRIO
@@ -287,6 +300,7 @@ export const AtendimentoForm = ({
                 setVinculoTerritorio("");
                 setStatusVacinas("INDISPONIVEL");
                 setAlergiasTriagem("");
+                setAlergiasPaciente([]);
                 return;
             }
 
@@ -297,8 +311,21 @@ export const AtendimentoForm = ({
                 const equipe = (data as any)?.prontuarioFamiliar || "";
                 const texto = [bairro, municipio, equipe].filter(Boolean).join(" • ");
                 setVinculoTerritorio(texto);
+                
+                // Carrega alergias do paciente (histórico completo)
+                const alergiasTexto = (data as any)?.alergias || "";
+                if (alergiasTexto) {
+                    const alergiasLista = alergiasTexto
+                        .split(/[\s,;]+/)
+                        .map((a: string) => a.trim().toUpperCase())
+                        .filter((a: string) => a.length > 0);
+                    setAlergiasPaciente(alergiasLista);
+                } else {
+                    setAlergiasPaciente([]);
+                }
             } catch {
                 setVinculoTerritorio("");
+                setAlergiasPaciente([]);
             }
 
             try {
@@ -412,6 +439,9 @@ export const AtendimentoForm = ({
                 // Campos de desfecho
                 motivoDesfecho: data.motivoDesfecho,
                 especialidadeEncaminhamento: data.especialidadeEncaminhamento || "",
+                // Aprazamento
+                aprazamento: data.aprazamento || "",
+                diasTratamento: data.diasTratamento || "",
             };
 
             await onSave(dadosParaEnvio);
@@ -474,8 +504,29 @@ export const AtendimentoForm = ({
                                 />
                             )}
 
-                            {/* Alergias (triagem) */}
-                            {alergiasTriagem && (
+                            {/* Alergias do paciente - Tags vermelhas de alerta */}
+                            {alergiasPaciente.length > 0 && (
+                                <div>
+                                    <Label className="text-red-700 font-semibold flex items-center gap-2">
+                                        <AlertCircle className="h-4 w-4" />
+                                        Alergias Conhecidas - ATENÇÃO!
+                                    </Label>
+                                    <div className="mt-2 flex flex-wrap gap-2">
+                                        {alergiasPaciente.map((alergia, idx) => (
+                                            <Badge
+                                                key={idx}
+                                                variant="destructive"
+                                                className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 text-sm"
+                                            >
+                                                ⚠️ {alergia}
+                                            </Badge>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                            
+                            {/* Alergias (triagem) - apenas se não estiverem no histórico */}
+                            {alergiasTriagem && alergiasTriagem.trim() && alergiasPaciente.length === 0 && (
                                 <div>
                                     <Label>Alergias (da Triagem)</Label>
                                     <Textarea value={alergiasTriagem} readOnly className="bg-gray-50" rows={2} />
@@ -590,51 +641,81 @@ export const AtendimentoForm = ({
                             <CardTitle className="text-lg">Conduta Médica</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
-                            {/* Exemplos/placeholder de estoque/integrações */}
-                            <div className="border border-gray-200 rounded-lg p-4">
-                                <h3 className="text-sm font-semibold text-gray-800 mb-3">Medicamentos por Disponibilidade</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="text-xs font-medium text-green-700 mb-2">Disponíveis</div>
-                                        <ul className="min-h-[120px] border border-green-100 rounded p-2 text-sm text-gray-700 bg-green-50/30">
-                                            <li className="py-1">Ex.: Dipirona 500mg</li>
-                                            <li className="py-1">Ex.: Paracetamol 750mg</li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-medium text-red-700 mb-2">Não Disponíveis</div>
-                                        <ul className="min-h-[120px] border border-red-100 rounded p-2 text-sm text-gray-700 bg-red-50/30">
-                                            <li className="py-1">Ex.: Amoxicilina 500mg</li>
-                                            <li className="py-1">Ex.: Ibuprofeno 400mg</li>
-                                        </ul>
-                                    </div>
+                            {/* REMUME - Relação Municipal de Medicamentos Essenciais */}
+                            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50/30">
+                                <h3 className="text-sm font-semibold text-blue-900 mb-2">REMUME - Relação Municipal de Medicamentos Essenciais</h3>
+                                <p className="text-xs text-blue-700 mb-3">
+                                    Busque medicamentos disponíveis na rede municipal de saúde
+                                </p>
+                                <div className="border border-blue-100 rounded p-3 bg-white">
+                                    <RemumeBusca
+                                        onMedicamentoSelecionado={setMedicamentoRemumeSelecionado}
+                                        medicamentoSelecionado={medicamentoRemumeSelecionado}
+                                        placeholder="Digite o nome do medicamento ou princípio ativo..."
+                                        disabled={!isEditing || readOnly}
+                                    />
                                 </div>
                             </div>
 
+                            {/* PRESCRIÇÃO */}
+                            <FormField
+                                control={form.control}
+                                name="prescricao"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Prescrição</FormLabel>
+                                        <FormControl>
+                                            <Textarea {...field} placeholder="Medicamentos, dosagens, posologia..." rows={6} disabled={!isEditing || readOnly} />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* APRAZAMENTO DE RECEITAS E DIAS DE TRATAMENTO */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                {/* PRESCRIÇÃO */}
                                 <FormField
                                     control={form.control}
-                                    name="prescricao"
+                                    name="aprazamento"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Prescrição</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} placeholder="Medicamentos, dosagens, posologia..." rows={5} disabled={!isEditing || readOnly} />
-                                            </FormControl>
+                                            <FormLabel>Aprazamento de Receitas</FormLabel>
+                                            <Select onValueChange={field.onChange} value={field.value} disabled={!isEditing || readOnly}>
+                                                <FormControl>
+                                                    <SelectTrigger>
+                                                        <SelectValue placeholder="Selecione o aprazamento..." />
+                                                    </SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="1_1_HORA">1/1 Hora</SelectItem>
+                                                    <SelectItem value="2_2_HORAS">2/2 Horas</SelectItem>
+                                                    <SelectItem value="4_4_HORAS">4/4 Horas</SelectItem>
+                                                    <SelectItem value="6_6_HORAS">6/6 Horas</SelectItem>
+                                                    <SelectItem value="8_8_HORAS">8/8 Horas</SelectItem>
+                                                    <SelectItem value="12_12_HORAS">12/12 Horas</SelectItem>
+                                                    <SelectItem value="1X_AO_DIA">1x Ao Dia</SelectItem>
+                                                    <SelectItem value="2X_AO_DIA">2x Ao Dia</SelectItem>
+                                                </SelectContent>
+                                            </Select>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
-                                {/* MEDICAMENTOS PRESCRITOS */}
+
                                 <FormField
                                     control={form.control}
-                                    name="medicamentosPrescritos"
+                                    name="diasTratamento"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Lista de Medicamentos</FormLabel>
+                                            <FormLabel>Dias de Tratamento</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} placeholder="Lista detalhada dos medicamentos..." rows={5} disabled={!isEditing || readOnly} />
+                                                <Input
+                                                    {...field}
+                                                    type="number"
+                                                    placeholder="Ex: 7, 14, 30..."
+                                                    min="1"
+                                                    disabled={!isEditing || readOnly}
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

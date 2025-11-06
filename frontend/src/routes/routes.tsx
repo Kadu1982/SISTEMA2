@@ -70,6 +70,9 @@ const AreasACS = lazy(() => import("@/features/saude-familia-acs/AreasPage"));
 const MetasACS = lazy(() => import("@/features/saude-familia-acs/MetasPage"));
 const PainelACS = lazy(() => import("@/features/saude-familia-acs/PainelAcsPage"));
 
+// ✅ PROCEDIMENTOS RÁPIDOS ADICIONADO
+const ProcedimentosRapidos = lazy(() => import("@/pages/ProcedimentosRapidos"));
+
 // Componente de Rota Protegida
 const PrivateRoute = ({ children }: { children: JSX.Element }) => {
     const { operador } = useOperador();
@@ -101,6 +104,7 @@ export const AppRoutes = () => {
                 <Route path="atendimento-odontologico" element={<AtendimentoOdontologico />} />
                 <Route path="samu" element={<SAMU />} />
                 <Route path="upa" element={<UPA />} />
+                <Route path="procedimentos-rapidos" element={<ProcedimentosRapidos />} />
 
                 {/* Rotas do Módulo Hospitalar */}
                 <Route path="hospitalar/filas" element={<HospitalarFilas />} />

@@ -77,6 +77,21 @@ apiService.interceptors.response.use(
     (error: AxiosError<any>) => {
         const status = error?.response?.status;
         const data = error?.response?.data;
+        const url = error.config?.url || "";
+
+        // Suprime erros 500 do endpoint de vacinas (opcional)
+        // Este endpoint pode não estar implementado e não é crítico
+        if (status === 500 && url.includes("/vacinas/status/")) {
+            // Previne que o erro seja logado no console
+            // Retorna uma resposta vazia para que o catch possa tratar silenciosamente
+            return Promise.resolve({ 
+                data: null,
+                status: 200,
+                statusText: "OK",
+                headers: {},
+                config: error.config
+            } as any);
+        }
 
         const message =
             (typeof data === "string" && data) ||

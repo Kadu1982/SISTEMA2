@@ -18,7 +18,7 @@ export interface PerfilDTO {
     isProfissionalSaude?: boolean;
 }
 
-const BASE_URL = '/api/perfis';
+const BASE_URL = '/perfis'; // apiService já tem /api na baseURL
 
 /**
  * Lista todos os perfis disponíveis
@@ -27,14 +27,27 @@ export async function listarPerfis(): Promise<PerfilDTO[]> {
     try {
         console.log('🔍 Buscando perfis em:', BASE_URL);
         const response = await apiService.get<ApiResponse<PerfilDTO[]>>(BASE_URL);
-        console.log('✅ Resposta da API:', response.data);
+        console.log('✅ Resposta completa da API:', response);
+        console.log('✅ Resposta data:', response.data);
         
-        if (!response.data.success) {
-            console.warn('⚠️ API retornou success=false:', response.data.message);
-            throw new Error(response.data.message || 'Erro ao listar perfis');
+        // Tenta diferentes formatos de resposta
+        let perfis: PerfilDTO[] = [];
+        
+        if (response.data) {
+            // Formato 1: { success: true, data: [...] }
+            if (response.data.success && Array.isArray(response.data.data)) {
+                perfis = response.data.data;
+            }
+            // Formato 2: Array direto
+            else if (Array.isArray(response.data)) {
+                perfis = response.data;
+            }
+            // Formato 3: { data: [...] }
+            else if (Array.isArray((response.data as any).data)) {
+                perfis = (response.data as any).data;
+            }
         }
         
-        const perfis = response.data.data || [];
         console.log(`✅ ${perfis.length} perfis carregados:`, perfis);
         return perfis;
     } catch (error: any) {
