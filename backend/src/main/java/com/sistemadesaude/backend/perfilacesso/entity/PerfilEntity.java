@@ -33,7 +33,7 @@ public class PerfilEntity {
      * Observação: há bancos legados com tipo = null. Os getters abaixo
      * tratam null-safety para evitar NPE em getNomeExibicao(), getCodigo() e getNivel().
      */
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = com.sistemadesaude.backend.perfilacesso.converter.PerfilTypeConverter.class)
     @Column(name = "tipo", nullable = false)
     private Perfil tipo;
 

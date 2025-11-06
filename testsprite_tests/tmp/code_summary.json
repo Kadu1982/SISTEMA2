@@ -1,0 +1,104 @@
+{
+  "tech_stack": [
+    "Java 17+",
+    "Spring Boot",
+    "Spring Security",
+    "JWT",
+    "PostgreSQL",
+    "TypeScript",
+    "React",
+    "Vite (dev server ~5173)",
+    "Axios",
+    "Playwright / Node.js",
+    "Cloudflare Tunnel (optional for exposure)"
+  ],
+  "features": [
+    {
+      "name": "Authentication & Login (Backend)",
+      "description": "Handles operator authentication, validates access window via optional AcessoValidator, optional Termo de Uso check, and issues JWT.",
+      "files": [
+        "backend/src/main/java/com/sistemadesaude/backend/operador/service/AuthenticationService.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/dto/LoginRequest.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/dto/LoginResponse.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/dto/OperadorDTO.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/entity/Operador.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/repository/OperadorRepository.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/mapper/OperadorMapper.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/security/AcessoValidator.java (expected, optional)",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/service/TermoUsoService.java (optional)"
+      ]
+    },
+    {
+      "name": "Operator Management (Backend)",
+      "description": "CRUD for operators, including assigning profiles and units, enforcing unique login/CPF/email and required fields.",
+      "files": [
+        "backend/src/main/java/com/sistemadesaude/backend/operador/controller/OperadorController.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/service/OperadorService.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/repository/OperadorRepository.java",
+        "backend/src/main/java/com/sistemadesaude/backend/operador/entity/Operador.java"
+      ]
+    },
+    {
+      "name": "Profiles & Permissions",
+      "description": "Profiles/roles management used to authorize modules visibility and actions.",
+      "files": [
+        "backend/src/main/java/com/sistemadesaude/backend/perfil/**",
+        "backend/src/main/java/com/sistemadesaude/backend/security/**"
+      ]
+    },
+    {
+      "name": "Frontend Services & Types",
+      "description": "TypeScript service layer and types for configuration and operators, using Axios to call backend APIs.",
+      "files": [
+        "frontend/src/services/ConfiguracaoService.ts",
+        "frontend/src/services/apiService.ts",
+        "frontend/src/types/**"
+      ]
+    },
+    {
+      "name": "Frontend App & Layout",
+      "description": "React app layout and routing, module visibility according to logged operator profiles.",
+      "files": [
+        "frontend/src/Layout.tsx",
+        "frontend/src/main.tsx",
+        "frontend/src/router/**",
+        "frontend/src/components/**"
+      ]
+    },
+    {
+      "name": "E2E / System Tests (Node/Playwright)",
+      "description": "Assorted JS test scripts to validate login, operator management, and module access (UPA etc.).",
+      "files": [
+        "test-login-playwright.js",
+        "test-app-playwright.js",
+        "test-local-app.js",
+        "test-operator-management.js",
+        "test-operator-upa-access.js",
+        "test-upa-sistema.js",
+        "testar-aplicacao.js",
+        "testar-login-funcionando.js"
+      ]
+    },
+    {
+      "name": "Gateway Service",
+      "description": "Spring Cloud Gateway module (if used to route frontend/backend).",
+      "files": [
+        "gateway/src/main/java/com/sistemadesaude/gateway/**"
+      ]
+    },
+    {
+      "name": "Dev Ops & Scripts",
+      "description": "Scripts for DB setup, admin user, Cloudflare tunnel, and environment helpers.",
+      "files": [
+        "docker-compose.yml",
+        "criar-usuario-master.sql",
+        "force-create-admin.sql",
+        "atualizar-senha-admin.sql",
+        "scripts/**",
+        "start-cloudflare-tunnel.*",
+        "compartilhar-*.bat",
+        "*.sql"
+      ]
+    }
+  ]
+}

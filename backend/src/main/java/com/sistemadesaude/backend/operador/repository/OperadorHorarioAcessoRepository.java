@@ -27,7 +27,7 @@ public interface OperadorHorarioAcessoRepository extends JpaRepository<OperadorH
      * 🔹 NOVO: retorna somente os horários do "diaSemana" informado.
      * Assumimos que sua entidade possui os campos:
      *  - operadorId (Long)
-     *  - diaSemana (Integer, 1=segunda ... 7=domingo)
+     *  - diaSemana (Short, usando sua convenção atual 0=domingo, 1=segunda ... 6=sábado)
      *  - horaInicio (LocalTime) / horaFim (LocalTime)
      *
      * Ajuste os nomes dos campos se na sua entidade forem diferentes.
@@ -40,5 +40,5 @@ public interface OperadorHorarioAcessoRepository extends JpaRepository<OperadorH
             ORDER BY h.horaInicio ASC
            """)
     List<OperadorHorarioAcesso> findByOperadorIdAndDiaSemana(@Param("operadorId") Long operadorId,
-                                                             @Param("diaSemana") Integer diaSemana);
+                                                             @Param("diaSemana") Short diaSemana);
 }

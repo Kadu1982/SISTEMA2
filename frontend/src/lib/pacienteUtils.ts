@@ -67,14 +67,34 @@ export const temTelefone = (telefone: string | null): boolean => {
 
 /**
  * Aplica máscara ao CPF durante a digitação
- * @param value - Valor do CPF
+ * @param value - Valor do CPF (pode ter ou não formatação)
+ * Formato: 000.000.000-00
  */
 export const aplicarMascaraCpf = (value: string): string => {
+    if (!value) return '';
+    
+    // Remove todos os caracteres não numéricos
     const digits = value.replace(/\D/g, '');
-    if (digits.length <= 11) {
-        return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+    
+    // Limita a 11 dígitos
+    const limitedDigits = digits.slice(0, 11);
+    
+    // Aplica máscara 000.000.000-00 progressivamente durante a digitação
+    if (limitedDigits.length === 0) {
+        return '';
+    } else if (limitedDigits.length <= 3) {
+        // 1-3 dígitos: 123
+        return limitedDigits;
+    } else if (limitedDigits.length <= 6) {
+        // 4-6 dígitos: 123.456
+        return limitedDigits.slice(0, 3) + '.' + limitedDigits.slice(3);
+    } else if (limitedDigits.length <= 9) {
+        // 7-9 dígitos: 123.456.789
+        return limitedDigits.slice(0, 3) + '.' + limitedDigits.slice(3, 6) + '.' + limitedDigits.slice(6);
+    } else {
+        // 10-11 dígitos: 123.456.789-01
+        return limitedDigits.slice(0, 3) + '.' + limitedDigits.slice(3, 6) + '.' + limitedDigits.slice(6, 9) + '-' + limitedDigits.slice(9, 11);
     }
-    return value;
 };
 
 /**

@@ -1,5 +1,6 @@
 package com.sistemadesaude.backend.perfilacesso.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.sistemadesaude.backend.perfilacesso.entity.Perfil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -42,5 +43,30 @@ public class PerfilDTO {
 
     public void setNome(String nome) {
         this.nomeCustomizado = nome;
+    }
+    
+    /**
+     * Retorna o tipo como string para serialização JSON
+     * Garante que o enum seja serializado como string no JSON
+     */
+    @JsonProperty("tipo")
+    public String getTipoAsString() {
+        return tipo != null ? tipo.name() : null;
+    }
+    
+    /**
+     * Setter para compatibilidade - aceita string e converte para enum
+     */
+    public void setTipoAsString(String tipoString) {
+        if (tipoString != null) {
+            try {
+                this.tipo = Perfil.valueOf(tipoString);
+            } catch (IllegalArgumentException e) {
+                // Se não conseguir converter, mantém null
+                this.tipo = null;
+            }
+        } else {
+            this.tipo = null;
+        }
     }
 }

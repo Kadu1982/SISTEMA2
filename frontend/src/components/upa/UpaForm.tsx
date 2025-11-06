@@ -45,8 +45,6 @@ const UpaForm: React.FC = () => {
     const [paciente, setPaciente] = useState<PacienteList | null>(null);
     const [dataEntrada, setDataEntrada] = useState<string>('');
     const [horaEntrada, setHoraEntrada] = useState<string>('');
-    const [prioridade, setPrioridade] = useState<'BAIXA'|'MEDIA'|'ALTA'|'URGENTE'|undefined>(undefined);
-    const [motivo, setMotivo] = useState<string>('');
     const [status, setStatus] = useState<'ABERTO'|'EM_ATENDIMENTO'|'ALTA'|'ENCAMINHADO'|undefined>('ABERTO');
     const [observacoes, setObservacoes] = useState<string>('');
 
@@ -71,8 +69,6 @@ const UpaForm: React.FC = () => {
                 setPaciente(upa.pacienteId ? { id: upa.pacienteId, nomeCompleto: '' } : null);
                 setDataEntrada(upa.dataEntrada ?? '');
                 setHoraEntrada(upa.horaEntrada ?? '');
-                setPrioridade(upa.prioridade);
-                setMotivo(upa.motivo ?? '');
                 setStatus(upa.status ?? 'ABERTO');
                 setObservacoes(upa.observacoes ?? '');
             } catch (e: any) {
@@ -94,15 +90,25 @@ const UpaForm: React.FC = () => {
             throw new Error('Informe a data de entrada.');
         }
 
+        // Tentar obter unidadeId do operador logado
+        const operadorData = localStorage.getItem('operadorData');
+        let unidadeId: number | undefined;
+        if (operadorData) {
+            try {
+                const operador = JSON.parse(operadorData);
+                unidadeId = operador.unidadeId || operador.unidadeAtualId || operador.unidade_saude_id;
+            } catch (e) {
+                console.warn('Não foi possível obter unidadeId do operador');
+            }
+        }
+
         return {
             pacienteId: paciente.id,
             dataEntrada,
             horaEntrada: horaEntrada || undefined,
-            prioridade,
-            motivo: motivo || undefined,
             status: status || 'ABERTO',
             observacoes: observacoes || undefined,
-            // unidadeId: se você controla via contexto (OperadorContext), pode setar aqui
+            unidadeId: unidadeId,
         };
     };
 
@@ -114,6 +120,8 @@ const UpaForm: React.FC = () => {
             setSalvando(true);
             const payload = montarPayload();
 
+            console.log('📤 Payload sendo enviado:', payload);
+
             if (isEdit && idEdicao) {
                 await atualizarUpa(idEdicao, payload);
             } else {
@@ -123,8 +131,9 @@ const UpaForm: React.FC = () => {
             // Volta para a lista da UPA (ajuste a rota conforme seu projeto)
             navigate('/upa');
         } catch (e: any) {
-            console.error(e);
-            const msg = e?.message || 'Erro ao salvar registro da UPA.';
+            console.error('❌ Erro completo:', e);
+            console.error('❌ Response data:', e?.response?.data);
+            const msg = e?.response?.data?.message || e?.message || 'Erro ao salvar registro da UPA.';
             setErro(msg);
         } finally {
             setSalvando(false);
@@ -175,35 +184,6 @@ const UpaForm: React.FC = () => {
                                     onChange={(e) => setHoraEntrada(e.target.value)}
                                 />
                             </div>
-                        </div>
-
-                        {/* Prioridade */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Prioridade</label>
-                            <Select
-                                value={prioridade}
-                                onValueChange={(v) => setPrioridade(v as any)}
-                            >
-                                <SelectTrigger className="w-full">
-                                    <SelectValue placeholder="Selecione a prioridade" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="BAIXA">Baixa</SelectItem>
-                                    <SelectItem value="MEDIA">Média</SelectItem>
-                                    <SelectItem value="ALTA">Alta</SelectItem>
-                                    <SelectItem value="URGENTE">Urgente</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-
-                        {/* Motivo */}
-                        <div className="space-y-2">
-                            <label className="text-sm font-medium">Motivo/Queixa</label>
-                            <Input
-                                value={motivo}
-                                onChange={(e) => setMotivo(e.target.value)}
-                                placeholder="Ex.: dor abdominal, febre, queda..."
-                            />
                         </div>
 
                         {/* Status */}

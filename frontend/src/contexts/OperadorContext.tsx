@@ -7,7 +7,7 @@ export interface Operador {
     id: number | string;
     nome: string;
     login: string;
-    perfis?: Array<{ codigo: string; nome?: string }>;
+    perfis?: string[]; // ✅ Array de strings, não objetos
     isMaster?: boolean;
     [k: string]: any;
 }
@@ -42,8 +42,8 @@ export const OperadorProvider = ({ children }: { children: ReactNode }) => {
         if (storedOperador) {
             // 🔐 Garante que isMaster seja definido corretamente ao carregar do localStorage
             const isMasterAdmin = storedOperador.login === 'admin.master' ||
-                storedOperador.perfis?.some((perfil: any) => perfil.codigo === 'ADMINISTRADOR_SISTEMA') ||
-                storedOperador.perfis?.some((perfil: any) => perfil.codigo === 'ADMIN');
+                storedOperador.perfis?.includes('ADMINISTRADOR_SISTEMA') ||
+                storedOperador.perfis?.includes('ADMIN');
 
             const operadorComMaster = {
                 ...storedOperador,
@@ -57,8 +57,8 @@ export const OperadorProvider = ({ children }: { children: ReactNode }) => {
     const login = (newToken: string, operadorData: Operador) => {
         // 🔐 Determina se é Master Administrator baseado no perfil ou login
         const isMasterAdmin = operadorData.login === 'admin.master' ||
-            operadorData.perfis?.some(perfil => perfil.codigo === 'ADMINISTRADOR_SISTEMA') ||
-            operadorData.perfis?.some(perfil => perfil.codigo === 'ADMIN');
+            operadorData.perfis?.includes('ADMINISTRADOR_SISTEMA') ||
+            operadorData.perfis?.includes('ADMIN');
 
         // Adiciona propriedade isMaster ao operador
         const operadorComMaster = {

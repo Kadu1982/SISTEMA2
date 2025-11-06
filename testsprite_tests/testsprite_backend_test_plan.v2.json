@@ -1,0 +1,99 @@
+{
+  "testPlan": {
+    "id": "BACKEND_OPERADORES_V1",
+    "title": "Backend - Criação e Validações de Operadores",
+    "description": "Plano baseado em PLANO_TESTES_LOGIN_OPERADORES.md e REGAS_LOGIN_OPERADORES.md",
+    "testType": "backend",
+    "api": {
+      "baseUrl": "http://localhost:8080"
+    },
+    "notes": [
+      "NÃO modificar o operador admin.master (login: admin.master, senha: Admin@123). Apenas usá-lo para autenticação administrativa quando necessário.",
+      "Os testes devem cobrir criação de operadores, validações e vínculos de perfis/unidades, conforme PLANO_TESTES_LOGIN_OPERADORES.md e REGAS_LOGIN_OPERADORES.md",
+      "Utilizar logins/CPFs/emails únicos por execução para evitar flutuação por duplicidade (ex.: operador.teste.{timestamp})"
+    ],
+    "requirements": [
+      {
+        "id": "R3_CRIACAO_OPERADORES",
+        "title": "Criação e Validações de Operadores",
+        "description": "Criar operadores e validar regras de obrigatórios, duplicidade e vínculos",
+        "testCases": [
+          {
+            "id": "T8_API",
+            "title": "Criar Operador válido",
+            "preconditions": [
+              "Autenticar como admin.master para obter JWT",
+              "Existem perfis e unidades cadastradas"
+            ],
+            "steps": [
+              "POST /api/operadores com nome=Operador Teste, login=operador.teste.{ts}, senha=Teste@123, cpf={cpf_unique}, email=operador.teste.{ts}@teste.com, ativo=true, isMaster=false",
+              "Salvar o ID retornado",
+              "PUT /api/operadores/{id}/perfis com pelo menos 1 perfil (ex.: UPA ou RECEPCIONISTA_UPA)",
+              "PUT /api/operadores/{id}/unidades com lista de unidades e indicar unidade principal"
+            ],
+            "expectedResults": [
+              "201/200 na criação",
+              "Perfis vinculados com sucesso",
+              "Unidades vinculadas e principal definida"
+            ]
+          },
+          {
+            "id": "T9_API",
+            "title": "Validação de campos obrigatórios",
+            "steps": [
+              "POST /api/operadores com campos faltando ou curtos (nome<3, login<4, senha<6, cpf vazio, sem perfis, sem unidades, sem unidade principal)"
+            ],
+            "expectedResults": [
+              "Resposta 400 com mensagens de validação para os campos obrigatórios"
+            ]
+          },
+          {
+            "id": "T10_API",
+            "title": "Login duplicado",
+            "preconditions": ["Operador com login operador.teste.{ts} já criado"],
+            "steps": ["Tentar POST /api/operadores com o mesmo login"],
+            "expectedResults": ["Erro 400/409 informando que login já existe"]
+          },
+          {
+            "id": "T11_API",
+            "title": "CPF duplicado",
+            "preconditions": ["Operador com CPF {cpf_unique} já criado"],
+            "steps": ["Tentar POST /api/operadores com mesmo CPF"],
+            "expectedResults": ["Erro de constraint/com 400/409 indicando CPF já existe"]
+          },
+          {
+            "id": "T12_API",
+            "title": "Email duplicado",
+            "preconditions": ["Operador com email operador.teste.{ts}@teste.com já criado"],
+            "steps": ["Tentar POST /api/operadores com mesmo email"],
+            "expectedResults": ["Erro de constraint/com 400/409 indicando Email já existe"]
+          },
+          {
+            "id": "T13_API",
+            "title": "Múltiplos perfis",
+            "steps": [
+              "Criar novo operador válido",
+              "PUT /api/operadores/{id}/perfis com múltiplos perfis (ex.: UPA e RECEPCIONISTA_UPA)"
+            ],
+            "expectedResults": ["Operador permanece válido e todos os perfis estão vinculados"]
+          },
+          {
+            "id": "T14_API",
+            "title": "Múltiplas unidades",
+            "steps": [
+              "Criar novo operador válido",
+              "PUT /api/operadores/{id}/unidades com múltiplas unidades e uma principal"
+            ],
+            "expectedResults": ["Todas as unidades vinculadas e principal definida"]
+          },
+          {
+            "id": "T15_API",
+            "title": "Proteção do admin.master",
+            "steps": ["Tentar criar operador com login=admin.master"],
+            "expectedResults": ["Erro 'Login já existe' ou 'Operador master não pode ser alterado' e o registro não é modificado"]
+          }
+        ]
+      }
+    ]
+  }
+}
