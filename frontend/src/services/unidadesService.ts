@@ -170,6 +170,7 @@ function normalizeList(resp: any): UnidadeDTO[] | Page<UnidadeDTO> {
 /**
  * Lista Unidades (paginado ou lista simples).
  * Aceita paginação/filtros; respeita AbortSignal quando informado.
+ * @param skipAuth - Se true, não envia token de autenticação (útil para tela de login)
  */
 export async function listarUnidades(params?: {
     page?: number;
@@ -178,9 +179,14 @@ export async function listarUnidades(params?: {
     busca?: string;
     ativa?: boolean;
     signal?: AbortSignal;
+    skipAuth?: boolean;
 }): Promise<Page<UnidadeDTO> | UnidadeDTO[]> {
-    const { signal, ...queryParams } = params || {};
-    const { data } = await api.get(BASE_PATH, { params: queryParams, signal });
+    const { signal, skipAuth, ...queryParams } = params || {};
+    const config: any = { params: queryParams, signal };
+    if (skipAuth) {
+        config.headers = { "X-Skip-Auth": "true" };
+    }
+    const { data } = await api.get(BASE_PATH, config);
     return normalizeList(data);
 }
 

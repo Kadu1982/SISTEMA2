@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller para gerenciamento de perfis de acesso
@@ -26,6 +27,35 @@ import java.util.List;
 public class PerfilController {
 
     private final PerfilService perfilService;
+
+    /**
+     * ✅ NOVO: Lista os tipos de perfis disponíveis no sistema (valores do Enum Perfil)
+     * Pode ser acessado sem autenticação para uso no frontend
+     */
+    @GetMapping("/tipos-disponiveis")
+    @PreAuthorize("permitAll()")
+    public ResponseEntity<ApiResponse<List<Map<String, String>>>> tiposDisponiveis() {
+        log.info("Requisição para listar tipos de perfis disponíveis");
+        try {
+            List<Map<String, String>> tipos = java.util.Arrays.stream(
+                    com.sistemadesaude.backend.perfilacesso.entity.Perfil.values())
+                    .map(perfil -> {
+                        Map<String, String> map = new java.util.LinkedHashMap<>();
+                        map.put("codigo", perfil.getCodigo());
+                        map.put("descricao", perfil.getDescricao());
+                        map.put("nivel", String.valueOf(perfil.getNivel()));
+                        map.put("nome", perfil.name());
+                        return map;
+                    })
+                    .collect(java.util.stream.Collectors.toList());
+            
+            return ResponseEntity.ok(new ApiResponse<>(true, "Tipos de perfis listados com sucesso", tipos));
+        } catch (Exception e) {
+            log.error("❌ Erro ao listar tipos de perfis: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Erro ao listar tipos de perfis", null));
+        }
+    }
 
     @GetMapping("/busca")
     public ResponseEntity<?> buscar(@RequestParam(name = "termo", required = false) String termo) {
@@ -156,13 +186,19 @@ public class PerfilController {
     public ResponseEntity<ApiResponse<PerfilDTO>> atribuirPermissoes(
             @PathVariable Long id,
             @RequestBody List<String> permissoes) {
-        log.info("Requisição para atribuir permissões ao perfil com ID: {}", id);
+        log.info("🛡️ Requisição para atribuir permissões ao perfil com ID: {} - Permissões: {}", id, permissoes);
         try {
             PerfilDTO perfilAtualizado = perfilService.atribuirPermissoes(id, permissoes);
+            log.info("✅ Permissões atribuídas com sucesso ao perfil {}", id);
             return ResponseEntity.ok(new ApiResponse<>(true, "Permissões atribuídas com sucesso", perfilAtualizado));
         } catch (EntityNotFoundException e) {
+            log.warn("⚠️ Perfil não encontrado com ID: {}", id);
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(false, e.getMessage(), null));
+        } catch (Exception e) {
+            log.error("❌ Erro ao atribuir permissões ao perfil {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(false, "Erro ao atribuir permissões: " + e.getMessage(), null));
         }
     }
 

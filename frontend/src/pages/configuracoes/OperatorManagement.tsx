@@ -23,6 +23,7 @@ import { cn } from '@/lib/utils';
 import configuracaoService from '@/services/ConfiguracaoService';
 import * as opSvc from '@/services/operadoresService';
 import { formatCpf, unformatCpf } from '@/common/utils/formatCpf';
+import { GerenciadorPerfis } from '@/components/GerenciadorPerfis';
 
 /* ================= Tipos ================= */
 interface Perfil {
@@ -518,28 +519,13 @@ function PerfisReadOnly({ operador }: { operador: Operador | null }) {
 /* ===== PERFIS (editável) - ÚNICA VERSÃO ===== */
 function AbaPerfis({ operadorId }: { operadorId: number }) {
     const { toast } = useToast();
-    const [dominio, setDominio] = useState<{value:string; label:string}[]>([]);
     const [selecionados, setSelecionados] = useState<string[]>([]);
-    const [busca, setBusca] = useState('');
 
-    // Carrega domínio de perfis e os perfis do operador
+    // Carrega perfis do operador
     useEffect(() => {
         (async () => {
             try {
-                // ✅ CORREÇÃO 1: Import correto
-                const configService = await import('@/services/ConfiguracaoService');
-                const todosPerfis = await configService.default.listarPerfis();
                 const doOperador = await opSvc.listarPerfisDoOperador?.(operadorId) || [];
-
-                const opts = (Array.isArray(todosPerfis) ? todosPerfis : [])
-                    .filter((p: any) => (p?.nome || '').trim().length > 0 && p?.ativo !== false)
-                    .map((p: any) => ({
-                        value: String(p.nome).trim(),
-                        label: String(p.nomeExibicao || p.nomeCustomizado || p.nome).trim(),
-                    }))
-                    .sort((a:any,b:any)=>a.label.localeCompare(b.label));
-
-                setDominio(opts);
                 setSelecionados(Array.isArray(doOperador) ? doOperador : []);
             } catch (e: any) {
                 toast({ title: 'Erro', description: e?.message || 'Falha ao carregar perfis.', variant: 'destructive' });
@@ -547,35 +533,30 @@ function AbaPerfis({ operadorId }: { operadorId: number }) {
         })();
     }, [operadorId, toast]);
 
-    const toggle = (p:string) => setSelecionados(prev => prev.includes(p) ? prev.filter(x=>x!==p) : [...prev, p]);
-
     const salvar = async () => {
         try {
             await opSvc.salvarPerfisDoOperador?.(operadorId, selecionados);
-            toast({ title: 'Perfis salvos' });
+            toast({ title: 'Sucesso!', description: 'Perfis salvos com sucesso.' });
         } catch (e:any) {
             toast({ title: 'Erro', description: e?.message || 'Falha ao salvar perfis.', variant: 'destructive' });
         }
     };
 
-    const filtrados = dominio.filter(o => o.label.toLowerCase().includes(busca.toLowerCase()) || o.value.toLowerCase().includes(busca.toLowerCase()));
-
     return (
-        <div className="space-y-3">
-            <div className="flex gap-2">
-                <Input placeholder="Filtrar perfis..." value={busca} onChange={(e)=>setBusca(e.target.value)} />
-                <Button onClick={salvar}>Salvar</Button>
-            </div>
+        <div className="space-y-4">
+            {/* ✅ Usando novo GerenciadorPerfis com valores padronizados */}
+            <GerenciadorPerfis
+                perfisSelecionados={selecionados}
+                onChange={setSelecionados}
+            />
 
-            <div className="grid md:grid-cols-3 gap-2">
-                {filtrados.map(opt => (
-                    <label key={opt.value} className="border rounded px-3 py-2 flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={selecionados.includes(opt.value)} onChange={()=>toggle(opt.value)} />
-                        <span className="truncate">{opt.label}</span>
-                        <span className="text-xs text-muted-foreground">({opt.value})</span>
-                    </label>
-                ))}
-                {filtrados.length===0 && <span className="text-sm text-muted-foreground">Nenhum perfil encontrado.</span>}
+            <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setSelecionados([])}>
+                    Limpar
+                </Button>
+                <Button onClick={salvar}>
+                    Salvar Perfis
+                </Button>
             </div>
         </div>
     );
@@ -826,7 +807,7 @@ function AbaModulos({ operadorId }: { operadorId: number }) {
                             </Badge>
                         );
                     })}
-                </div>
+            </div>
             )}
 
             {modulos.length === 0 && (
@@ -915,7 +896,7 @@ function AbaUnidades({ operadorId }: { operadorId: number }) {
                 {unidadesDisponiveis.length === 0 ? (
                     <p className="text-sm text-muted-foreground">Nenhuma unidade disponível.</p>
                 ) : (
-                    <div className="space-y-2">
+        <div className="space-y-2">
                         {unidadesDisponiveis.map(unidade => {
                             const selecionada = unidadesSelecionadas.includes(unidade.id);
                             return (

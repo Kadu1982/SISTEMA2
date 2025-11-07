@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import apiService from "@/services/apiService";
+import { parseApiError, showErrorToast } from "@/services/errorHandler";
 
 // UI
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,18 +278,41 @@ const AtendimentoMedico: React.FC = () => {
     // =========================
     const atualizarStatusAgendamento = async (agendamentoId: number, status: string) => {
         const normalized = String(status || "").toUpperCase();
+        let lastError: any = null;
+        
         try {
             // Tenta PATCH padrão
             await apiService.patch(`/agendamentos/${agendamentoId}/status`, { status: normalized });
-        } catch (err) {
+            toast({
+                title: "Sucesso!",
+                description: `Agendamento alterado para ${normalized}`,
+                className: "bg-green-100 text-green-800",
+            });
+            return;
+        } catch (err: any) {
+            lastError = err;
+            console.error("Erro no PATCH:", err.response?.data || err.message);
+            
             // Fallback para APIs que usam PUT
-            await apiService.put(`/agendamentos/${agendamentoId}/status`, { status: normalized });
+            try {
+                await apiService.put(`/agendamentos/${agendamentoId}/status`, { status: normalized });
+                toast({
+                    title: "Sucesso!",
+                    description: `Agendamento alterado para ${normalized}`,
+                    className: "bg-green-100 text-green-800",
+                });
+                return;
+            } catch (putErr: any) {
+                lastError = putErr;
+                console.error("Erro no PUT:", putErr.response?.data || putErr.message);
+            }
         }
-        toast({
-            title: "Status atualizado!",
-            description: `Agendamento alterado para ${normalized}`,
-            className: "bg-green-100 text-green-800",
-        });
+        
+        // Se ambos falharam, usa o novo error handler
+        const parsedError = parseApiError(lastError);
+        showErrorToast(parsedError);
+        
+        throw lastError;
     };
 
     // =========================
@@ -448,6 +472,31 @@ const AtendimentoMedico: React.FC = () => {
 
     const handleIniciarAtendimento = async (paciente: PacienteTriado) => {
         try {
+            // ✅ VERIFICAR PERMISSÕES ANTES DE TENTAR
+            const operadorData = localStorage.getItem('operadorData');
+            if (!operadorData) {
+                toast({
+                    title: "Erro de Autenticação",
+                    description: "Você não está autenticado. Faça login novamente.",
+                    variant: "destructive"
+                });
+                return;
+            }
+
+            const operador = JSON.parse(operadorData);
+            const perfisPermitidos = ['RECEPCAO', 'ADMIN', 'MEDICO', 'ENFERMEIRO', 'MASTER', 'MASTER_USER', 'ADMINISTRADOR_SISTEMA', 'ADMINISTRADOR', 'TRIAGEM'];
+            const temPermissao = operador.perfis?.some((perfil: string) => perfisPermitidos.includes(perfil));
+
+            if (!temPermissao) {
+                const perfisDoUsuario = operador.perfis?.join(', ') || 'Nenhum perfil';
+                toast({
+                    title: "Acesso Negado",
+                    description: `Você não tem permissão para iniciar atendimento. Seus papéis: ${perfisDoUsuario}. Papéis necessários: ${perfisPermitidos.join(', ')}`,
+                    variant: "destructive"
+                });
+                return;
+            }
+
             await atualizarStatusAgendamento(paciente.agendamentoId, "EM_ATENDIMENTO");
             setPacienteParaAtendimento(paciente);
             setShowDetalhes(false);

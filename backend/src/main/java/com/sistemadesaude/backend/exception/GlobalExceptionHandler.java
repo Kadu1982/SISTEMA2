@@ -1,69 +1,126 @@
 package com.sistemadesaude.backend.exception;
 
-import com.sistemadesaude.backend.response.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.FieldError;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.HashMap;
-import java.util.Map;
+import jakarta.persistence.EntityNotFoundException;
+import java.util.*;
+import java.util.stream.Collectors;
 
+/**
+ * Handler global de exceções para toda a aplicação
+ * Garante respostas padronizadas e logging centralizado
+ */
+@RestControllerAdvice
 @Slf4j
-@ControllerAdvice
 public class GlobalExceptionHandler {
 
+    /**
+     * Trata AccessDeniedException - Acesso negado (403)
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ApiErrorResponse<Map<String, Object>>> handleAccessDeniedException(
+            AccessDeniedException ex) {
+        
+        log.warn("⚠️ AccessDeniedException: {}", ex.getMessage());
+        
+        Map<String, Object> details = new HashMap<>();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
+        if (auth != null) {
+            List<String> userRoles = auth.getAuthorities().stream()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .sorted()
+                .collect(Collectors.toList());
+            
+            details.put("userRoles", userRoles);
+            log.debug("Usuário com roles: {}", userRoles);
+        } else {
+            log.debug("Usuário não autenticado");
+        }
+        
+        ApiErrorResponse<Map<String, Object>> response = new ApiErrorResponse<>(
+            false,
+            "Acesso negado. Verifique suas permissões.",
+            details
+        );
+        
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    /**
+     * Trata BadCredentialsException - Credenciais inválidas (401)
+     */
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiErrorResponse<?>> handleBadCredentialsException(
+            BadCredentialsException ex) {
+        
+        log.warn("⚠️ Credenciais inválidas");
+        
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(new ApiErrorResponse<>(
+                false,
+                "Email ou senha inválidos",
+                null
+            ));
+    }
+
+    /**
+     * Trata MethodArgumentNotValidException - Validação falhou (400)
+     */
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Map<String, String>>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ApiErrorResponse<?>> handleValidationException(
+            MethodArgumentNotValidException ex) {
+        
+        log.warn("⚠️ Erro de validação");
+        
         Map<String, String> errors = new HashMap<>();
-        ex.getBindingResult().getAllErrors().forEach((error) -> {
-            String fieldName = ((FieldError) error).getField();
+        ex.getBindingResult().getFieldErrors().forEach(error -> {
+            String fieldName = error.getField();
             String errorMessage = error.getDefaultMessage();
             errors.put(fieldName, errorMessage);
+            log.debug("Campo '{}' com erro: {}", fieldName, errorMessage);
         });
-        ApiResponse<Map<String, String>> response = new ApiResponse<>(false, "Erro de validação", errors);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(new ApiErrorResponse<>(false, "Validação falhou", errors));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.warn("⚠️ IllegalArgumentException: {}", ex.getMessage());
-        ApiResponse<String> response = new ApiResponse<>(false, ex.getMessage(), null);
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+    /**
+     * Trata EntityNotFoundException - Recurso não encontrado (404)
+     */
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity<ApiErrorResponse<?>> handleEntityNotFoundException(
+            EntityNotFoundException ex) {
+        
+        log.warn("⚠️ Recurso não encontrado: {}", ex.getMessage());
+        
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ApiErrorResponse<>(false, ex.getMessage(), null));
     }
 
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
-        // Log detalhado do erro para debugging
-        log.error("❌ RuntimeException capturada pelo GlobalExceptionHandler", ex);
-
-        // Mensagem mais informativa
-        String message = ex.getMessage() != null && !ex.getMessage().isBlank()
-            ? ex.getMessage()
-            : "Erro interno do servidor";
-
-        ApiResponse<String> response = new ApiResponse<>(false, message, null);
-
-        // Se a mensagem contém indicadores de erro de banco/servidor, retorna 500
-        if (message.toLowerCase().contains("banco de dados") ||
-            message.toLowerCase().contains("database") ||
-            message.toLowerCase().contains("sql") ||
-            message.toLowerCase().contains("hibernate") ||
-            message.toLowerCase().contains("jpa")) {
-            return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-        // Caso contrário, mantém 400
-        return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
-    }
-
+    /**
+     * Trata Exception genérica - Erro interno (500)
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<String>> handleGenericException(Exception ex) {
-        log.error("❌ Exception não tratada capturada pelo GlobalExceptionHandler", ex);
-        ApiResponse<String> response = new ApiResponse<>(false, "Erro interno do servidor", null);
-        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    public ResponseEntity<ApiErrorResponse<?>> handleGenericException(Exception ex) {
+        
+        log.error("❌ Erro não tratado", ex);
+        
+        String message = "Erro interno do servidor";
+        if (ex.getMessage() != null && !ex.getMessage().isEmpty()) {
+            message += ": " + ex.getMessage();
+        }
+        
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ApiErrorResponse<>(false, message, null));
     }
 }

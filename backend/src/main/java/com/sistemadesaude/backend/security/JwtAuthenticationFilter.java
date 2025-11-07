@@ -44,7 +44,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             logger.debug("🔍 Processando {} {}", method, path);
 
             // Endpoints públicos não precisam de token
-            if (isPublicEndpoint(path)) {
+            if (isPublicEndpoint(path, method)) {
                 logger.debug("✅ Endpoint público, acesso permitido: {}", path);
                 filterChain.doFilter(request, response);
                 return;
@@ -101,12 +101,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         return null;
     }
 
-    private boolean isPublicEndpoint(String path) {
-        return path.startsWith("/api/auth") ||
+    private boolean isPublicEndpoint(String path, String method) {
+        // Endpoints sempre públicos
+        if (path.startsWith("/api/auth") ||
                 path.startsWith("/api/test") ||
                 path.startsWith("/v3/api-docs") ||
                 path.startsWith("/swagger-ui") ||
                 path.startsWith("/api/health") ||
-                path.startsWith("/actuator");
+                path.startsWith("/actuator")) {
+            return true;
+        }
+        
+        // GET /api/unidades é público para permitir seleção na tela de login
+        // Mas POST, PUT, DELETE devem ser protegidos
+        if (path.equals("/api/unidades") && "GET".equalsIgnoreCase(method)) {
+            return true;
+        }
+        
+        return false;
     }
 }

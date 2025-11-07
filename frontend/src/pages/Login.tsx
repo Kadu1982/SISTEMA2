@@ -82,7 +82,8 @@ const Login: React.FC = () => {
         (async () => {
             try {
                 setCarregandoUnidades(true);
-                const resultado = await listarUnidades();
+                // skipAuth: true para não tentar enviar token na tela de login
+                const resultado = await listarUnidades({ skipAuth: true });
                 // listarUnidades pode retornar array ou Page, normalizamos para array
                 const unidadesCarregadas = Array.isArray(resultado) ? resultado : (resultado as any).content || [];
                 if (mounted) {

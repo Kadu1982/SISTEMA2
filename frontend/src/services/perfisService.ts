@@ -192,74 +192,18 @@ export async function buscarPerfilPorTipo(tipo: string): Promise<PerfilDTO | nul
 }
 
 /**
- * Templates de perfis pré-configurados
+ * ⚠️ DEPRECATED: Templates de perfis removidos
+ * 
+ * Os perfis agora são gerenciados pelo backend usando a Enum Perfil padronizada.
+ * Use o novo endpoint GET /api/perfis/tipos-disponiveis para obter a lista oficial.
+ * 
+ * Valores padrão do backend:
+ * - MEDICO
+ * - ENFERMEIRO
+ * - RECEPCAO
+ * - TRIAGEM
+ * - DENTISTA
+ * - FARMACEUTICO
+ * - ADMIN
+ * - etc.
  */
-export const PERFIS_TEMPLATES = {
-    UPA: {
-        tipo: 'UPA',
-        nome: 'UPA',
-        modulos: ['UPA'],
-        permissoes: [
-            'UPA_ACESSAR',
-            'UPA_ATENDER',
-            'UPA_VISUALIZAR',
-            'TRIAGEM_REALIZAR',
-            'CLASSIFICACAO_RISCO',
-            'GERENCIAR_PACIENTES',
-            'GERENCIAR_ATENDIMENTOS',
-            'VISUALIZAR_RELATORIOS',
-            'ENFERMAGEM_ATENDER',
-            'MEDICO_ATENDER'
-        ]
-    },
-    ENFERMEIRO_UPA: {
-        tipo: 'Enfermeiro UPA',
-        nome: 'Enfermeiro UPA',
-        modulos: ['UPA'],
-        permissoes: [
-            'ENFERMAGEM_ATENDER',
-            'UPA_ATENDER',
-            'UPA_VISUALIZAR',
-            'TRIAGEM_REALIZAR',
-            'CLASSIFICACAO_RISCO',
-            'GERENCIAR_PACIENTES',
-            'GERENCIAR_ATENDIMENTOS',
-            'VISUALIZAR_RELATORIOS'
-        ]
-    },
-    MEDICO_UPA: {
-        tipo: 'Médico UPA',
-        nome: 'Médico UPA',
-        modulos: ['UPA'],
-        permissoes: [
-            'MEDICO_ATENDER',
-            'UPA_ATENDER',
-            'UPA_VISUALIZAR',
-            'GERENCIAR_PACIENTES',
-            'VISUALIZAR_RELATORIOS'
-        ]
-    },
-    RECEPCIONISTA_UPA: {
-        tipo: 'Recepcionista UPA',
-        nome: 'Recepcionista UPA',
-        modulos: ['UPA', 'RECEPCAO'],
-        permissoes: [
-            'UPA_VISUALIZAR',
-            'GERENCIAR_PACIENTES',
-            'RECEPCAO_ATENDER'
-        ]
-    }
-};
-
-/**
- * Cria um perfil a partir de um template
- */
-export async function criarPerfilDoTemplate(templateKey: keyof typeof PERFIS_TEMPLATES): Promise<PerfilDTO> {
-    const template = PERFIS_TEMPLATES[templateKey];
-    return await criarPerfilCompleto(
-        template.tipo,
-        template.nome,
-        template.modulos,
-        template.permissoes
-    );
-}
