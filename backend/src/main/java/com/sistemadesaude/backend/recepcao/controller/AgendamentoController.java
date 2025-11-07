@@ -4,6 +4,7 @@ import com.sistemadesaude.backend.exames.dto.GerarSadtRequest;
 import com.sistemadesaude.backend.exames.dto.SadtResponseDTO;
 import com.sistemadesaude.backend.exames.service.SadtService;
 import com.sistemadesaude.backend.recepcao.dto.AgendamentoDTO;
+import com.sistemadesaude.backend.recepcao.dto.AtualizarStatusAgendamentoRequest;
 import com.sistemadesaude.backend.recepcao.dto.NovoAgendamentoRequest;
 import com.sistemadesaude.backend.recepcao.entity.StatusAgendamento;
 import com.sistemadesaude.backend.recepcao.service.AgendamentoService;
@@ -23,9 +24,11 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/agendamentos")
@@ -153,50 +156,108 @@ public class AgendamentoController {
 
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('RECEPCAO', 'ADMIN', 'MEDICO', 'ENFERMEIRO', 'MASTER', 'MASTER_USER', 'ADMINISTRADOR_SISTEMA', 'ADMINISTRADOR', 'TRIAGEM')")
-    public ResponseEntity<AgendamentoDTO> atualizarStatus(
+    public ResponseEntity<?> atualizarStatus(
             @PathVariable Long id,
-            @RequestBody Map<String, String> request) {
+            @RequestBody AtualizarStatusAgendamentoRequest request,
+            Authentication authentication) {
         logUserInfo("ATUALIZAR_STATUS");
-        String novoStatus = request.get("status");
-        log.info("Atualizando status do agendamento ID: {} para {}", id, novoStatus);
+        log.debug("Request body recebido: {}", request);
+        
+        // Log das permissões do usuário para debug
+        if (authentication != null) {
+            log.debug("Permissões do usuário: {}", authentication.getAuthorities());
+        }
+        
+        if (request == null) {
+            log.warn("Request body é null para agendamento ID: {}", id);
+            return ResponseEntity.badRequest().body(Map.of("error", "Request body é obrigatório"));
+        }
+        
+        String novoStatus = request.getStatus();
         if (novoStatus == null || novoStatus.trim().isEmpty()) {
             log.warn("Status não informado para agendamento ID: {}", id);
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Status é obrigatório"));
         }
+        
+        novoStatus = novoStatus.trim().toUpperCase();
+        log.info("Atualizando status do agendamento ID: {} para {}", id, novoStatus);
+        
+        // Valida se o status é válido antes de processar
+        try {
+            StatusAgendamento.valueOf(novoStatus);
+        } catch (IllegalArgumentException e) {
+            log.warn("Status inválido '{}' para agendamento ID: {}. Valores válidos: {}", 
+                    novoStatus, id, Arrays.toString(StatusAgendamento.values()));
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Status inválido",
+                "statusRecebido", novoStatus,
+                "valoresValidos", Arrays.stream(StatusAgendamento.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList())
+            ));
+        }
+        
         try {
             AgendamentoDTO agendamento = agendamentoService.atualizarStatus(id, novoStatus);
             log.info("Status do agendamento {} atualizado com sucesso", id);
             return ResponseEntity.ok(agendamento);
         } catch (Exception e) {
             log.error("Erro ao atualizar status do agendamento {}: {}", id, e.getMessage(), e);
-            throw e;
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Erro ao atualizar status", "message", e.getMessage()));
         }
     }
 
     @PutMapping("/{agendamentoId}/status")
     @PreAuthorize("hasAnyRole('MEDICO', 'ENFERMEIRO', 'RECEPCAO', 'ADMIN', 'MASTER', 'MASTER_USER', 'ADMINISTRADOR_SISTEMA', 'ADMINISTRADOR', 'TRIAGEM')")
-    public ResponseEntity<Void> atualizarStatusAgendamento(
+    public ResponseEntity<?> atualizarStatusAgendamento(
             @PathVariable Long agendamentoId,
-            @RequestBody Map<String, String> request) {
+            @RequestBody AtualizarStatusAgendamentoRequest request,
+            Authentication authentication) {
         logUserInfo("ATUALIZAR_STATUS_AGENDAMENTO");
+        log.debug("Request body recebido: {}", request);
+        
+        // Log das permissões do usuário para debug
+        if (authentication != null) {
+            log.debug("Permissões do usuário: {}", authentication.getAuthorities());
+        }
+        
+        if (request == null) {
+            log.warn("Request body é null para agendamento ID: {}", agendamentoId);
+            return ResponseEntity.badRequest().body(Map.of("error", "Request body é obrigatório"));
+        }
+        
+        String novoStatus = request.getStatus();
+        if (novoStatus == null || novoStatus.trim().isEmpty()) {
+            log.warn("Status não informado para agendamento ID: {}", agendamentoId);
+            return ResponseEntity.badRequest().body(Map.of("error", "Status é obrigatório"));
+        }
+        
+        novoStatus = novoStatus.trim().toUpperCase();
+        log.info("Atualizando status do agendamento ID: {} para {}", agendamentoId, novoStatus);
+        
         try {
-            String novoStatus = request.get("status");
-            if (novoStatus == null || novoStatus.trim().isEmpty()) {
-                log.warn("Status não informado para agendamento ID: {}", agendamentoId);
-                return ResponseEntity.badRequest().build();
-            }
-            try {
-                StatusAgendamento.valueOf(novoStatus);
-            } catch (IllegalArgumentException e) {
-                log.warn("Status inválido '{}' para agendamento ID: {}", novoStatus, agendamentoId);
-                return ResponseEntity.badRequest().build();
-            }
+            StatusAgendamento.valueOf(novoStatus);
+        } catch (IllegalArgumentException e) {
+            log.warn("Status inválido '{}' para agendamento ID: {}. Valores válidos: {}", 
+                    novoStatus, agendamentoId, Arrays.toString(StatusAgendamento.values()));
+            return ResponseEntity.badRequest().body(Map.of(
+                "error", "Status inválido",
+                "statusRecebido", novoStatus,
+                "valoresValidos", Arrays.stream(StatusAgendamento.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList())
+            ));
+        }
+        
+        try {
             agendamentoService.atualizarStatus(agendamentoId, novoStatus);
             log.info("✅ Status do agendamento {} atualizado para: {}", agendamentoId, novoStatus);
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             log.error("❌ Erro ao atualizar status do agendamento {}: {}", agendamentoId, e.getMessage(), e);
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Map.of("error", "Erro ao atualizar status", "message", e.getMessage()));
         }
     }
 

@@ -70,26 +70,36 @@ public class UnidadeSaudeService {
 
         try {
             // Busca todas as unidades do repositório
+            logger.debug("Buscando unidades do repositório...");
             List<UnidadeSaude> entidades = unidadeRepo.findAll();
+            logger.debug("Encontradas {} unidades no banco de dados", entidades.size());
+            
             List<UnidadeSaudeDTO> unidades = entidades.stream()
                     .map(entity -> {
                         try {
+                            logger.trace("Convertendo unidade {} para DTO", entity.getId());
                             return unidadeMapper.toDTO(entity);
                         } catch (Exception e) {
-                            logger.error("Erro ao converter unidade {} para DTO: {}", entity.getId(), e.getMessage(), e);
+                            logger.error("Erro ao converter unidade {} para DTO: {}", 
+                                    entity != null && entity.getId() != null ? entity.getId() : "null", 
+                                    e.getMessage(), e);
                             // Retorna um DTO básico em caso de erro
                             UnidadeSaudeDTO dto = new UnidadeSaudeDTO();
-                            dto.setId(entity.getId());
-                            dto.setNome(entity.getNome());
-                            dto.setCodigoCnes(entity.getCodigoCnes());
-                            dto.setTipo(entity.getTipo());
-                            dto.setAtiva(entity.getAtiva());
+                            if (entity != null) {
+                                dto.setId(entity.getId());
+                                dto.setNome(entity.getNome());
+                                dto.setCodigoCnes(entity.getCodigoCnes());
+                                dto.setTipo(entity.getTipo());
+                                dto.setAtiva(entity.getAtiva());
+                            }
                             dto.setPerfisPermitidos(new java.util.ArrayList<>());
                             return dto;
                         }
                     })
                     .collect(Collectors.toList());
 
+            logger.debug("Conversão concluída. {} DTOs criados", unidades.size());
+            
             // Atualiza o cache
             cacheListaUnidades = unidades;
             cacheListaTimestamp = System.currentTimeMillis();
@@ -97,6 +107,7 @@ public class UnidadeSaudeService {
             return unidades;
         } catch (Exception e) {
             logger.error("Erro ao listar unidades: {}", e.getMessage(), e);
+            logger.error("Stack trace completo:", e);
             throw new RuntimeException("Erro ao listar unidades: " + e.getMessage(), e);
         }
     }

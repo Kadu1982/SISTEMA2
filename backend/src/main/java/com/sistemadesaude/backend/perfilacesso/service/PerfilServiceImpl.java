@@ -294,10 +294,12 @@ public class PerfilServiceImpl implements PerfilService {
 
     @Override
     public PerfilDTO atribuirPermissoes(Long id, List<String> permissoes) throws EntityNotFoundException {
-        log.debug("Atribuindo permissões ao perfil com ID: {}", id);
+        log.info("🛡️ Atribuindo permissões ao perfil com ID: {} - Recebidas: {}", id, permissoes);
 
         PerfilEntity perfil = perfilRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Perfil não encontrado com o ID: " + id));
+
+        log.debug("📋 Permissões ANTES: {}", perfil.getPermissoes());
 
         String usuarioAtual = getUsuarioAtual();
         perfil.setAtualizadoPor(usuarioAtual);
@@ -311,10 +313,16 @@ public class PerfilServiceImpl implements PerfilService {
                 .map(String::toUpperCase)
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
+        log.info("✅ Permissões normalizadas: {}", normalizadas);
         perfil.setPermissoes(normalizadas);
+        log.debug("📋 Permissões DEPOIS de setPermissoes: {}", perfil.getPermissoes());
 
         PerfilEntity perfilAtualizado = perfilRepository.save(perfil);
-        return perfilMapper.toDTO(perfilAtualizado);
+        log.info("💾 Perfil salvo. Permissões após save: {}", perfilAtualizado.getPermissoes());
+        
+        PerfilDTO dto = perfilMapper.toDTO(perfilAtualizado);
+        log.info("📤 DTO retornado com permissões: {}", dto.getPermissoes());
+        return dto;
     }
 
     @Override

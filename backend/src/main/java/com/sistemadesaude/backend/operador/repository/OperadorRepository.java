@@ -13,7 +13,7 @@ import java.util.Optional;
 public interface OperadorRepository extends JpaRepository<Operador, Long> {
 
     boolean existsByLogin(String login);
-    
+
     boolean existsByCpf(String cpf);
     
     boolean existsByEmail(String email);

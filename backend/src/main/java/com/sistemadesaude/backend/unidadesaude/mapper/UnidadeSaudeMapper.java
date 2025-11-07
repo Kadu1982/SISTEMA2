@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Mapper para conversão entre UnidadeSaude e UnidadeSaudeDTO
@@ -25,10 +24,24 @@ public interface UnidadeSaudeMapper {
      * Os campos calculados são mapeados através de expressões
      */
     @Named("toDTO")
-    @Mapping(target = "tipoDescricao", expression = "java(entity.getTipo() != null ? entity.getTipo().getDescricao() : null)")
+    @Mapping(target = "tipoDescricao", expression = "java(getTipoDescricao(entity))")
     @Mapping(target = "enderecoCompleto", expression = "java(buildEnderecoCompleto(entity))")
     @Mapping(target = "perfisPermitidos", expression = "java(convertSetToStringList(entity.getPerfisPermitidos()))")
     UnidadeSaudeDTO toDTO(UnidadeSaude entity);
+    
+    /**
+     * Método auxiliar para obter descrição do tipo de forma segura
+     */
+    default String getTipoDescricao(UnidadeSaude entity) {
+        try {
+            if (entity == null || entity.getTipo() == null) {
+                return null;
+            }
+            return entity.getTipo().getDescricao();
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     /**
      * Converte lista de entidades para lista de DTOs completos
@@ -77,7 +90,7 @@ public interface UnidadeSaudeMapper {
     @Mapping(target = "criadoPor", ignore = true)
     @Mapping(target = "atualizadoPor", ignore = true)
     @Mapping(target = "documentos", ignore = true)
-    @Mapping(target = "tipoDescricao", expression = "java(entity.getTipo() != null ? entity.getTipo().getDescricao() : null)")
+    @Mapping(target = "tipoDescricao", expression = "java(getTipoDescricao(entity))")
     @Mapping(target = "enderecoCompleto", expression = "java(buildEnderecoResumido(entity))")
     UnidadeSaudeDTO toDTOResumido(UnidadeSaude entity);
 
@@ -92,41 +105,47 @@ public interface UnidadeSaudeMapper {
      * Utilizado nas expressões de mapeamento
      */
     default String buildEnderecoCompleto(UnidadeSaude entity) {
-        if (entity == null) return null;
+        try {
+            if (entity == null) return null;
 
-        StringBuilder sb = new StringBuilder();
+            StringBuilder sb = new StringBuilder();
 
-        if (entity.getEndereco() != null && !entity.getEndereco().trim().isEmpty()) {
-            sb.append(entity.getEndereco());
-        }
-
-        if (entity.getCidade() != null && !entity.getCidade().trim().isEmpty()) {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(entity.getCidade());
-        }
-
-        if (entity.getEstado() != null && !entity.getEstado().trim().isEmpty()) {
-            if (sb.length() > 0) sb.append(" - ");
-            sb.append(entity.getEstado().toUpperCase());
-        }
-
-        if (entity.getCep() != null && !entity.getCep().trim().isEmpty()) {
-            if (sb.length() > 0) sb.append(" - CEP: ");
-            String cepRaw = entity.getCep();
-            StringBuilder digits = new StringBuilder();
-            for (int i = 0; i < cepRaw.length(); i++) {
-                char c = cepRaw.charAt(i);
-                if (Character.isDigit(c)) digits.append(c);
+            if (entity.getEndereco() != null && !entity.getEndereco().trim().isEmpty()) {
+                sb.append(entity.getEndereco());
             }
-            String cep = digits.toString();
-            if (cep.length() == 8) {
-                sb.append(cep.substring(0, 5)).append("-").append(cep.substring(5));
-            } else {
-                sb.append(cep);
-            }
-        }
 
-        return sb.length() > 0 ? sb.toString() : null;
+            if (entity.getCidade() != null && !entity.getCidade().trim().isEmpty()) {
+                if (sb.length() > 0) sb.append(", ");
+                sb.append(entity.getCidade());
+            }
+
+            if (entity.getEstado() != null && !entity.getEstado().trim().isEmpty()) {
+                if (sb.length() > 0) sb.append(" - ");
+                String estado = entity.getEstado().trim();
+                sb.append(estado.length() == 2 ? estado.toUpperCase() : estado);
+            }
+
+            if (entity.getCep() != null && !entity.getCep().trim().isEmpty()) {
+                if (sb.length() > 0) sb.append(" - CEP: ");
+                String cepRaw = entity.getCep();
+                StringBuilder digits = new StringBuilder();
+                for (int i = 0; i < cepRaw.length(); i++) {
+                    char c = cepRaw.charAt(i);
+                    if (Character.isDigit(c)) digits.append(c);
+                }
+                String cep = digits.toString();
+                if (cep.length() == 8) {
+                    sb.append(cep.substring(0, 5)).append("-").append(cep.substring(5));
+                } else {
+                    sb.append(cep);
+                }
+            }
+
+            return sb.length() > 0 ? sb.toString() : null;
+        } catch (Exception e) {
+            // Em caso de erro, retorna null para não quebrar o mapeamento
+            return null;
+        }
     }
 
     /**
@@ -143,7 +162,8 @@ public interface UnidadeSaudeMapper {
 
         if (entity.getEstado() != null && !entity.getEstado().trim().isEmpty()) {
             if (sb.length() > 0) sb.append(" - ");
-            sb.append(entity.getEstado().toUpperCase());
+            String estado = entity.getEstado().trim();
+            sb.append(estado.length() == 2 ? estado.toUpperCase() : estado);
         }
 
         return sb.length() > 0 ? sb.toString() : null;
@@ -154,10 +174,14 @@ public interface UnidadeSaudeMapper {
      */
     @Named("setToStringList")
     default List<String> convertSetToStringList(Set<String> set) {
-        if (set == null || set.isEmpty()) {
+        try {
+            if (set == null || set.isEmpty()) {
+                return new ArrayList<>();
+            }
+            return new ArrayList<>(set);
+        } catch (Exception e) {
             return new ArrayList<>();
         }
-        return new ArrayList<>(set);
     }
 
     /**

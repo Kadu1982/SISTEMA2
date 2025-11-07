@@ -136,13 +136,8 @@ public class PerfilEntity {
 
     @PreUpdate
     public void preUpdate() {
-        if (permissoes == null) {
-            permissoes = new HashSet<>();
-        }
-        if (modulos == null) {
-            modulos = new HashSet<>();
-        }
-        normalizarColecoes();
+        // ✅ NÃO mexe em permissões/módulos no PreUpdate
+        // Apenas sincroniza o nome
         syncNome();
     }
 

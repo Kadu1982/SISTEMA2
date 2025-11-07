@@ -5,7 +5,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 /**
- * Classe entidade que representa um motivo de atendimentover.
+ * Classe entidade que representa um motivo de atendimento.
  */
 @Entity
 @Table(name = "motivos_atendimento")
@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@EqualsAndHashCode
 public class MotivoAtendimento {
 
     @Id
@@ -26,6 +27,7 @@ public class MotivoAtendimento {
     private String descricao;
 
     @Column(name = "ativo")
+    @Builder.Default
     private Boolean ativo = true;
 
     @Column(name = "data_cadastro")

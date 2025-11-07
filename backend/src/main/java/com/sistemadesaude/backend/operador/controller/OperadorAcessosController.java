@@ -70,14 +70,14 @@ public class OperadorAcessosController {
         perfilRepo.deleteByOperadorId(operadorId);
 
         for (String perfil : perfisValidos) {
-            OperadorPerfilKey key = new OperadorPerfilKey();
-            key.setOperadorId(operadorId);
-            key.setPerfil(perfil);
+                OperadorPerfilKey key = new OperadorPerfilKey();
+                key.setOperadorId(operadorId);
+                key.setPerfil(perfil);
 
-            OperadorPerfil ent = new OperadorPerfil();
-            ent.setId(key);
+                OperadorPerfil ent = new OperadorPerfil();
+                ent.setId(key);
 
-            perfilRepo.save(ent);
+                perfilRepo.save(ent);
         }
         return ResponseEntity.noContent().build();
     }
