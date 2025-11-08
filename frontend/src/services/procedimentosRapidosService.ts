@@ -146,6 +146,20 @@ export interface RegistrarDesfechoRequest {
 
 export interface CancelarProcedimentoRequest {
   motivo: string;
+  observacoes?: string;
+  cancelarAtividadesPendentes?: boolean;
+}
+
+export interface EncaminharParaProcedimentoRequest {
+  atendimentoId: number;
+  pacienteId: number;
+  medicoSolicitante?: string;
+  especialidadeOrigem?: string;
+  setorId?: number;
+  tipoDesfecho?: string; // "ALTA_SE_MELHORA", "ALTA_APOS_MEDICACAO", "CUIDADOS_ENFERMAGEM"
+  alergias?: string;
+  observacoes?: string;
+  atividades?: AtividadeEnfermagemDTO[];
 }
 
 // ============================================================================
@@ -168,8 +182,16 @@ export const procedimentosRapidosService = {
     dataInicio?: string;
     dataFim?: string;
     status?: StatusProcedimento;
+    statuses?: StatusProcedimento[];
+    especialidade?: string;
+    termo?: string;
   }): Promise<ProcedimentoRapidoListDTO[]> {
-    const { data } = await api.get("/procedimentos-rapidos", { params });
+    // Converte array de statuses para query params múltiplos
+    const queryParams: any = { ...params };
+    if (params?.statuses && params.statuses.length > 0) {
+      queryParams.statuses = params.statuses;
+    }
+    const { data } = await api.get("/procedimentos-rapidos", { params: queryParams });
     return data?.data || data;
   },
 
@@ -287,6 +309,57 @@ export const procedimentosRapidosService = {
   async obterHistorico(id: number): Promise<ProcedimentoRapidoDTO> {
     const { data } = await api.get(`/procedimentos-rapidos/${id}/historico`);
     return data?.data || data;
+  },
+
+  /**
+   * Encaminha paciente do Atendimento Ambulatorial para Procedimentos Rápidos
+   */
+  async encaminharDeAtendimento(
+    request: EncaminharParaProcedimentoRequest
+  ): Promise<ProcedimentoRapidoDTO> {
+    const { data } = await api.post("/procedimentos-rapidos/encaminhar-atendimento", request);
+    return data?.data || data;
+  },
+
+  /**
+   * Lista motivos de cancelamento disponíveis
+   */
+  async listarMotivosCancelamento(): Promise<string[]> {
+    const { data } = await api.get("/procedimentos-rapidos/motivos-cancelamento");
+    return data?.data || data;
+  },
+
+  /**
+   * Vincula um paciente cadastrado a um procedimento criado para usuário não identificado
+   */
+  async vincularPaciente(procedimentoId: number, pacienteId: number): Promise<ProcedimentoRapidoDTO> {
+    const { data } = await api.put(`/procedimentos-rapidos/${procedimentoId}/vincular-paciente`, {
+      pacienteId,
+    });
+    return data?.data || data;
+  },
+
+  /**
+   * Verifica se paciente tem procedimento ativo
+   */
+  async temProcedimentoAtivo(pacienteId: number): Promise<boolean> {
+    const { data } = await api.get(`/procedimentos-rapidos/paciente/${pacienteId}/tem-ativo`);
+    return data?.data ?? data ?? false;
+  },
+
+  /**
+   * Busca procedimento ativo de um paciente
+   */
+  async buscarProcedimentoAtivoPorPaciente(pacienteId: number): Promise<ProcedimentoRapidoDTO | null> {
+    try {
+      const { data } = await api.get(`/procedimentos-rapidos/paciente/${pacienteId}/ativo`);
+      return data?.data || data;
+    } catch (error: any) {
+      if (error?.response?.status === 404) {
+        return null;
+      }
+      throw error;
+    }
   },
 };
 

@@ -19,7 +19,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Save, AlertCircle, User, ClipboardList, Stethoscope, Pill, FileText, CheckCircle, FlaskConical, Activity, Send } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import CidBusca from "@/components/atendimento/CidBusca";
 import MotivoDesfechoSelect from "@/components/atendimento/MotivoDesfechoSelect";
@@ -31,6 +33,9 @@ import { MedicamentoRemume } from "@/types/Remume";
 
 import { toast } from "sonner";
 import apiService from "@/services/apiService";
+import laboratorioService from "@/services/laboratorio/laboratorioService";
+import type { Exame } from "@/services/laboratorio/laboratorioService";
+import { buscarProcedimentos, type ProcedimentoSUS } from "@/services/odontologiaService";
 
 // ✅ CIAP-2
 import CiapFields, { CiapFieldsValue } from "@/components/ciap/CiapFields";
@@ -62,6 +67,8 @@ const atendimentoSchema = z
         solicitacaoExames: z.string().optional(),
         exameClinico: z.string().optional(),
         condutaMedica: z.string().optional(),
+        procedimentosRealizados: z.string().optional(),
+        encaminhamentos: z.string().optional(),
 
         // 🔹 CIAP-2 (campos existentes)
         ciapRfe: z.string().optional(), // 01–29 (RFE) — único
@@ -71,6 +78,8 @@ const atendimentoSchema = z
         // 🔹 NOVOS: Motivo de desfecho
         motivoDesfecho: z.string().min(2, "O motivo de desfecho é obrigatório."),
         especialidadeEncaminhamento: z.string().optional(),
+        setorEncaminhamento: z.string().optional(),
+        tiposCuidadosEnfermagem: z.array(z.string()).optional(),
 
         // 🔹 NOVO: Aprazamento de receitas
         aprazamento: z.string().optional(),
@@ -99,6 +108,19 @@ const atendimentoSchema = z
         {
             message: "Especialidade é obrigatória quando o motivo for Encaminhamento.",
             path: ["especialidadeEncaminhamento"],
+        }
+    )
+    .refine(
+        (data) => {
+            // Regra: se motivo for "02" (Alta se melhora) ou "04" (Alta após medicação/procedimento), setor é obrigatório
+            if (data.motivoDesfecho === "02" || data.motivoDesfecho === "04") {
+                return !!data.setorEncaminhamento && data.setorEncaminhamento.trim().length > 0;
+            }
+            return true;
+        },
+        {
+            message: "Setor é obrigatório quando o motivo for Alta se melhora ou Alta após medicação/procedimento.",
+            path: ["setorEncaminhamento"],
         }
     );
 
@@ -152,6 +174,31 @@ export const AtendimentoForm = ({
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(!atendimentoId);
 
+    // Estados para Solicitar Exames
+    const [examesSelecionados, setExamesSelecionados] = useState<Exame[]>([]);
+    const [procedimentosSelecionados, setProcedimentosSelecionados] = useState<ProcedimentoSUS[]>([]);
+    const [buscaExame, setBuscaExame] = useState("");
+    const [buscaProcedimento, setBuscaProcedimento] = useState("");
+    const [resultadosBuscaExame, setResultadosBuscaExame] = useState<Exame[]>([]);
+    const [resultadosBuscaProcedimento, setResultadosBuscaProcedimento] = useState<ProcedimentoSUS[]>([]);
+    const [buscandoExame, setBuscandoExame] = useState(false);
+    const [buscandoProcedimento, setBuscandoProcedimento] = useState(false);
+
+    // Estados para Procedimentos Realizados
+    const [procedimentosRealizadosLista, setProcedimentosRealizadosLista] = useState<Array<{
+        id: string;
+        descricao: string;
+        dataHora: string;
+    }>>([]);
+
+    // Estados para Encaminhamentos
+    const [encaminhamentosLista, setEncaminhamentosLista] = useState<Array<{
+        id: string;
+        especialidade: string;
+        motivo: string;
+        dataHora: string;
+    }>>([]);
+
     // Saúde da Mulher (DUM) vindo do Acolhimento
     const [dumData, setDumData] = useState<string>("");
     const [gestante, setGestante] = useState<boolean>(false);
@@ -169,6 +216,36 @@ export const AtendimentoForm = ({
         ciapDiagnosticos: [],
         ciapProcedimentos: [],
     });
+
+    // Funções de busca
+    const buscarExames = async (termo: string) => {
+        if (termo.trim().length < 3) return;
+        try {
+            setBuscandoExame(true);
+            const response = await laboratorioService.buscarExames(termo);
+            const exames = Array.isArray(response.data) ? response.data : (response.data?.data || []);
+            setResultadosBuscaExame(exames.slice(0, 10));
+        } catch (error) {
+            console.error("Erro ao buscar exames:", error);
+            setResultadosBuscaExame([]);
+        } finally {
+            setBuscandoExame(false);
+        }
+    };
+
+    const buscarProcedimentosLista = async (termo: string) => {
+        if (termo.trim().length < 3) return;
+        try {
+            setBuscandoProcedimento(true);
+            const procedimentos = await buscarProcedimentos(termo, 10);
+            setResultadosBuscaProcedimento(procedimentos);
+        } catch (error) {
+            console.error("Erro ao buscar procedimentos:", error);
+            setResultadosBuscaProcedimento([]);
+        } finally {
+            setBuscandoProcedimento(false);
+        }
+    };
 
     // ✅ VALORES PADRÃO
     const getDefaultValues = (): AtendimentoFormData => ({
@@ -191,6 +268,8 @@ export const AtendimentoForm = ({
         solicitacaoExames: initialData?.solicitacaoExames || "",
         exameClinico: initialData?.exameClinico || initialData?.examesFisicos || "",
         condutaMedica: initialData?.condutaMedica || "",
+        procedimentosRealizados: (initialData as any)?.procedimentosRealizados || "",
+        encaminhamentos: (initialData as any)?.encaminhamentos || "",
 
         // 🔹 Defaults CIAP-2
         ciapRfe: (initialData as any)?.ciapRfe || undefined,
@@ -200,6 +279,8 @@ export const AtendimentoForm = ({
         // 🔹 NOVOS: Defaults motivo de desfecho
         motivoDesfecho: (initialData as any)?.motivoDesfecho || "01", // Default: Alta
         especialidadeEncaminhamento: (initialData as any)?.especialidadeEncaminhamento || "",
+        setorEncaminhamento: (initialData as any)?.setorEncaminhamento || "",
+        tiposCuidadosEnfermagem: (initialData as any)?.tiposCuidadosEnfermagem || [],
 
         // 🔹 NOVO: Default aprazamento
         aprazamento: (initialData as any)?.aprazamento || "",
@@ -254,6 +335,20 @@ export const AtendimentoForm = ({
     useEffect(() => {
         if (!gestante) setSemanasGestacao("");
     }, [gestante]);
+
+    // ✅ SINCRONIZA ESTADO CIAP COM O FORMULÁRIO
+    useEffect(() => {
+        // Sincroniza ciapRfe (array -> string)
+        const ciapRfeValue = ciap.ciapRfe[0] || undefined;
+        form.setValue("ciapRfe", ciapRfeValue, { shouldValidate: true, shouldDirty: false });
+        
+        // Sincroniza ciapDiagnosticos (array -> array)
+        form.setValue("ciapDiagnosticos", ciap.ciapDiagnosticos || [], { shouldValidate: true, shouldDirty: false });
+        
+        // Sincroniza ciapProcedimentos (array -> array)
+        form.setValue("ciapProcedimentos", ciap.ciapProcedimentos || [], { shouldValidate: true, shouldDirty: false });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [ciap.ciapRfe, ciap.ciapDiagnosticos, ciap.ciapProcedimentos]);
 
     // ✅ Extrai dados da triagem (a partir de texto)
     const extrairDadosTriagem = (observacoes: string): DadosTriagem => {
@@ -416,6 +511,10 @@ export const AtendimentoForm = ({
 
     // ✅ SUBMISSÃO
     const handleSubmit = async (data: AtendimentoFormData) => {
+        console.log("🔵 handleSubmit chamado com dados:", data);
+        console.log("🔵 Estado CIAP:", ciap);
+        console.log("🔵 isEditing:", isEditing);
+        console.log("🔵 readOnly:", readOnly);
         setIsSubmitting(true);
         try {
             // 🔹 Normaliza CIAP (RFE único + listas de 0..5)
@@ -439,6 +538,8 @@ export const AtendimentoForm = ({
                 // Campos de desfecho
                 motivoDesfecho: data.motivoDesfecho,
                 especialidadeEncaminhamento: data.especialidadeEncaminhamento || "",
+                setorEncaminhamento: data.setorEncaminhamento || "",
+                tiposCuidadosEnfermagem: data.tiposCuidadosEnfermagem || [],
                 // Aprazamento
                 aprazamento: data.aprazamento || "",
                 diasTratamento: data.diasTratamento || "",
@@ -466,13 +567,120 @@ export const AtendimentoForm = ({
             </div>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                    {/* ✅ SEÇÃO: SINAIS E SINTOMAS + CID */}
+                <form 
+                    onSubmit={form.handleSubmit(
+                        handleSubmit,
+                        (errors) => {
+                            console.error("Erros de validação:", errors);
+                            console.error("Estado CIAP atual:", ciap);
+                            console.error("Valores do formulário:", form.getValues());
+                            
+                            // Exibir mensagens de erro para o usuário
+                            const errorMessages: string[] = [];
+                            
+                            // Verifica erros específicos
+                            if (errors.ciapRfe) {
+                                errorMessages.push(errors.ciapRfe.message || "Informe pelo menos 1 RFE (01–29) ou Diagnóstico (70–99) do CIAP-2.");
+                            }
+                            if (errors.cid10) {
+                                errorMessages.push(errors.cid10.message || "O campo CID é obrigatório.");
+                            }
+                            if (errors.pacienteId) {
+                                errorMessages.push(errors.pacienteId.message || "O campo Paciente é obrigatório.");
+                            }
+                            if (errors.motivoDesfecho) {
+                                errorMessages.push(errors.motivoDesfecho.message || "O motivo de desfecho é obrigatório.");
+                            }
+                            if (errors.especialidadeEncaminhamento) {
+                                errorMessages.push(errors.especialidadeEncaminhamento.message || "Especialidade é obrigatória quando o motivo for Encaminhamento.");
+                            }
+                            
+                            // Se não encontrou erros específicos, tenta pegar o primeiro erro
+                            if (errorMessages.length === 0) {
+                                const firstErrorKey = Object.keys(errors)[0];
+                                if (firstErrorKey) {
+                                    const firstError = errors[firstErrorKey as keyof typeof errors];
+                                    if (firstError?.message) {
+                                        errorMessages.push(firstError.message);
+                                    }
+                                }
+                            }
+                            
+                            // Exibe mensagem de erro
+                            if (errorMessages.length > 0) {
+                                toast.error(errorMessages[0]);
+                            } else {
+                                toast.error("Por favor, corrija os erros no formulário.");
+                            }
+                        }
+                    )} 
+                    className="space-y-6"
+                >
+                    {/* ✅ ESTRUTURA DE TABS */}
+                    <Tabs defaultValue="dados-clinicos" className="w-full">
+                        <TabsList className="grid w-full grid-cols-9">
+                            <TabsTrigger value="dados-usuario" className="flex items-center gap-2">
+                                <User className="h-4 w-4" />
+                                <span className="hidden sm:inline">Dados do Usuário</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="dados-triagem" className="flex items-center gap-2">
+                                <ClipboardList className="h-4 w-4" />
+                                <span className="hidden sm:inline">Triagem</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="dados-clinicos" className="flex items-center gap-2">
+                                <Stethoscope className="h-4 w-4" />
+                                <span className="hidden sm:inline">Dados Clínicos</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="prescricao" className="flex items-center gap-2">
+                                <Pill className="h-4 w-4" />
+                                <span className="hidden sm:inline">Prescrição</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="solicitar-exames" className="flex items-center gap-2">
+                                <FlaskConical className="h-4 w-4" />
+                                <span className="hidden sm:inline">Solicitar Exames</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="procedimentos-realizados" className="flex items-center gap-2">
+                                <Activity className="h-4 w-4" />
+                                <span className="hidden sm:inline">Procedimentos</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="diagnostico" className="flex items-center gap-2">
+                                <FileText className="h-4 w-4" />
+                                <span className="hidden sm:inline">Diagnóstico</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="encaminhamentos" className="flex items-center gap-2">
+                                <Send className="h-4 w-4" />
+                                <span className="hidden sm:inline">Encaminhamentos</span>
+                            </TabsTrigger>
+                            <TabsTrigger value="desfecho" className="flex items-center gap-2">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="hidden sm:inline">Desfecho</span>
+                            </TabsTrigger>
+                        </TabsList>
+
+                        {/* ✅ ABA: DADOS DO USUÁRIO */}
+                        <TabsContent value="dados-usuario" className="space-y-4 mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Sinais e sintomas</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <User className="h-5 w-5" />
+                                        Dados do Usuário
+                                    </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
+                                    {/* Informações Básicas */}
+                                    {pacienteSelecionado && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                <div className="font-medium text-gray-700">Nome Completo</div>
+                                                <div className="text-gray-800">{pacienteSelecionado.nomeCompleto || "Não informado"}</div>
+                                            </div>
+                                            <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                <div className="font-medium text-gray-700">ID do Paciente</div>
+                                                <div className="text-gray-800">{pacienteSelecionado.id || "Não informado"}</div>
+                                            </div>
+                                        </div>
+                                    )}
+
                             {/* Vínculo de Território e Status de Vacinas */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
@@ -486,23 +694,6 @@ export const AtendimentoForm = ({
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Queixa principal (triagem) */}
-                            {initialData?.queixaPrincipal && (
-                                <FormField
-                                    control={form.control}
-                                    name="queixaPrincipal"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Queixa Principal (da Triagem)</FormLabel>
-                                            <FormControl>
-                                                <Textarea {...field} readOnly className="bg-gray-50" rows={2} />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            )}
 
                             {/* Alergias do paciente - Tags vermelhas de alerta */}
                             {alergiasPaciente.length > 0 && (
@@ -533,6 +724,149 @@ export const AtendimentoForm = ({
                                 </div>
                             )}
 
+                                    {/* Saúde da Mulher (somente visualização, vindo do Acolhimento) */}
+                                    <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
+                                        <Label className="text-sm font-medium">Saúde da Mulher (Acolhimento)</Label>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 text-sm">
+                                            <div>
+                                                <div className="text-gray-600">Data da Última Menstruação (DUM)</div>
+                                                <div className="mt-1 font-medium text-gray-800">{dumData || "Não informado"}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-gray-600">Gestante</div>
+                                                <div className="mt-1 font-medium text-gray-800">{gestante ? "Sim" : "Não"}</div>
+                                            </div>
+                                            <div>
+                                                <div className="text-gray-600">Semanas de Gestação</div>
+                                                <div className="mt-1 font-medium text-gray-800">
+                                                    {gestante && semanasGestacao ? `${semanasGestacao} semana${Number(semanasGestacao) > 1 ? "s" : ""}` : "—"}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* ✅ ABA: DADOS DA TRIAGEM */}
+                        <TabsContent value="dados-triagem" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <ClipboardList className="h-5 w-5" />
+                                        Dados da Triagem
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {dadosTriagem ? (
+                                        <>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                {dadosTriagem.profissionalTriagem && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Profissional da Triagem</div>
+                                                        <div className="text-gray-800">{dadosTriagem.profissionalTriagem}</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.horarioTriagem && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Horário da Triagem</div>
+                                                        <div className="text-gray-800">{dadosTriagem.horarioTriagem}</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.pressaoArterial && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Pressão Arterial</div>
+                                                        <div className="text-gray-800">{dadosTriagem.pressaoArterial}</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.temperatura !== undefined && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Temperatura</div>
+                                                        <div className="text-gray-800">{dadosTriagem.temperatura} °C</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.frequenciaCardiaca !== undefined && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Frequência Cardíaca</div>
+                                                        <div className="text-gray-800">{dadosTriagem.frequenciaCardiaca} bpm</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.saturacaoOxigenio !== undefined && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Saturação O₂</div>
+                                                        <div className="text-gray-800">{dadosTriagem.saturacaoOxigenio}%</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.peso !== undefined && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Peso</div>
+                                                        <div className="text-gray-800">{dadosTriagem.peso} kg</div>
+                                                    </div>
+                                                )}
+                                                {dadosTriagem.altura !== undefined && (
+                                                    <div className="text-sm bg-gray-50 border border-gray-200 rounded-md p-3">
+                                                        <div className="font-medium text-gray-700">Altura</div>
+                                                        <div className="text-gray-800">{dadosTriagem.altura} m</div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {dadosTriagem.classificacaoRisco && (
+                                                <div className="mt-4">
+                                                    <Label className="text-sm font-medium">Classificação de Risco</Label>
+                                                    <div className="mt-2">
+                                                        {getClassificacaoRiscoBadge(dadosTriagem.classificacaoRisco)}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {dadosTriagem.escalaDor !== undefined && (
+                                                <div className="mt-4">
+                                                    <Label className="text-sm font-medium">Escala de Dor</Label>
+                                                    <div className="mt-2 text-gray-800">{dadosTriagem.escalaDor}/10</div>
+                                                </div>
+                                            )}
+                                            {dadosTriagem.observacoes && (
+                                                <div className="mt-4">
+                                                    <Label className="text-sm font-medium">Observações</Label>
+                                                    <Textarea value={dadosTriagem.observacoes} readOnly className="bg-gray-50 mt-2" rows={3} />
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="text-center text-gray-500 py-8">
+                                            Nenhum dado de triagem disponível
+                                        </div>
+                                    )}
+
+                                    {/* Queixa principal (triagem) */}
+                                    {initialData?.queixaPrincipal && (
+                                        <FormField
+                                            control={form.control}
+                                            name="queixaPrincipal"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel>Queixa Principal (da Triagem)</FormLabel>
+                                                    <FormControl>
+                                                        <Textarea {...field} readOnly className="bg-gray-50" rows={2} />
+                                                    </FormControl>
+                                                    <FormMessage />
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* ✅ ABA: DADOS CLÍNICOS */}
+                        <TabsContent value="dados-clinicos" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Stethoscope className="h-5 w-5" />
+                                        Dados Clínicos
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
                             {/* SINTOMAS / ANAMNESE */}
                             <FormField
                                 control={form.control}
@@ -563,82 +897,47 @@ export const AtendimentoForm = ({
                                 )}
                             />
 
-                            {/* Saúde da Mulher (somente visualização, vindo do Acolhimento) */}
-                            <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
-                                <Label className="text-sm font-medium">Saúde da Mulher (Acolhimento)</Label>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 text-sm">
-                                    <div>
-                                        <div className="text-gray-600">Data da Última Menstruação (DUM)</div>
-                                        <div className="mt-1 font-medium text-gray-800">{dumData || "Não informado"}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-600">Gestante</div>
-                                        <div className="mt-1 font-medium text-gray-800">{gestante ? "Sim" : "Não"}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-gray-600">Semanas de Gestação</div>
-                                        <div className="mt-1 font-medium text-gray-800">
-                                            {gestante && semanasGestacao ? `${semanasGestacao} semana${Number(semanasGestacao) > 1 ? "s" : ""}` : "—"}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Hipótese Diagnóstica */}
+                                    {/* ORIENTAÇÕES */}
                             <FormField
                                 control={form.control}
-                                name="diagnostico"
+                                        name="orientacoes"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Hipótese Diagnóstica</FormLabel>
+                                                <FormLabel>Orientações ao Paciente</FormLabel>
                                         <FormControl>
-                                            <Textarea {...field} placeholder="Detalhes adicionais sobre a hipótese diagnóstica..." rows={3} disabled={!isEditing || readOnly} />
+                                                    <Textarea {...field} placeholder="Cuidados, restrições, sinais de alerta..." rows={3} disabled={!isEditing || readOnly} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* CID-10 */}
+                                    {/* RETORNO */}
                             <FormField
                                 control={form.control}
-                                name="cid10"
+                                        name="retorno"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>CID-10 *</FormLabel>
+                                                <FormLabel>Orientações de Retorno</FormLabel>
                                         <FormControl>
-                                            <CidBusca
-                                                onCidSelecionado={handleCidSelecionado}
-                                                cidSelecionado={cidSelecionado}
-                                                placeholder="Digite o código ou descrição do CID..."
-                                                disabled={!isEditing || readOnly}
-                                            />
+                                                    <Input {...field} placeholder="Ex: 7 dias, 15 dias, 1 mês, SN (se necessário)..." disabled={!isEditing || readOnly} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-
-                            {/* 🔹 CIAP-2 (card existente) */}
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="text-base">Classificação CIAP-2</CardTitle>
-                                    <CardDescription>
-                                        Selecione <strong>1 RFE (01–29)</strong> e/ou até <strong>5 Diagnósticos (70–99)</strong>. Processos/Procedimentos (30–69) são
-                                        opcionais (até 5).
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <CiapFields value={ciap} onChange={setCiap} disabled={!isEditing || readOnly} />
                                 </CardContent>
                             </Card>
-                        </CardContent>
-                    </Card>
+                        </TabsContent>
 
-                    {/* ✅ SEÇÃO: CONDUTA MÉDICA */}
+                        {/* ✅ ABA: PRESCRIÇÃO */}
+                        <TabsContent value="prescricao" className="space-y-4 mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Conduta Médica</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Pill className="h-5 w-5" />
+                                        Prescrição de Medicamentos
+                                    </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             {/* REMUME - Relação Municipal de Medicamentos Essenciais */}
@@ -722,89 +1021,547 @@ export const AtendimentoForm = ({
                                     )}
                                 />
                             </div>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
-                            {/* ORIENTAÇÕES */}
+                        {/* ✅ ABA: HIPÓTESE DIAGNÓSTICA (CID) */}
+                        <TabsContent value="diagnostico" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <FileText className="h-5 w-5" />
+                                        Hipótese Diagnóstica (CID)
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Hipótese Diagnóstica */}
                             <FormField
                                 control={form.control}
-                                name="orientacoes"
+                                        name="diagnostico"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Orientações ao Paciente</FormLabel>
+                                                <FormLabel>Hipótese Diagnóstica</FormLabel>
                                         <FormControl>
-                                            <Textarea {...field} placeholder="Cuidados, restrições, sinais de alerta..." rows={3} disabled={!isEditing || readOnly} />
+                                                    <Textarea {...field} placeholder="Detalhes adicionais sobre a hipótese diagnóstica..." rows={3} disabled={!isEditing || readOnly} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
 
-                            {/* RETORNO */}
+                                    {/* CID-10 */}
                             <FormField
                                 control={form.control}
-                                name="retorno"
+                                        name="cid10"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Orientações de Retorno</FormLabel>
+                                                <FormLabel>CID-10 *</FormLabel>
                                         <FormControl>
-                                            <Input {...field} placeholder="Ex: 7 dias, 15 dias, 1 mês, SN (se necessário)..." disabled={!isEditing || readOnly} />
+                                                    <CidBusca
+                                                        onCidSelecionado={handleCidSelecionado}
+                                                        cidSelecionado={cidSelecionado}
+                                                        placeholder="Digite o código ou descrição do CID..."
+                                                        disabled={!isEditing || readOnly}
+                                                    />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
+
+                                    {/* 🔹 CIAP-2 */}
+                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="text-base">Classificação CIAP-2</CardTitle>
+                                            <CardDescription>
+                                                Selecione <strong>1 RFE (01–29)</strong> e/ou até <strong>5 Diagnósticos (70–99)</strong>. Processos/Procedimentos (30–69) são
+                                                opcionais (até 5).
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <CiapFields value={ciap} onChange={setCiap} disabled={!isEditing || readOnly} />
                         </CardContent>
                     </Card>
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
 
-                    {/* ✅ SEÇÃO: Motivo de Desfecho (CORRIGIDA) */}
+                        {/* ✅ ABA: SOLICITAR PROCEDIMENTOS E EXAMES */}
+                        <TabsContent value="solicitar-exames" className="space-y-4 mt-4">
                     <Card>
                         <CardHeader>
-                            <CardTitle className="text-lg">Motivo de Desfecho</CardTitle>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <FlaskConical className="h-5 w-5" />
+                                        Solicitar Procedimentos e Exames
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Solicite exames e procedimentos para o paciente.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Busca de Exames */}
+                                    <div className="space-y-2">
+                                        <Label>Buscar Exame</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="Digite o nome ou código do exame..."
+                                                value={buscaExame}
+                                                onChange={(e) => {
+                                                    setBuscaExame(e.target.value);
+                                                    if (e.target.value.trim().length >= 3) {
+                                                        buscarExames(e.target.value);
+                                                    } else {
+                                                        setResultadosBuscaExame([]);
+                                                    }
+                                                }}
+                                                disabled={!isEditing || readOnly}
+                                            />
+                                        </div>
+                                        {resultadosBuscaExame.length > 0 && (
+                                            <div className="border border-gray-200 rounded-md max-h-48 overflow-y-auto">
+                                                {resultadosBuscaExame.map((exame) => (
+                                                    <div
+                                                        key={exame.id}
+                                                        className="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                        onClick={() => {
+                                                            if (!isEditing || readOnly) return;
+                                                            if (!examesSelecionados.find((e) => e.id === exame.id)) {
+                                                                setExamesSelecionados([...examesSelecionados, exame]);
+                                                            }
+                                                            setBuscaExame("");
+                                                            setResultadosBuscaExame([]);
+                                                        }}
+                                                    >
+                                                        <div className="font-medium text-sm">{exame.nome}</div>
+                                                        <div className="text-xs text-gray-500">{exame.codigo}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Busca de Procedimentos */}
+                                    <div className="space-y-2">
+                                        <Label>Buscar Procedimento</Label>
+                                        <div className="flex gap-2">
+                                            <Input
+                                                placeholder="Digite o nome ou código do procedimento..."
+                                                value={buscaProcedimento}
+                                                onChange={(e) => {
+                                                    setBuscaProcedimento(e.target.value);
+                                                    if (e.target.value.trim().length >= 3) {
+                                                        buscarProcedimentosLista(e.target.value);
+                                                    } else {
+                                                        setResultadosBuscaProcedimento([]);
+                                                    }
+                                                }}
+                                                disabled={!isEditing || readOnly}
+                                            />
+                                        </div>
+                                        {resultadosBuscaProcedimento.length > 0 && (
+                                            <div className="border border-gray-200 rounded-md max-h-48 overflow-y-auto">
+                                                {resultadosBuscaProcedimento.map((proc) => (
+                                                    <div
+                                                        key={proc.codigo}
+                                                        className="p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                        onClick={() => {
+                                                            if (!isEditing || readOnly) return;
+                                                            if (!procedimentosSelecionados.find((p) => p.codigo === proc.codigo)) {
+                                                                setProcedimentosSelecionados([...procedimentosSelecionados, proc]);
+                                                            }
+                                                            setBuscaProcedimento("");
+                                                            setResultadosBuscaProcedimento([]);
+                                                        }}
+                                                    >
+                                                        <div className="font-medium text-sm">{proc.descricao}</div>
+                                                        <div className="text-xs text-gray-500">{proc.codigo}</div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Lista de Exames Selecionados */}
+                                    {examesSelecionados.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Label>Exames Selecionados</Label>
+                                            <div className="space-y-2">
+                                                {examesSelecionados.map((exame) => (
+                                                    <div key={exame.id} className="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded-md">
+                                                        <div>
+                                                            <div className="font-medium text-sm">{exame.nome}</div>
+                                                            <div className="text-xs text-gray-500">{exame.codigo}</div>
+                                                        </div>
+                                                        {!readOnly && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setExamesSelecionados(examesSelecionados.filter((e) => e.id !== exame.id));
+                                                                }}
+                                                            >
+                                                                Remover
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Lista de Procedimentos Selecionados */}
+                                    {procedimentosSelecionados.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Label>Procedimentos Selecionados</Label>
+                                            <div className="space-y-2">
+                                                {procedimentosSelecionados.map((proc) => (
+                                                    <div key={proc.codigo} className="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded-md">
+                                                        <div>
+                                                            <div className="font-medium text-sm">{proc.descricao}</div>
+                                                            <div className="text-xs text-gray-500">{proc.codigo}</div>
+                                                        </div>
+                                                        {!readOnly && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setProcedimentosSelecionados(procedimentosSelecionados.filter((p) => p.codigo !== proc.codigo));
+                                                                }}
+                                                            >
+                                                                Remover
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Campo de Observações */}
+                                    <FormField
+                                        control={form.control}
+                                        name="solicitacaoExames"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Observações</FormLabel>
+                                                <FormControl>
+                                                    <Textarea 
+                                                        {...field} 
+                                                        placeholder="Observações adicionais sobre os exames e procedimentos solicitados..." 
+                                                        rows={4} 
+                                                        disabled={!isEditing || readOnly} 
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* ✅ ABA: PROCEDIMENTOS REALIZADOS */}
+                        <TabsContent value="procedimentos-realizados" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Activity className="h-5 w-5" />
+                                        Procedimentos Realizados
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Registre os procedimentos já realizados durante o atendimento.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Adicionar Novo Procedimento */}
+                                    {!readOnly && (
+                                        <div className="space-y-2">
+                                            <Label>Adicionar Procedimento Realizado</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    placeholder="Descrição do procedimento..."
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === "Enter" && e.currentTarget.value.trim()) {
+                                                            const novoProcedimento = {
+                                                                id: Date.now().toString(),
+                                                                descricao: e.currentTarget.value.trim(),
+                                                                dataHora: new Date().toISOString(),
+                                                            };
+                                                            setProcedimentosRealizadosLista([...procedimentosRealizadosLista, novoProcedimento]);
+                                                            e.currentTarget.value = "";
+                                                        }
+                                                    }}
+                                                    disabled={!isEditing || readOnly}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    onClick={() => {
+                                                        const input = document.querySelector('input[placeholder="Descrição do procedimento..."]') as HTMLInputElement;
+                                                        if (input && input.value.trim()) {
+                                                            const novoProcedimento = {
+                                                                id: Date.now().toString(),
+                                                                descricao: input.value.trim(),
+                                                                dataHora: new Date().toISOString(),
+                                                            };
+                                                            setProcedimentosRealizadosLista([...procedimentosRealizadosLista, novoProcedimento]);
+                                                            input.value = "";
+                                                        }
+                                                    }}
+                                                    disabled={!isEditing || readOnly}
+                                                >
+                                                    Adicionar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Lista de Procedimentos Realizados */}
+                                    {procedimentosRealizadosLista.length > 0 ? (
+                                        <div className="space-y-2">
+                                            <Label>Procedimentos Realizados</Label>
+                                            <div className="space-y-2">
+                                                {procedimentosRealizadosLista.map((proc) => (
+                                                    <div key={proc.id} className="flex items-center justify-between p-3 bg-gray-50 border border-gray-200 rounded-md">
+                                                        <div className="flex-1">
+                                                            <div className="font-medium text-sm">{proc.descricao}</div>
+                                                            <div className="text-xs text-gray-500">
+                                                                {new Date(proc.dataHora).toLocaleString("pt-BR")}
+                                                            </div>
+                                                        </div>
+                                                        {!readOnly && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                onClick={() => {
+                                                                    setProcedimentosRealizadosLista(procedimentosRealizadosLista.filter((p) => p.id !== proc.id));
+                                                                }}
+                                                            >
+                                                                Remover
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center text-gray-500 py-8">
+                                            Nenhum procedimento realizado registrado.
+                                        </div>
+                                    )}
+
+                                    {/* Campo de Observações (fallback) */}
+                                    <FormField
+                                        control={form.control}
+                                        name="procedimentosRealizados"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Observações Adicionais</FormLabel>
+                                                <FormControl>
+                                                    <Textarea 
+                                                        {...field} 
+                                                        placeholder="Observações adicionais sobre os procedimentos realizados..." 
+                                                        rows={3} 
+                                                        disabled={!isEditing || readOnly} 
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* ✅ ABA: ENCAMINHAMENTOS */}
+                        <TabsContent value="encaminhamentos" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <Send className="h-5 w-5" />
+                                        Encaminhamentos
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Gerencie os encaminhamentos do paciente.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    {/* Adicionar Novo Encaminhamento */}
+                                    {!readOnly && (
+                                        <div className="space-y-4 p-4 border border-gray-200 rounded-lg bg-gray-50">
+                                            <div className="grid grid-cols-2 gap-4">
+                                                <div className="space-y-2">
+                                                    <Label>Especialidade</Label>
+                                                    <Input
+                                                        id="novaEspecialidade"
+                                                        placeholder="Ex.: Cardiologia, Dermatologia..."
+                                                        disabled={!isEditing || readOnly}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label>Motivo</Label>
+                                                    <Input
+                                                        id="novoMotivo"
+                                                        placeholder="Motivo do encaminhamento..."
+                                                        disabled={!isEditing || readOnly}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <Button
+                                                type="button"
+                                                onClick={() => {
+                                                    const especialidadeInput = document.getElementById("novaEspecialidade") as HTMLInputElement;
+                                                    const motivoInput = document.getElementById("novoMotivo") as HTMLInputElement;
+                                                    if (especialidadeInput && motivoInput && especialidadeInput.value.trim() && motivoInput.value.trim()) {
+                                                        const novoEncaminhamento = {
+                                                            id: Date.now().toString(),
+                                                            especialidade: especialidadeInput.value.trim(),
+                                                            motivo: motivoInput.value.trim(),
+                                                            dataHora: new Date().toISOString(),
+                                                        };
+                                                        setEncaminhamentosLista([...encaminhamentosLista, novoEncaminhamento]);
+                                                        especialidadeInput.value = "";
+                                                        motivoInput.value = "";
+                                                    } else {
+                                                        toast.error("Preencha a especialidade e o motivo do encaminhamento.");
+                                                    }
+                                                }}
+                                                disabled={!isEditing || readOnly}
+                                            >
+                                                Adicionar Encaminhamento
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {/* Lista de Encaminhamentos */}
+                                    {encaminhamentosLista.length > 0 ? (
+                                        <div className="space-y-2">
+                                            <Label>Encaminhamentos Registrados</Label>
+                                            <div className="space-y-2">
+                                                {encaminhamentosLista.map((enc) => (
+                                                    <div key={enc.id} className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                                                        <div className="flex items-start justify-between">
+                                                            <div className="flex-1">
+                                                                <div className="font-medium text-sm">{enc.especialidade}</div>
+                                                                <div className="text-sm text-gray-700 mt-1">{enc.motivo}</div>
+                                                                <div className="text-xs text-gray-500 mt-1">
+                                                                    {new Date(enc.dataHora).toLocaleString("pt-BR")}
+                                                                </div>
+                                                            </div>
+                                                            {!readOnly && (
+                                                                <Button
+                                                                    type="button"
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setEncaminhamentosLista(encaminhamentosLista.filter((e) => e.id !== enc.id));
+                                                                    }}
+                                                                >
+                                                                    Remover
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="text-center text-gray-500 py-8">
+                                            Nenhum encaminhamento registrado.
+                                        </div>
+                                    )}
+
+                                    {/* Campo de Observações (fallback) */}
+                                    <FormField
+                                        control={form.control}
+                                        name="encaminhamentos"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel>Observações Adicionais</FormLabel>
+                                                <FormControl>
+                                                    <Textarea 
+                                                        {...field} 
+                                                        placeholder="Observações adicionais sobre os encaminhamentos..." 
+                                                        rows={3} 
+                                                        disabled={!isEditing || readOnly} 
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </CardContent>
+                            </Card>
+                        </TabsContent>
+
+                        {/* ✅ ABA: DESFECHO DA CONSULTA */}
+                        <TabsContent value="desfecho" className="space-y-4 mt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="text-lg flex items-center gap-2">
+                                        <CheckCircle className="h-5 w-5" />
+                                        Desfecho da Consulta
+                                    </CardTitle>
                             <CardDescription>
                                 Selecione o motivo de desfecho do atendimento conforme tabela oficial do SUS.
                             </CardDescription>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-4">
-                                {/* Manter UM ÚNICO FormField (motivoDesfecho). */}
                                 <FormField
                                     control={form.control}
                                     name="motivoDesfecho"
                                     render={({ field }) => (
                                         <FormItem>
-                                            {/* Podemos manter o FormControl aqui porque o componente retorna UM único nó (<div>) */}
                                             <FormControl>
                                                 <MotivoDesfechoSelect
                                                     motivoValue={field.value}
                                                     especialidadeValue={form.getValues("especialidadeEncaminhamento")}
+                                                            setorValue={form.getValues("setorEncaminhamento")}
+                                                            tiposCuidadosValue={form.getValues("tiposCuidadosEnfermagem") || []}
                                                     onMotivoChange={(value) => {
                                                         field.onChange(value);
-                                                        // Limpa especialidade se não for Encaminhamento
                                                         if (value !== "03") {
                                                             form.setValue("especialidadeEncaminhamento", "");
                                                         }
+                                                                if (value !== "02" && value !== "04") {
+                                                                    form.setValue("setorEncaminhamento", "");
+                                                                    form.setValue("tiposCuidadosEnfermagem", []);
+                                                                }
                                                     }}
                                                     onEspecialidadeChange={(value) => {
                                                         form.setValue("especialidadeEncaminhamento", value);
                                                     }}
+                                                            onSetorChange={(value) => {
+                                                                form.setValue("setorEncaminhamento", value);
+                                                            }}
+                                                            onTiposCuidadosChange={(value) => {
+                                                                form.setValue("tiposCuidadosEnfermagem", value);
+                                                            }}
                                                     disabled={!isEditing || readOnly}
                                                 />
                                             </FormControl>
-
-                                            {/* Mensagens de erro atreladas a este FormField */}
                                             <FormMessage />
-                                            {/* Caso queira exibir erro da especialidade condicionalmente aqui: */}
                                             {form.watch("motivoDesfecho") === "03" &&
                                                 !form.getValues("especialidadeEncaminhamento") && (
                                                     <FormMessage>Especialidade é obrigatória quando o motivo for Encaminhamento.</FormMessage>
                                                 )}
+                                                    {(form.watch("motivoDesfecho") === "02" || 
+                                                      form.watch("motivoDesfecho") === "04") &&
+                                                        !form.getValues("setorEncaminhamento") && (
+                                                            <FormMessage>Setor é obrigatório quando o motivo for Alta se melhora ou Alta após medicação/procedimento.</FormMessage>
+                                                        )}
                                         </FormItem>
                                     )}
                                 />
-
-                                {/* ❌ REMOVIDO: o FormField "especialidadeEncaminhamento" que só tinha <div/> dentro de <FormControl> */}
                             </div>
                         </CardContent>
                     </Card>
+                        </TabsContent>
+                    </Tabs>
 
                     {/* ✅ BOTÕES DE AÇÃO */}
                     {isEditing && !readOnly && (

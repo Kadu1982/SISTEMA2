@@ -7,15 +7,19 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Repository para AtividadeEnfermagem
+ */
 @Repository
 public interface AtividadeEnfermagemRepository extends JpaRepository<AtividadeEnfermagem, Long> {
 
     /**
-     * Busca atividades por procedimento
+     * Busca atividades por procedimento rápido
      */
-    List<AtividadeEnfermagem> findByProcedimentoRapidoIdOrderByDataCriacaoAsc(Long procedimentoRapidoId);
+    List<AtividadeEnfermagem> findByProcedimentoRapidoId(Long procedimentoRapidoId);
 
     /**
      * Busca atividades por situação
@@ -23,28 +27,25 @@ public interface AtividadeEnfermagemRepository extends JpaRepository<AtividadeEn
     List<AtividadeEnfermagem> findBySituacao(SituacaoAtividade situacao);
 
     /**
-     * Busca atividades urgentes pendentes
+     * Busca atividades por COREN
      */
-    @Query("""
-        SELECT a FROM AtividadeEnfermagem a
-        WHERE a.urgente = true
-        AND a.situacao = 'PENDENTE'
-        ORDER BY a.dataCriacao ASC
-    """)
-    List<AtividadeEnfermagem> findUrgentesPendentes();
+    List<AtividadeEnfermagem> findByCorenRealizacao(String corenRealizacao);
 
     /**
-     * Conta atividades pendentes de um procedimento
+     * Busca atividades com reação adversa
      */
-    @Query("""
-        SELECT COUNT(a) FROM AtividadeEnfermagem a
-        WHERE a.procedimentoRapido.id = :procedimentoId
-        AND a.situacao = 'PENDENTE'
-    """)
-    Long countPendentesByProcedimento(@Param("procedimentoId") Long procedimentoId);
+    List<AtividadeEnfermagem> findByReacaoAdversaTrue();
 
     /**
-     * Verifica se existem atividades pendentes em um procedimento
+     * Busca atividades atrasadas
      */
-    boolean existsByProcedimentoRapidoIdAndSituacao(Long procedimentoId, SituacaoAtividade situacao);
+    @Query("SELECT a FROM AtividadeEnfermagem a " +
+           "WHERE a.situacao = 'PENDENTE' " +
+           "AND EXISTS (SELECT h FROM a.horariosAprazados h WHERE h < :dataHora)")
+    List<AtividadeEnfermagem> findAtrasadas(@Param("dataHora") LocalDateTime dataHora);
+
+    /**
+     * Busca atividades assinadas digitalmente
+     */
+    List<AtividadeEnfermagem> findByHashAssinaturaDigitalIsNotNull();
 }

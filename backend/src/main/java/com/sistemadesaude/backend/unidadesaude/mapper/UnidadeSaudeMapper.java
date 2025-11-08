@@ -106,42 +106,42 @@ public interface UnidadeSaudeMapper {
      */
     default String buildEnderecoCompleto(UnidadeSaude entity) {
         try {
-            if (entity == null) return null;
+        if (entity == null) return null;
 
-            StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
 
-            if (entity.getEndereco() != null && !entity.getEndereco().trim().isEmpty()) {
-                sb.append(entity.getEndereco());
-            }
+        if (entity.getEndereco() != null && !entity.getEndereco().trim().isEmpty()) {
+            sb.append(entity.getEndereco());
+        }
 
-            if (entity.getCidade() != null && !entity.getCidade().trim().isEmpty()) {
-                if (sb.length() > 0) sb.append(", ");
-                sb.append(entity.getCidade());
-            }
+        if (entity.getCidade() != null && !entity.getCidade().trim().isEmpty()) {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(entity.getCidade());
+        }
 
-            if (entity.getEstado() != null && !entity.getEstado().trim().isEmpty()) {
-                if (sb.length() > 0) sb.append(" - ");
+        if (entity.getEstado() != null && !entity.getEstado().trim().isEmpty()) {
+            if (sb.length() > 0) sb.append(" - ");
                 String estado = entity.getEstado().trim();
                 sb.append(estado.length() == 2 ? estado.toUpperCase() : estado);
-            }
+        }
 
-            if (entity.getCep() != null && !entity.getCep().trim().isEmpty()) {
-                if (sb.length() > 0) sb.append(" - CEP: ");
-                String cepRaw = entity.getCep();
-                StringBuilder digits = new StringBuilder();
-                for (int i = 0; i < cepRaw.length(); i++) {
-                    char c = cepRaw.charAt(i);
-                    if (Character.isDigit(c)) digits.append(c);
-                }
-                String cep = digits.toString();
-                if (cep.length() == 8) {
-                    sb.append(cep.substring(0, 5)).append("-").append(cep.substring(5));
-                } else {
-                    sb.append(cep);
-                }
+        if (entity.getCep() != null && !entity.getCep().trim().isEmpty()) {
+            if (sb.length() > 0) sb.append(" - CEP: ");
+            String cepRaw = entity.getCep();
+            StringBuilder digits = new StringBuilder();
+            for (int i = 0; i < cepRaw.length(); i++) {
+                char c = cepRaw.charAt(i);
+                if (Character.isDigit(c)) digits.append(c);
             }
+            String cep = digits.toString();
+            if (cep.length() == 8) {
+                sb.append(cep.substring(0, 5)).append("-").append(cep.substring(5));
+            } else {
+                sb.append(cep);
+            }
+        }
 
-            return sb.length() > 0 ? sb.toString() : null;
+        return sb.length() > 0 ? sb.toString() : null;
         } catch (Exception e) {
             // Em caso de erro, retorna null para não quebrar o mapeamento
             return null;
@@ -175,10 +175,10 @@ public interface UnidadeSaudeMapper {
     @Named("setToStringList")
     default List<String> convertSetToStringList(Set<String> set) {
         try {
-            if (set == null || set.isEmpty()) {
-                return new ArrayList<>();
-            }
-            return new ArrayList<>(set);
+        if (set == null || set.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return new ArrayList<>(set);
         } catch (Exception e) {
             return new ArrayList<>();
         }

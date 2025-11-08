@@ -62,8 +62,7 @@ public class CidService {
         }
 
         // Usar método original para compatibilidade ou o otimizado
-        List<Cid> resultados = cidRepository.findTop10ByCodigoContainingIgnoreCaseOrDescricaoContainingIgnoreCase(
-                descricao.trim(), descricao.trim());
+        List<Cid> resultados = cidRepository.buscarPorTermo(descricao.trim());
 
         log.debug("✅ Encontrados {} CIDs por descrição '{}'", resultados.size(), descricao);
         return resultados;
@@ -97,9 +96,8 @@ public class CidService {
             return resultados;
         } catch (Exception e) {
             // Fallback para método original
-            log.debug("⚠️ Usando fallback para busca simples");
-            List<Cid> resultados = cidRepository.findTop10ByCodigoContainingIgnoreCaseOrDescricaoContainingIgnoreCase(
-                    termoLimpo, termoLimpo);
+            log.debug("⚠️ Usando fallback para busca simples: {}", e.getMessage());
+            List<Cid> resultados = cidRepository.buscarPorTermo(termoLimpo);
             log.debug("✅ Encontrados {} CIDs por termo '{}' (busca simples)", resultados.size(), termo);
             return resultados;
         }

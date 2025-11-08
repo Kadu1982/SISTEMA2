@@ -33,6 +33,17 @@ public interface ProcedimentoRapidoService {
     );
 
     /**
+     * Lista procedimentos com filtros avançados
+     */
+    List<ProcedimentoRapidoListDTO> listarComFiltrosAvancados(
+            LocalDateTime dataInicio,
+            LocalDateTime dataFim,
+            List<StatusProcedimento> statuses,
+            String especialidade,
+            String termoPesquisa
+    );
+
+    /**
      * Lista procedimentos aguardando atendimento
      */
     List<ProcedimentoRapidoListDTO> listarAguardando();
@@ -96,4 +107,19 @@ public interface ProcedimentoRapidoService {
      * Encaminha paciente do Atendimento Ambulatorial para Procedimentos Rápidos
      */
     ProcedimentoRapidoDTO encaminharDeAtendimento(EncaminharParaProcedimentoRequest request, String operadorLogin);
+
+    /**
+     * Vincula um paciente cadastrado a um procedimento criado para usuário não identificado
+     */
+    ProcedimentoRapidoDTO vincularPaciente(Long id, Long pacienteId, String operadorLogin);
+
+    /**
+     * Verifica se paciente tem procedimento ativo
+     */
+    boolean temProcedimentoAtivo(Long pacienteId);
+
+    /**
+     * Busca procedimento ativo de um paciente
+     */
+    ProcedimentoRapidoDTO buscarProcedimentoAtivoPorPaciente(Long pacienteId);
 }
