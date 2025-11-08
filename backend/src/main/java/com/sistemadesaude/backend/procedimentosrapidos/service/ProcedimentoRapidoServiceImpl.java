@@ -134,6 +134,89 @@ public class ProcedimentoRapidoServiceImpl implements ProcedimentoRapidoService 
 
     @Override
     @Transactional(readOnly = true)
+    public List<ProcedimentoRapidoListDTO> listarComFiltrosAvancados(
+            LocalDateTime dataInicio,
+            LocalDateTime dataFim,
+            List<StatusProcedimento> statuses,
+            String especialidade,
+            String termoPesquisa
+    ) {
+        log.debug("Listando procedimentos com filtros avançados - Data: {} a {}, Statuses: {}, Especialidade: {}, Termo: {}", 
+                dataInicio, dataFim, statuses, especialidade, termoPesquisa);
+
+        List<ProcedimentoRapido> procedimentos = procedimentoRepository.findAll();
+
+        // Aplica filtro de período
+        if (dataInicio != null || dataFim != null) {
+            LocalDateTime inicio = dataInicio != null ? dataInicio : LocalDateTime.of(2000, 1, 1, 0, 0);
+            LocalDateTime fim = dataFim != null ? dataFim : LocalDateTime.now().plusYears(10);
+            procedimentos = procedimentos.stream()
+                    .filter(p -> {
+                        LocalDateTime data = p.getDataCriacao() != null ? p.getDataCriacao() : LocalDateTime.now();
+                        return !data.isBefore(inicio) && !data.isAfter(fim);
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        // Aplica filtro de status (múltiplos)
+        if (statuses != null && !statuses.isEmpty()) {
+            procedimentos = procedimentos.stream()
+                    .filter(p -> statuses.contains(p.getStatus()))
+                    .collect(Collectors.toList());
+        }
+
+        // Aplica filtro de especialidade
+        if (especialidade != null && !especialidade.trim().isEmpty()) {
+            String especialidadeUpper = especialidade.trim().toUpperCase();
+            procedimentos = procedimentos.stream()
+                    .filter(p -> p.getEspecialidadeOrigem() != null && 
+                            p.getEspecialidadeOrigem().toUpperCase().contains(especialidadeUpper))
+                    .collect(Collectors.toList());
+        }
+
+        // Aplica filtro de termo de pesquisa
+        if (termoPesquisa != null && !termoPesquisa.trim().isEmpty()) {
+            String termoUpper = termoPesquisa.trim().toUpperCase();
+            procedimentos = procedimentos.stream()
+                    .filter(p -> {
+                        boolean match = false;
+                        if (p.getPaciente() != null) {
+                            if (p.getPaciente().getNomeCompleto() != null && 
+                                p.getPaciente().getNomeCompleto().toUpperCase().contains(termoUpper)) {
+                                match = true;
+                            }
+                            if (p.getPaciente().getCpf() != null && 
+                                p.getPaciente().getCpf().toUpperCase().contains(termoUpper)) {
+                                match = true;
+                            }
+                        }
+                        if (p.getMedicoSolicitante() != null && 
+                            p.getMedicoSolicitante().toUpperCase().contains(termoUpper)) {
+                            match = true;
+                        }
+                        if (p.getEspecialidadeOrigem() != null && 
+                            p.getEspecialidadeOrigem().toUpperCase().contains(termoUpper)) {
+                            match = true;
+                        }
+                        if (p.getOrigemEncaminhamento() != null && 
+                            p.getOrigemEncaminhamento().toUpperCase().contains(termoUpper)) {
+                            match = true;
+                        }
+                        if (String.valueOf(p.getId()).contains(termoPesquisa.trim())) {
+                            match = true;
+                        }
+                        return match;
+                    })
+                    .collect(Collectors.toList());
+        }
+
+        return procedimentos.stream()
+                .map(procedimentoMapper::toListDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ProcedimentoRapidoListDTO> listarAguardando() {
         log.debug("Listando procedimentos aguardando atendimento");
 
@@ -313,18 +396,44 @@ public class ProcedimentoRapidoServiceImpl implements ProcedimentoRapidoService 
             throw new BusinessException("Só é possível aprazamento de atividades pendentes");
         }
 
-        // Validação de prazo máximo (1 dia)
-        LocalDateTime limiteMaximo = LocalDateTime.now().plusDays(1);
-        if (request.getNovoHorario().isAfter(limiteMaximo)) {
-            throw new BusinessException("O aprazamento não pode ser superior a 1 dia a partir de agora");
+        // Validação 1: Deve ser maior que a data/hora inicial da atividade
+        if (atividade.getDataHoraInicial() != null && 
+            request.getNovoHorario().isBefore(atividade.getDataHoraInicial())) {
+            throw new BusinessException("O novo horário deve ser maior que a data/hora inicial da atividade");
         }
 
-        // Verifica se todas as atividades estão pendentes para permitir aprazamento
-        boolean todasPendentes = procedimento.getAtividades().stream()
-                .allMatch(a -> a.getSituacao() == SituacaoAtividade.PENDENTE);
+        // Validação 2: Deve ser maior que as execuções anteriores
+        if (!atividade.getHorariosAnteriores().isEmpty()) {
+            LocalDateTime ultimoHorarioAnterior = atividade.getHorariosAnteriores()
+                    .stream()
+                    .max(LocalDateTime::compareTo)
+                    .orElse(null);
+            if (ultimoHorarioAnterior != null && request.getNovoHorario().isBefore(ultimoHorarioAnterior)) {
+                throw new BusinessException("O novo horário deve ser maior que as execuções anteriores");
+            }
+        }
 
-        if (!todasPendentes) {
-            throw new BusinessException("Só é possível aprazamento quando todas as atividades estão pendentes");
+        // Validação 3: Permite aprazamento de no máximo um dia a partir da data atual
+        LocalDateTime limiteMaximo = LocalDateTime.now().plusDays(1);
+        if (request.getNovoHorario().isAfter(limiteMaximo)) {
+            throw new BusinessException("O aprazamento não pode ser superior a 1 dia a partir da data atual");
+        }
+
+        // Validação 4: Se já houver atividades executadas na sequência, não permite aprazamento
+        // Verifica se há atividades da mesma programação já executadas
+        List<AtividadeEnfermagem> atividadesMesmaProgramacao = procedimento.getAtividades().stream()
+                .filter(a -> a.getIntervaloMinutos() != null && 
+                            a.getIntervaloMinutos().equals(atividade.getIntervaloMinutos()) &&
+                            a.getDataHoraInicial() != null &&
+                            atividade.getDataHoraInicial() != null &&
+                            a.getDataHoraInicial().equals(atividade.getDataHoraInicial()))
+                .collect(Collectors.toList());
+
+        boolean temAtividadesExecutadas = atividadesMesmaProgramacao.stream()
+                .anyMatch(a -> a.getSituacao() == SituacaoAtividade.EXECUTADO);
+
+        if (temAtividadesExecutadas) {
+            throw new BusinessException("Não é possível informar novo horário pois existem atividades já executadas na sequência");
         }
 
         // Salva horário anterior
@@ -413,16 +522,33 @@ public class ProcedimentoRapidoServiceImpl implements ProcedimentoRapidoService 
             throw new BusinessException("Procedimento já está cancelado");
         }
 
-        // Verifica se há atividades pendentes e pede confirmação através da mensagem
-        if (procedimento.temAtividadesPendentes()) {
-            log.warn("Cancelando procedimento ID: {} com {} atividades pendentes", id, procedimento.contarAtividadesPendentes());
+        // Verifica se há atividades pendentes
+        boolean temAtividadesPendentes = procedimento.temAtividadesPendentes();
+        long quantidadeAtividadesPendentes = procedimento.contarAtividadesPendentes();
+
+        if (temAtividadesPendentes) {
+            // Se não foi solicitado cancelar atividades pendentes, exige observações
+            if (!request.getCancelarAtividadesPendentes() && 
+                (request.getObservacoes() == null || request.getObservacoes().trim().isEmpty())) {
+                throw new BusinessException(
+                    "O usuário possui " + quantidadeAtividadesPendentes + 
+                    " atividade(s) pendente(s) para execução. " +
+                    "É obrigatório informar observações ao cancelar o atendimento com atividades pendentes."
+                );
+            }
+
+            log.warn("Cancelando procedimento ID: {} com {} atividades pendentes", id, quantidadeAtividadesPendentes);
 
             // Cancela todas as atividades pendentes
+            String observacaoCancelamento = request.getObservacoes() != null && !request.getObservacoes().trim().isEmpty()
+                ? request.getObservacoes()
+                : "Cancelado automaticamente junto com o procedimento";
+
             procedimento.getAtividades().stream()
                     .filter(a -> a.getSituacao() == SituacaoAtividade.PENDENTE)
                     .forEach(a -> {
                         a.setSituacao(SituacaoAtividade.CANCELADO);
-                        a.setObservacoes("Cancelado automaticamente junto com o procedimento");
+                        a.setObservacoes(observacaoCancelamento);
                     });
         }
 
@@ -483,14 +609,33 @@ public class ProcedimentoRapidoServiceImpl implements ProcedimentoRapidoService 
         log.info("Encaminhando paciente ID: {} do atendimento ID: {} para Procedimentos Rápidos",
                 request.getPacienteId(), request.getAtendimentoId());
 
-        // Busca paciente
-        Paciente paciente = pacienteRepository.findById(request.getPacienteId())
-                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+        // Valida se paciente existe
+        if (!pacienteRepository.existsById(request.getPacienteId())) {
+            throw new ResourceNotFoundException("Paciente não encontrado");
+        }
+
+        // Determina a origem do encaminhamento baseado no tipo de desfecho
+        String origem = "Atendimento Ambulatorial";
+        if (request.getTipoDesfecho() != null) {
+            switch (request.getTipoDesfecho()) {
+                case "ALTA_SE_MELHORA":
+                    origem = "Atendimento Ambulatorial - Alta se melhora";
+                    break;
+                case "ALTA_APOS_MEDICACAO":
+                    origem = "Atendimento Ambulatorial - Alta após medicação/procedimento";
+                    break;
+                case "CUIDADOS_ENFERMAGEM":
+                    origem = "Atendimento Ambulatorial - Cuidados de Enfermagem";
+                    break;
+                default:
+                    origem = "Atendimento Ambulatorial";
+            }
+        }
 
         // Cria procedimento rápido
         CriarProcedimentoRapidoRequest criarRequest = CriarProcedimentoRapidoRequest.builder()
                 .pacienteId(request.getPacienteId())
-                .origemEncaminhamento("Atendimento Ambulatorial")
+                .origemEncaminhamento(origem)
                 .atendimentoMedicoOrigemId(request.getAtendimentoId())
                 .medicoSolicitante(request.getMedicoSolicitante())
                 .especialidadeOrigem(request.getEspecialidadeOrigem())
@@ -499,6 +644,76 @@ public class ProcedimentoRapidoServiceImpl implements ProcedimentoRapidoService 
                 .atividades(request.getAtividades())
                 .build();
 
-        return criar(criarRequest, operadorLogin);
+        ProcedimentoRapidoDTO procedimento = criar(criarRequest, operadorLogin);
+
+        // Se foi informado setorId, atualiza o procedimento com essa informação
+        // (Nota: isso pode requerer uma atualização adicional se a entidade tiver campo setor)
+        if (request.getSetorId() != null) {
+            log.debug("Setor ID informado: {} para procedimento ID: {}", request.getSetorId(), procedimento.getId());
+            // O setor pode ser armazenado nas observações ou em um campo específico se existir
+            if (procedimento.getObservacoesGerais() != null && !procedimento.getObservacoesGerais().isEmpty()) {
+                procedimento.setObservacoesGerais(
+                    procedimento.getObservacoesGerais() + 
+                    String.format(" | Setor ID: %d | Tipo Desfecho: %s", 
+                        request.getSetorId(), 
+                        request.getTipoDesfecho() != null ? request.getTipoDesfecho() : "N/A")
+                );
+            } else {
+                procedimento.setObservacoesGerais(
+                    String.format("Setor ID: %d | Tipo Desfecho: %s", 
+                        request.getSetorId(), 
+                        request.getTipoDesfecho() != null ? request.getTipoDesfecho() : "N/A")
+                );
+            }
+        }
+
+        return procedimento;
+    }
+
+    @Override
+    @Transactional
+    public ProcedimentoRapidoDTO vincularPaciente(Long id, Long pacienteId, String operadorLogin) {
+        log.info("Vinculando paciente ID: {} ao procedimento ID: {}", pacienteId, id);
+
+        ProcedimentoRapido procedimento = procedimentoRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Procedimento rápido não encontrado"));
+
+        // Validações
+        if (procedimento.getStatus() == StatusProcedimento.FINALIZADO) {
+            throw new BusinessException("Não é possível vincular paciente a um procedimento finalizado");
+        }
+
+        if (procedimento.getStatus() == StatusProcedimento.CANCELADO) {
+            throw new BusinessException("Não é possível vincular paciente a um procedimento cancelado");
+        }
+
+        // Busca o novo paciente
+        Paciente novoPaciente = pacienteRepository.findById(pacienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Paciente não encontrado"));
+
+        // Atualiza o paciente do procedimento
+        procedimento.setPaciente(novoPaciente);
+        procedimento.setAtualizadoPor(operadorLogin);
+
+        ProcedimentoRapido atualizado = procedimentoRepository.save(procedimento);
+        log.info("Paciente vinculado com sucesso ao procedimento ID: {}", id);
+
+        return procedimentoMapper.toDTO(atualizado);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean temProcedimentoAtivo(Long pacienteId) {
+        log.debug("Verificando se paciente ID: {} tem procedimento ativo", pacienteId);
+        return procedimentoRepository.temProcedimentoAtivo(pacienteId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProcedimentoRapidoDTO buscarProcedimentoAtivoPorPaciente(Long pacienteId) {
+        log.debug("Buscando procedimento ativo para paciente ID: {}", pacienteId);
+        ProcedimentoRapido procedimento = procedimentoRepository.findProcedimentoAtivoPorPaciente(pacienteId)
+                .orElseThrow(() -> new ResourceNotFoundException("Nenhum procedimento ativo encontrado para o paciente"));
+        return procedimentoMapper.toDTO(procedimento);
     }
 }

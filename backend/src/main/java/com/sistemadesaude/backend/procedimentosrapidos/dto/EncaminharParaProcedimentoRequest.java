@@ -26,6 +26,8 @@ public class EncaminharParaProcedimentoRequest {
 
     private String medicoSolicitante;
     private String especialidadeOrigem;
+    private Long setorId;
+    private String tipoDesfecho; // "ALTA_SE_MELHORA", "ALTA_APOS_MEDICACAO", "CUIDADOS_ENFERMAGEM"
     private String alergias;
     private String observacoes;
 

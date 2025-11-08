@@ -118,6 +118,28 @@ public interface ProcedimentoRapidoRepository extends JpaRepository<Procedimento
     List<ProcedimentoRapido> findAguardandoAtendimento();
 
     /**
+     * Verifica se paciente tem procedimento ativo (AGUARDANDO ou EM_ATENDIMENTO)
+     */
+    @Query("""
+        SELECT COUNT(p) > 0 FROM ProcedimentoRapido p
+        WHERE p.paciente.id = :pacienteId
+        AND p.status IN ('AGUARDANDO', 'EM_ATENDIMENTO')
+    """)
+    boolean temProcedimentoAtivo(@Param("pacienteId") Long pacienteId);
+
+    /**
+     * Busca procedimento ativo de um paciente
+     */
+    @Query(value = """
+        SELECT * FROM procedimentos_rapidos p
+        WHERE p.paciente_id = :pacienteId
+        AND p.status IN ('AGUARDANDO', 'EM_ATENDIMENTO')
+        ORDER BY p.data_criacao DESC
+        LIMIT 1
+    """, nativeQuery = true)
+    Optional<ProcedimentoRapido> findProcedimentoAtivoPorPaciente(@Param("pacienteId") Long pacienteId);
+
+    /**
      * Busca todos os procedimentos com associações carregadas
      */
     @Query("""
@@ -128,4 +150,43 @@ public interface ProcedimentoRapidoRepository extends JpaRepository<Procedimento
         ORDER BY p.dataCriacao DESC
     """)
     List<ProcedimentoRapido> findAllWithAssociations();
+
+    /**
+     * Busca procedimentos com filtros avançados (termo de pesquisa)
+     */
+    @Query("""
+        SELECT DISTINCT p FROM ProcedimentoRapido p
+        LEFT JOIN FETCH p.paciente
+        LEFT JOIN FETCH p.operadorResponsavel
+        WHERE (
+            UPPER(p.paciente.nomeCompleto) LIKE UPPER(CONCAT('%', :termo, '%'))
+            OR UPPER(p.paciente.cpf) LIKE UPPER(CONCAT('%', :termo, '%'))
+            OR UPPER(p.medicoSolicitante) LIKE UPPER(CONCAT('%', :termo, '%'))
+            OR UPPER(p.especialidadeOrigem) LIKE UPPER(CONCAT('%', :termo, '%'))
+            OR UPPER(p.origemEncaminhamento) LIKE UPPER(CONCAT('%', :termo, '%'))
+            OR CAST(p.id AS string) LIKE CONCAT('%', :termo, '%')
+        )
+        ORDER BY p.dataCriacao DESC
+    """)
+    List<ProcedimentoRapido> buscarPorTermo(@Param("termo") String termo);
+
+    /**
+     * Busca procedimentos com múltiplos status
+     */
+    @Query("""
+        SELECT p FROM ProcedimentoRapido p
+        WHERE p.status IN :statuses
+        ORDER BY p.dataCriacao DESC
+    """)
+    List<ProcedimentoRapido> findByStatusIn(@Param("statuses") List<StatusProcedimento> statuses);
+
+    /**
+     * Busca procedimentos por especialidade/origem
+     */
+    @Query("""
+        SELECT p FROM ProcedimentoRapido p
+        WHERE UPPER(p.especialidadeOrigem) LIKE UPPER(CONCAT('%', :especialidade, '%'))
+        ORDER BY p.dataCriacao DESC
+    """)
+    List<ProcedimentoRapido> findByEspecialidade(@Param("especialidade") String especialidade);
 }

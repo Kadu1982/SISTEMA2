@@ -18,6 +18,8 @@ import {
     Stethoscope,
     Loader2,
     UserCheck,
+    Pill,
+    ArrowLeft,
 } from "lucide-react";
 
 import apiService from "@/services/apiService";
@@ -39,8 +41,10 @@ import { useToast } from "@/hooks/use-toast";
 import { AtendimentoForm, AtendimentoFormData } from "@/components/atendimento/AtendimentoForm";
 import { HistoricoAtendimentos } from "@/components/atendimento/HistoricoAtendimentos";
 import DocumentosMedicos from "@/components/atendimento/DocumentosMedicos";
+import { BarraSuperiorAtendimento } from "@/components/atendimento/BarraSuperiorAtendimento";
 import { atendimentoService } from "@/services/AtendimentoService";
 import { procedimentosRapidosService } from "@/services/procedimentosRapidosService";
+import HistoricoAgendamentosPaciente from "@/components/recepcao/agendamento/HistoricoAgendamentosPaciente";
 
 // =========================
 // Tipagens
@@ -244,6 +248,21 @@ const AtendimentoMedico: React.FC = () => {
     // ===== Linhas de Cuidado
     const [linhasCuidadoSelecionadas, setLinhasCuidadoSelecionadas] = useState<string[]>([]);
 
+    // ===== Procedimentos Rápidos (Cuidados de Enfermagem)
+    const [pacientesComProcedimentoAtivo, setPacientesComProcedimentoAtivo] = useState<Set<number>>(new Set());
+
+    // ===== Timer de Atendimento
+    const [dataInicioAtendimento, setDataInicioAtendimento] = useState<Date | null>(null);
+
+    // ===== Informações do Paciente para Barra Superior
+    const [infoPacienteBarra, setInfoPacienteBarra] = useState<{
+        nome?: string;
+        idade?: number | null;
+        sexo?: string;
+        municipio?: string;
+        endereco?: string;
+    } | null>(null);
+
     // =========================
     // Query — triados aguardando atendimento
     // =========================
@@ -273,6 +292,33 @@ const AtendimentoMedico: React.FC = () => {
         );
     }, [pacientesTriados, searchTerm]);
 
+    // Verifica quais pacientes têm procedimento ativo
+    useQuery({
+        queryKey: ["pacientesComProcedimentoAtivo", pacientesTriados.map(p => p.pacienteId)],
+        queryFn: async () => {
+            const pacientesIds = pacientesTriados.map(p => p.pacienteId);
+            const pacientesComAtivo = new Set<number>();
+            
+            await Promise.all(
+                pacientesIds.map(async (pacienteId) => {
+                    try {
+                        const temAtivo = await procedimentosRapidosService.temProcedimentoAtivo(pacienteId);
+                        if (temAtivo) {
+                            pacientesComAtivo.add(pacienteId);
+                        }
+                    } catch (error) {
+                        console.error(`Erro ao verificar procedimento ativo para paciente ${pacienteId}:`, error);
+                    }
+                })
+            );
+            
+            setPacientesComProcedimentoAtivo(pacientesComAtivo);
+            return pacientesComAtivo;
+        },
+        enabled: pacientesTriados.length > 0,
+        refetchInterval: 30_000,
+    });
+
     // =========================
     // Atualizar status do agendamento (PATCH -> fallback PUT)
     // =========================
@@ -295,12 +341,12 @@ const AtendimentoMedico: React.FC = () => {
             
             // Fallback para APIs que usam PUT
             try {
-                await apiService.put(`/agendamentos/${agendamentoId}/status`, { status: normalized });
-                toast({
+            await apiService.put(`/agendamentos/${agendamentoId}/status`, { status: normalized });
+        toast({
                     title: "Sucesso!",
-                    description: `Agendamento alterado para ${normalized}`,
-                    className: "bg-green-100 text-green-800",
-                });
+            description: `Agendamento alterado para ${normalized}`,
+            className: "bg-green-100 text-green-800",
+        });
                 return;
             } catch (putErr: any) {
                 lastError = putErr;
@@ -387,23 +433,55 @@ const AtendimentoMedico: React.FC = () => {
                 setPacienteId(String(novoAtendimento.pacienteId ?? payload.pacienteId));
                 setAtendimentoId(String(novoAtendimento.id));
 
-                // Verificar se o motivo de desfecho é "Cuidados de Enfermagem" (código "10")
-                if (data.motivoDesfecho === "10") {
+                // Verificar se o motivo de desfecho requer encaminhamento para Cuidados de Enfermagem
+                // Códigos: "02" (Alta se melhora), "04" (Alta após medicação/procedimento)
+                if (data.motivoDesfecho === "02" || data.motivoDesfecho === "04") {
                     try {
+                        // Determinar o tipo de desfecho para o procedimento rápido
+                        let tipoDesfecho = "ALTA_APOS_MEDICACAO";
+                        if (data.motivoDesfecho === "02") {
+                            tipoDesfecho = "ALTA_SE_MELHORA";
+                        } else if (data.motivoDesfecho === "04") {
+                            tipoDesfecho = "ALTA_APOS_MEDICACAO";
+                        }
+
+                        // Converter flags de atividades de enfermagem para atividades
+                        const atividades: any[] = [];
+                        if (data.tiposCuidadosEnfermagem && Array.isArray(data.tiposCuidadosEnfermagem)) {
+                            data.tiposCuidadosEnfermagem.forEach((tipo: string) => {
+                                atividades.push({
+                                    tipo: tipo,
+                                    descricao: tipo === "APLICACAO" ? "Aplicação de medicamentos" :
+                                              tipo === "CURATIVOS" ? "Curativos" :
+                                              tipo === "VACINAS" ? "Aplicação de vacinas" : tipo,
+                                    situacao: "PENDENTE",
+                                    urgente: false
+                                });
+                            });
+                        }
+
                         // Encaminhar para Procedimentos Rápidos
                         await procedimentosRapidosService.encaminharDeAtendimento({
                             atendimentoId: novoAtendimento.id,
                             pacienteId: pacienteAlvoId,
                             medicoSolicitante: novoAtendimento.profissionalNome || "",
                             especialidadeOrigem: data.especialidadeEncaminhamento || "",
+                            setorId: data.setorEncaminhamento ? Number(data.setorEncaminhamento) : undefined,
+                            tipoDesfecho: tipoDesfecho,
                             alergias: pacienteParaAtendimento?.observacoes || "",
                             observacoes: data.observacoes || "",
-                            atividades: []
+                            atividades: atividades
                         });
+
+                        const mensagemDesfecho = data.motivoDesfecho === "02" 
+                            ? "Atendimento salvo e paciente encaminhado para Cuidados de Enfermagem (Alta se melhora)."
+                            : data.motivoDesfecho === "04"
+                            ? "Atendimento salvo e paciente encaminhado para Cuidados de Enfermagem (Alta após medicação/procedimento)."
+                            : "Atendimento salvo e paciente encaminhado para Cuidados de Enfermagem.";
 
                         toast({
                             title: "Sucesso!",
-                            description: "Atendimento salvo e paciente encaminhado para Cuidados de Enfermagem.",
+                            description: mensagemDesfecho,
                         });
                     } catch (error: any) {
                         console.error("Erro ao encaminhar para Procedimentos Rápidos:", error);
@@ -420,7 +498,7 @@ const AtendimentoMedico: React.FC = () => {
                         await atualizarStatusAgendamento(pacienteParaAtendimento.agendamentoId, "FINALIZADO");
                         await queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
                         setPacienteParaAtendimento(null);
-                        if (data.motivoDesfecho !== "10") {
+                        if (data.motivoDesfecho !== "02" && data.motivoDesfecho !== "04") {
                             toast({ title: "Sucesso!", description: "Atendimento salvo e paciente finalizado." });
                         }
                     } catch {
@@ -431,7 +509,7 @@ const AtendimentoMedico: React.FC = () => {
                         });
                     }
                 } else {
-                    if (data.motivoDesfecho !== "10") {
+                    if (data.motivoDesfecho !== "02" && data.motivoDesfecho !== "04") {
                         toast({ title: "Sucesso!", description: "Atendimento salvo com sucesso." });
                     }
                 }
@@ -497,14 +575,70 @@ const AtendimentoMedico: React.FC = () => {
                 return;
             }
 
+            // Buscar informações completas do paciente para a barra superior
+            try {
+                const { data: pacienteData } = await apiService.get(`/pacientes/${paciente.pacienteId}`);
+                setInfoPacienteBarra({
+                    nome: paciente.nomeCompleto,
+                    idade: paciente.idade,
+                    sexo: (pacienteData as any)?.sexo || undefined,
+                    municipio: (pacienteData as any)?.municipioResidencia || (pacienteData as any)?.municipio || undefined,
+                    endereco: (pacienteData as any)?.enderecoCompleto || (pacienteData as any)?.endereco || undefined,
+                });
+            } catch (error) {
+                console.error("Erro ao buscar dados do paciente:", error);
+                setInfoPacienteBarra({
+                    nome: paciente.nomeCompleto,
+                    idade: paciente.idade,
+                    sexo: undefined,
+                    municipio: undefined,
+                    endereco: undefined,
+                });
+            }
+
             await atualizarStatusAgendamento(paciente.agendamentoId, "EM_ATENDIMENTO");
             setPacienteParaAtendimento(paciente);
+            setDataInicioAtendimento(new Date()); // Inicia o timer
             setShowDetalhes(false);
             setActiveTab("novo");
             await queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
         } catch (error) {
             console.error("Erro ao iniciar atendimento:", error);
             toast({ title: "Erro", description: "Erro ao iniciar o atendimento.", variant: "destructive" });
+        }
+    };
+
+    // =========================
+    // RETORNAR PARA AVALIAÇÃO (após Cuidados de Enfermagem)
+    // =========================
+    const handleRetornarParaAvaliacao = async (paciente: PacienteTriado) => {
+        try {
+            // Busca o procedimento ativo do paciente
+            const procedimentoAtivo = await procedimentosRapidosService.buscarProcedimentoAtivoPorPaciente(paciente.pacienteId);
+            
+            if (!procedimentoAtivo) {
+                toast({
+                    title: "Aviso",
+                    description: "Nenhum procedimento ativo encontrado para este paciente.",
+                    variant: "default",
+                });
+                return;
+            }
+
+            // Verifica se há médico solicitante para retornar
+            if (procedimentoAtivo.medicoSolicitante) {
+                toast({
+                    title: "Retornando para Avaliação",
+                    description: `Paciente retornará para avaliação com ${procedimentoAtivo.medicoSolicitante}.`,
+                });
+            }
+
+            // Inicia o atendimento normalmente
+            await handleIniciarAtendimento(paciente);
+        } catch (error: any) {
+            console.error("Erro ao retornar para avaliação:", error);
+            const parsedError = parseApiError(error);
+            showErrorToast(parsedError);
         }
     };
 
@@ -584,6 +718,7 @@ const AtendimentoMedico: React.FC = () => {
                                             <TableHead>Profissional</TableHead>
                                             <TableHead>Queixa Principal</TableHead>
                                             <TableHead>Sinais Vitais</TableHead>
+                                            <TableHead>Ações</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -597,8 +732,17 @@ const AtendimentoMedico: React.FC = () => {
                                                     <TableCell>
                                                         <div className="flex items-center gap-2">
                                                             <User className="h-4 w-4 text-gray-500" />
-                                                            <div>
-                                                                <div className="font-medium">{paciente.nomeCompleto}</div>
+                                                            <div className="flex-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <span className="font-medium">{paciente.nomeCompleto}</span>
+                                                                    {/* Badge azul indicando que está em Cuidados de Enfermagem */}
+                                                                    {pacientesComProcedimentoAtivo.has(paciente.pacienteId) && (
+                                                                        <Badge className="bg-blue-500 text-white text-xs">
+                                                                            <Pill className="h-3 w-3 mr-1" />
+                                                                            Em Cuidados de Enfermagem
+                                                                        </Badge>
+                                                                    )}
+                                                                </div>
                                                                 <div className="text-sm text-gray-500">SUS: {paciente.cartaoSus}</div>
                                                             </div>
                                                         </div>
@@ -634,11 +778,27 @@ const AtendimentoMedico: React.FC = () => {
                                                             )}
                                                         </div>
                                                     </TableCell>
+                                                    <TableCell>
+                                                        {pacientesComProcedimentoAtivo.has(paciente.pacienteId) && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    handleRetornarParaAvaliacao(paciente);
+                                                                }}
+                                                            >
+                                                                <ArrowLeft className="h-3 w-3 mr-1" />
+                                                                Retornar
+                                                            </Button>
+                                                        )}
+                                                    </TableCell>
                                                 </TableRow>
                                             ))
                                         ) : (
                                             <TableRow>
-                                                <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                                                <TableCell colSpan={8} className="text-center py-8 text-gray-500">
                                                     <div className="flex flex-col items-center gap-2">
                                                         <Stethoscope className="h-12 w-12 text-gray-300" />
                                                         <span>
@@ -659,6 +819,24 @@ const AtendimentoMedico: React.FC = () => {
 
                 {/* NOVO ATENDIMENTO */}
                 <TabsContent value="novo">
+                    {/* ✅ BARRA SUPERIOR FIXA */}
+                    {(pacienteParaAtendimento || pacienteSelecionadoLivre) && (
+                        <BarraSuperiorAtendimento
+                            pacienteNome={infoPacienteBarra?.nome || pacienteParaAtendimento?.nomeCompleto || pacienteSelecionadoLivre?.nome}
+                            pacienteIdade={infoPacienteBarra?.idade ?? pacienteParaAtendimento?.idade ?? null}
+                            pacienteSexo={infoPacienteBarra?.sexo || undefined}
+                            pacienteMunicipio={infoPacienteBarra?.municipio || undefined}
+                            pacienteEndereco={infoPacienteBarra?.endereco || undefined}
+                            setor={pacienteParaAtendimento?.setor || undefined}
+                            especialidade={pacienteParaAtendimento?.especialidade || undefined}
+                            dataInicioAtendimento={dataInicioAtendimento || undefined}
+                            onRefreshClick={() => {
+                                queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
+                                toast({ title: "Atualizado", description: "Lista de pacientes atualizada." });
+                            }}
+                        />
+                    )}
+
                     <Card className="mb-6">
                         <CardHeader className="flex flex-row items-center justify-between">
                             <div>
@@ -824,9 +1002,7 @@ ${pacienteParaAtendimento.observacoes || "Nenhuma observação registrada"}`,
                             {/* Histórico de agendamentos com filtros (reuso do endpoint já existente) */}
                             <div className="mt-2">
                                 <h3 className="text-lg font-semibold mb-2">Histórico de Agendamentos</h3>
-                                {/* Import lazy evita peso inicial; se preferir, mova para import padrão no topo */}
-                                {/* @ts-ignore */}
-                                {React.createElement(require('@/components/recepcao/agendamento/HistoricoAgendamentosPaciente').default, { pacienteId })}
+                                <HistoricoAgendamentosPaciente pacienteId={pacienteId} />
                             </div>
                         </div>
                     )}

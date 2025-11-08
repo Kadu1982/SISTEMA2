@@ -35,9 +35,7 @@ public interface CidRepository extends JpaRepository<Cid, Long> {
             codigo
         LIMIT 10
         """, nativeQuery = true)
-    List<Cid> findTop10ByCodigoContainingIgnoreCaseOrDescricaoContainingIgnoreCase(
-            @Param("termo") String codigo,
-            @Param("termo") String descricao);
+    List<Cid> buscarPorTermo(@Param("termo") String termo);
 
     // ✅ BUSCA EXATA POR CÓDIGO
     @Query("SELECT c FROM Cid c WHERE UPPER(c.codigo) = UPPER(:codigo)")

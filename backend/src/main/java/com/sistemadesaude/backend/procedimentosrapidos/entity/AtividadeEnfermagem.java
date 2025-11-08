@@ -14,6 +14,14 @@ import java.util.List;
 /**
  * Entidade que representa uma atividade de enfermagem (medicação, exame, vacina)
  * a ser executada em um paciente dentro do módulo de Procedimentos Rápidos
+ * 
+ * FASE 1 - Novos campos adicionados:
+ * - COREN obrigatório
+ * - Detalhes de medicação
+ * - Reação adversa
+ * - Motivo de recusa
+ * - Hash de assinatura digital
+ * - Checklist dos 5 Certos
  */
 @Entity
 @Table(name = "atividades_enfermagem")
@@ -87,6 +95,79 @@ public class AtividadeEnfermagem {
     @OrderColumn(name = "ordem")
     @Builder.Default
     private List<LocalDateTime> horariosAnteriores = new ArrayList<>();
+
+    // ========== FASE 1: NOVOS CAMPOS ==========
+
+    /**
+     * COREN do profissional que executou a atividade
+     * Obrigatório para atividades executadas
+     */
+    @Column(name = "coren_realizacao", length = 20)
+    private String corenRealizacao;
+
+    /**
+     * ID do medicamento (referência à tabela de medicamentos)
+     */
+    @Column(name = "medicamento_id")
+    private Long medicamentoId;
+
+    /**
+     * Nome do medicamento
+     */
+    @Column(name = "medicamento_nome", length = 200)
+    private String medicamentoNome;
+
+    /**
+     * Dose do medicamento (ex: "500mg", "10ml")
+     */
+    @Column(name = "dose", length = 100)
+    private String dose;
+
+    /**
+     * Via de administração (VO, IV, IM, SC, etc.)
+     */
+    @Column(name = "via_administracao", length = 50)
+    private String viaAdministracao;
+
+    /**
+     * Diluição (se aplicável)
+     */
+    @Column(name = "diluicao", length = 200)
+    private String diluicao;
+
+    /**
+     * Indica se houve reação adversa
+     */
+    @Column(name = "reacao_adversa")
+    @Builder.Default
+    private Boolean reacaoAdversa = false;
+
+    /**
+     * Descrição da reação adversa (se houver)
+     */
+    @Column(name = "descricao_reacao", columnDefinition = "TEXT")
+    private String descricaoReacao;
+
+    /**
+     * Motivo de recusa (se paciente recusou)
+     */
+    @Column(name = "motivo_recusa", columnDefinition = "TEXT")
+    private String motivoRecusa;
+
+    /**
+     * Hash SHA-256 da assinatura digital
+     * Vincula com a tabela assinaturas_digitais
+     */
+    @Column(name = "hash_assinatura_digital", length = 255)
+    private String hashAssinaturaDigital;
+
+    /**
+     * Checklist dos 5 Certos (obrigatório para medicação)
+     */
+    @OneToOne(mappedBy = "atividadeEnfermagem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ChecklistCincoCertos checklist;
+
+    // ========== FIM NOVOS CAMPOS ==========
 
     @CreationTimestamp
     @Column(name = "data_criacao", nullable = false, updatable = false)

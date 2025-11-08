@@ -86,11 +86,11 @@ public class UnidadeSaudeService {
                             // Retorna um DTO básico em caso de erro
                             UnidadeSaudeDTO dto = new UnidadeSaudeDTO();
                             if (entity != null) {
-                                dto.setId(entity.getId());
-                                dto.setNome(entity.getNome());
-                                dto.setCodigoCnes(entity.getCodigoCnes());
-                                dto.setTipo(entity.getTipo());
-                                dto.setAtiva(entity.getAtiva());
+                            dto.setId(entity.getId());
+                            dto.setNome(entity.getNome());
+                            dto.setCodigoCnes(entity.getCodigoCnes());
+                            dto.setTipo(entity.getTipo());
+                            dto.setAtiva(entity.getAtiva());
                             }
                             dto.setPerfisPermitidos(new java.util.ArrayList<>());
                             return dto;
@@ -99,7 +99,7 @@ public class UnidadeSaudeService {
                     .collect(Collectors.toList());
 
             logger.debug("Conversão concluída. {} DTOs criados", unidades.size());
-            
+
             // Atualiza o cache
             cacheListaUnidades = unidades;
             cacheListaTimestamp = System.currentTimeMillis();

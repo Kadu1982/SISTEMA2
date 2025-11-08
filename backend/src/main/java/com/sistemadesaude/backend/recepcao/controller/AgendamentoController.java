@@ -228,17 +228,17 @@ public class AgendamentoController {
         }
         
         String novoStatus = request.getStatus();
-        if (novoStatus == null || novoStatus.trim().isEmpty()) {
-            log.warn("Status não informado para agendamento ID: {}", agendamentoId);
+            if (novoStatus == null || novoStatus.trim().isEmpty()) {
+                log.warn("Status não informado para agendamento ID: {}", agendamentoId);
             return ResponseEntity.badRequest().body(Map.of("error", "Status é obrigatório"));
-        }
+            }
         
         novoStatus = novoStatus.trim().toUpperCase();
         log.info("Atualizando status do agendamento ID: {} para {}", agendamentoId, novoStatus);
         
-        try {
-            StatusAgendamento.valueOf(novoStatus);
-        } catch (IllegalArgumentException e) {
+            try {
+                StatusAgendamento.valueOf(novoStatus);
+            } catch (IllegalArgumentException e) {
             log.warn("Status inválido '{}' para agendamento ID: {}. Valores válidos: {}", 
                     novoStatus, agendamentoId, Arrays.toString(StatusAgendamento.values()));
             return ResponseEntity.badRequest().body(Map.of(
@@ -248,7 +248,7 @@ public class AgendamentoController {
                     .map(Enum::name)
                     .collect(Collectors.toList())
             ));
-        }
+            }
         
         try {
             agendamentoService.atualizarStatus(agendamentoId, novoStatus);
