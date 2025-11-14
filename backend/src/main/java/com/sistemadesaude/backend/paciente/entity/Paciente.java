@@ -130,6 +130,9 @@ public class Paciente {
     @Column(name = "data_ultima_menstruacao")
     private LocalDate dataUltimaMenstruacao;
 
+    @Column(name = "alergias", length = 1000)
+    private String alergias;
+
 
 
     /**

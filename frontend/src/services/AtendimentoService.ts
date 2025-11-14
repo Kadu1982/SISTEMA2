@@ -383,6 +383,58 @@ class AtendimentoService {
     }
 
     /**
+     * Listar atendimentos por paciente
+     * ✅ NOVO: Método específico para buscar atendimentos de um paciente
+     */
+    async listarPorPaciente(pacienteId: string | number): Promise<Atendimento[]> {
+        try {
+            const pacienteIdStr = String(pacienteId);
+            
+            // Endpoint específico: /api/atendimentos/paciente/{id}
+            const resp = await apiService.get(`${this.base}/paciente/${pacienteIdStr}`);
+            const data = unwrap<any>(resp);
+            
+            // Backend retorna { success: true, message: "...", data: [...] }
+            if (data && typeof data === 'object') {
+                // Se tem campo 'data', usar ele
+                if (Array.isArray(data.data)) {
+                    return data.data;
+                }
+                // Se 'data' não é array mas existe, pode ser que o backend retornou direto
+                if (data.data !== undefined) {
+                    return Array.isArray(data.data) ? data.data : [];
+                }
+            }
+            
+            // Se retornar array direto (fallback)
+            if (Array.isArray(data)) {
+                return data;
+            }
+            
+            // Se retornar uma página, extrair o conteúdo
+            if (data && Array.isArray(data.content)) {
+                return data.content;
+            }
+            
+            // Se nada funcionou, retornar array vazio
+            console.warn("⚠️ Formato de resposta inesperado em listarPorPaciente:", data);
+            return [];
+        } catch (err: any) {
+            const msg = extractBackendMessage(err);
+            console.error("❌ listarPorPaciente:", msg, err);
+            // Não lançar erro, retornar array vazio para não quebrar a UI
+            return [];
+        }
+    }
+
+    /**
+     * Listar todos os atendimentos (sem filtros)
+     */
+    async listarTodos(): Promise<Atendimento[]> {
+        return this.listar();
+    }
+
+    /**
      * Baixar PDF do atendimento
      */
     async baixarPdf(atendimentoId: string | number): Promise<Blob> {

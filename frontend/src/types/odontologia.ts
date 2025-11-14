@@ -18,16 +18,46 @@ export type TipoTratamento =
     | "obturado"
     | "perdido"
     | "implante"
-    | "protese";
+    | "protese"
+    | "restauracao"
+    | "canal"
+    | "coroa"
+    | "ponte"
+    | "extracao"
+    | "gengivite"
+    | "periodontite"
+    | "mobilidade"
+    | "fratura"
+    | "ausente";
 
-/** Registro mínimo de um dente no odontograma (FDI/ISO: 11..48) */
+/** Registro completo de um dente no odontograma (FDI/ISO: 11..48) */
 export interface Dente {
     /** Número do dente no padrão FDI/ISO (ex.: 11..18, 21..28, 31..38, 41..48) */
     numero: number;
     /** Estado/tratamento atual do dente */
     estado: TipoTratamento;
+    /** Faces afetadas (M, D, O, V, P, L) */
+    faces?: Face[];
     /** Observações livres (opcional) */
     observacoes?: string;
+    /** Data do último tratamento */
+    dataUltimoTratamento?: string;
+    /** Histórico de tratamentos */
+    historico?: TratamentoHistorico[];
+}
+
+/** Registro de tratamento histórico */
+export interface TratamentoHistorico {
+    /** Data do tratamento */
+    data: string;
+    /** Tipo de tratamento realizado */
+    tipo: TipoTratamento;
+    /** Faces tratadas */
+    faces?: Face[];
+    /** Observações do tratamento */
+    observacoes?: string;
+    /** Profissional que realizou */
+    profissional?: string;
 }
 
 /** Procedimento SIA/SUS (domínio reduzido, suficiente para registro) */
@@ -93,10 +123,60 @@ export function gerarDentesPermanentes(): Dente[] {
 
 /** Mapa de cores padrão por tratamento (útil para legendas) */
 export const CORES_TRATAMENTO: Readonly<Record<TipoTratamento, string>> = {
-    sadio: "#4ade80",     // Verde
-    carie: "#ef4444",     // Vermelho
-    obturado: "#3b82f6",  // Azul
-    perdido: "#6b7280",   // Cinza
-    implante: "#8b5cf6",  // Roxo
-    protese: "#f59e0b",   // Amarelo
+    sadio: "#4ade80",        // Verde claro
+    carie: "#ef4444",        // Vermelho
+    obturado: "#3b82f6",     // Azul
+    perdido: "#6b7280",      // Cinza
+    implante: "#8b5cf6",    // Roxo
+    protese: "#f59e0b",     // Amarelo
+    restauracao: "#06b6d4", // Ciano
+    canal: "#6366f1",       // Índigo
+    coroa: "#ec4899",       // Rosa
+    ponte: "#14b8a6",       // Teal
+    extracao: "#dc2626",    // Vermelho escuro
+    gengivite: "#f97316",   // Laranja
+    periodontite: "#991b1b", // Vermelho muito escuro
+    mobilidade: "#7c3aed",  // Violeta
+    fratura: "#b91c1c",     // Vermelho escuro
+    ausente: "#1f2937",     // Cinza escuro
+} as const;
+
+/** Ícones para cada tipo de tratamento */
+export const ICONES_TRATAMENTO: Readonly<Record<TipoTratamento, string>> = {
+    sadio: "✓",
+    carie: "⚠",
+    obturado: "●",
+    perdido: "✕",
+    implante: "◉",
+    protese: "◯",
+    restauracao: "■",
+    canal: "◼",
+    coroa: "◾",
+    ponte: "▮",
+    extracao: "✖",
+    gengivite: "▲",
+    periodontite: "▼",
+    mobilidade: "◄",
+    fratura: "►",
+    ausente: "○",
+} as const;
+
+/** Labels descritivos para cada tipo de tratamento */
+export const LABELS_TRATAMENTO: Readonly<Record<TipoTratamento, string>> = {
+    sadio: "São",
+    carie: "Cárie",
+    obturado: "Obturado",
+    perdido: "Perdido",
+    implante: "Implante",
+    protese: "Prótese",
+    restauracao: "Restauração",
+    canal: "Canal",
+    coroa: "Coroa",
+    ponte: "Ponte",
+    extracao: "Extração",
+    gengivite: "Gengivite",
+    periodontite: "Periodontite",
+    mobilidade: "Mobilidade",
+    fratura: "Fratura",
+    ausente: "Ausente",
 } as const;

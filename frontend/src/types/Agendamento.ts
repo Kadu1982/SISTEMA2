@@ -228,6 +228,7 @@ export enum StatusAgendamento {
 export enum TipoAtendimento {
     CONSULTA_MEDICA = 'consulta_medica',
     CONSULTA_ENFERMAGEM = 'consulta_enfermagem',
+    CONSULTA_ODONTOLOGICA = 'consulta_odontologica',
     EXAME_LABORATORIAL = 'exame_laboratorial',
     EXAME_IMAGEM = 'exame_imagem',
     PROCEDIMENTO = 'procedimento',
@@ -282,6 +283,16 @@ export const ESPECIALIDADES_ENFERMAGEM: readonly OpcaoAgendamento[] = [
     { value: 'pre_natal', label: 'Pré-natal', categoria: 'acompanhamento', duracaoEstimada: 30 },
     { value: 'puericultura', label: 'Puericultura', categoria: 'acompanhamento', duracaoEstimada: 25 },
     { value: 'coleta_exames', label: 'Coleta de Exames', categoria: 'procedimento', duracaoEstimada: 15 } // ✅ NOVO
+] as const;
+
+export const ESPECIALIDADES_ODONTOLOGICAS: readonly OpcaoAgendamento[] = [
+    { value: 'odontologia_geral', label: 'Odontologia Geral', categoria: 'odontologia', duracaoEstimada: 60 },
+    { value: 'odontopediatria', label: 'Odontopediatria', categoria: 'odontologia', duracaoEstimada: 45 },
+    { value: 'ortodontia', label: 'Ortodontia', categoria: 'odontologia', duracaoEstimada: 60 },
+    { value: 'endodontia', label: 'Endodontia', categoria: 'odontologia', duracaoEstimada: 60 },
+    { value: 'periodontia', label: 'Periodontia', categoria: 'odontologia', duracaoEstimada: 45 },
+    { value: 'cirurgia_oral', label: 'Cirurgia Oral', categoria: 'odontologia', duracaoEstimada: 60 },
+    { value: 'prostese', label: 'Prótese', categoria: 'odontologia', duracaoEstimada: 60 }
 ] as const;
 
 // ✅ CONSTANTES CORRIGIDAS - ESTRUTURA SIMPLES PARA MULTISELECT
@@ -386,6 +397,12 @@ export function getEspecialidadesPorTipo(tipoAtendimento: string): Especialidade
 
         case TipoAtendimento.CONSULTA_ENFERMAGEM:
             return ESPECIALIDADES_ENFERMAGEM.map(esp => ({
+                value: esp.value,
+                label: esp.label
+            }));
+
+        case TipoAtendimento.CONSULTA_ODONTOLOGICA:
+            return ESPECIALIDADES_ODONTOLOGICAS.map(esp => ({
                 value: esp.value,
                 label: esp.label
             }));
@@ -605,6 +622,7 @@ export function getDuracaoEstimada(tipo: string, especialidade?: string): number
         const allOptions = [
             ...ESPECIALIDADES_MEDICAS,
             ...ESPECIALIDADES_ENFERMAGEM,
+            ...ESPECIALIDADES_ODONTOLOGICAS,
             ...TIPOS_PROCEDIMENTO,
             ...TIPOS_VACINA
         ];

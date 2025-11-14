@@ -202,7 +202,9 @@ export const TriagemPaciente: React.FC = () => {
                     .filter(Boolean)
                     .join(" • ");
                 setVinculoTerritorio(texto);
-            } catch {
+            } catch (error: any) {
+                console.error(`Erro ao carregar informações do paciente ${pacienteSelecionado.pacienteId}:`, error);
+                // Define valores padrão em caso de erro para não quebrar a aplicação
                 setVinculoTerritorio("");
             }
 
@@ -567,7 +569,9 @@ export const TriagemPaciente: React.FC = () => {
                 const todasAlergias = [...new Set([...alergiasExistentes, ...palavrasAlergias])];
                 
                 // Atualiza paciente com todas as alergias
+                // ✅ CORREÇÃO: Garante que o ID está presente e não envia campos desnecessários
                 await apiService.put(`/pacientes/${pacienteId}`, {
+                    id: pacienteId, // Garante que o ID está presente
                     ...pacienteData,
                     alergias: todasAlergias.join(", "),
                 });

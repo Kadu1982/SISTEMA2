@@ -33,15 +33,39 @@ public interface PacienteRepository extends JpaRepository<Paciente, Long> {
 
     /**
      * Busca pacientes por múltiplos critérios usando query personalizada.
+     * Busca por:
+     * - Nome completo (startsWith - mais eficiente)
+     * - CPF (exato ou parcial quando tiver 3+ dígitos)
+     * - CNS (exato ou parcial quando tiver 3+ dígitos)
+     * - Nome social (contains)
+     * - Nome da mãe (contains)
      */
     @Query("""
         SELECT p FROM Paciente p
-        WHERE LOWER(p.nomeCompleto) LIKE LOWER(CONCAT('%', :termo, '%'))
-        OR p.cpf = :termo
-        OR p.cns = :termo
-        OR LOWER(p.nomeSocial) LIKE LOWER(CONCAT('%', :termo, '%'))
-        OR LOWER(p.nomeMae) LIKE LOWER(CONCAT('%', :termo, '%'))
-        ORDER BY p.nomeCompleto ASC
+        WHERE (
+            (:termo IS NOT NULL AND :termo != '' AND LOWER(p.nomeCompleto) LIKE LOWER(CONCAT(:termo, '%')))
+            OR (:termo IS NOT NULL AND :termo != '' AND p.nomeSocial IS NOT NULL AND LOWER(p.nomeSocial) LIKE LOWER(CONCAT('%', :termo, '%')))
+            OR (:termo IS NOT NULL AND :termo != '' AND p.nomeMae IS NOT NULL AND LOWER(p.nomeMae) LIKE LOWER(CONCAT('%', :termo, '%')))
+        )
+        OR (
+            (:termoSemMascara IS NOT NULL AND :termoSemMascara != '' AND LENGTH(:termoSemMascara) >= 3 AND (
+                p.cpf = :termoSemMascara
+                OR p.cpf LIKE CONCAT(:termoSemMascara, '%')
+                OR p.cns = :termoSemMascara
+                OR p.cns LIKE CONCAT(:termoSemMascara, '%')
+            ))
+        )
+        ORDER BY 
+            CASE 
+                WHEN (:termo IS NOT NULL AND :termo != '' AND LOWER(p.nomeCompleto) LIKE LOWER(CONCAT(:termo, '%'))) THEN 1
+                WHEN (:termoSemMascara IS NOT NULL AND :termoSemMascara != '' AND p.cpf = :termoSemMascara) THEN 2
+                WHEN (:termoSemMascara IS NOT NULL AND :termoSemMascara != '' AND p.cns = :termoSemMascara) THEN 3
+                WHEN (:termoSemMascara IS NOT NULL AND :termoSemMascara != '' AND LENGTH(:termoSemMascara) >= 3 AND (p.cpf LIKE CONCAT(:termoSemMascara, '%') OR p.cns LIKE CONCAT(:termoSemMascara, '%'))) THEN 4
+                ELSE 5
+            END,
+            p.nomeCompleto ASC
         """)
-    List<Paciente> buscarPorMultiplosCriterios(@Param("termo") String termo);
+    List<Paciente> buscarPorMultiplosCriterios(
+            @Param("termo") String termo,
+            @Param("termoSemMascara") String termoSemMascara);
 }

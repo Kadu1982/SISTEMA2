@@ -9,6 +9,7 @@ import com.sistemadesaude.backend.assistenciasocial.entity.ServicoSocioassistenc
 import com.sistemadesaude.backend.assistenciasocial.entity.UnidadeAssistencial;
 import com.sistemadesaude.backend.assistenciasocial.service.AtendimentoAssistencialService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -30,7 +31,7 @@ public class AtendimentoAssistencialController {
     private final AtendimentoAssistencialService atendimentoService;
 
     @Autowired
-    public AtendimentoAssistencialController(AtendimentoAssistencialService atendimentoService) {
+    public AtendimentoAssistencialController(@Lazy AtendimentoAssistencialService atendimentoService) {
         this.atendimentoService = atendimentoService;
     }
 

@@ -1,33 +1,68 @@
-// AULA: Corrigimos e unificamos as interfaces para refletir o que o componente precisa.
-// Agora temos um único tipo `Prescricao` que será usado em toda a funcionalidade.
-// Note que os nomes dos campos (`id`, `data`, `medicamentos`) agora correspondem
-// ao que o componente `AtendimentoFarmacia.tsx` espera.
+// frontend/src/types/prescricao.ts
 
-/**
- * Representa um item de medicamento dentro de uma prescrição ou dispensação.
- * Esta estrutura corresponde aos campos do formulário em `AtendimentoFarmacia.tsx`.
- */
-export interface MedicamentoItem {
-    nome: string;
-    dosagem: string;
-    instrucoes: string;
+export type TipoPrescricao = 'INTERNO' | 'EXTERNO';
+
+export interface PrescricaoMedicamento {
+    id?: number;
+    atendimentoId?: number;
+    tipoPrescricao: TipoPrescricao;
+    medicamentoCodigo?: string;
+    medicamentoNome: string;
+    principioAtivoId?: number;
+    principioAtivo: string;
+    numeroReceita?: number;
+    medicamentoControlado: boolean;
+    quantidade?: number;
+    unidade?: string;
+    viaAdministracao?: string;
+    dataHoraInicial?: string; // ISO string
+    dataHoraFinal?: string; // ISO string
+    duracaoDias?: number;
+    aprazamento?: string;
+    instrucaoDosagem?: string;
+    observacoes?: string;
+    ordem?: number;
+    ativo?: boolean;
 }
 
-/**
- * Representa uma prescrição completa, como é usada pelo componente de atendimentover.
- */
-export interface Prescricao {
-    id: string; // O uso de `.substring` no componente sugere que o ID é uma string (ex: UUID).
-    pacienteId: string;
-    nomeMedico: string;
-    data: string; // Formato de data em string (ISO 8601)
-    medicamentos: MedicamentoItem[];
-}
+// Opções de aprazamento
+export const APRAZAMENTOS = [
+    { value: '1_1_HORA', label: '1/1 Hora' },
+    { value: '2_2_HORAS', label: '2/2 Horas' },
+    { value: '4_4_HORAS', label: '4/4 Horas' },
+    { value: '6_6_HORAS', label: '6/6 Horas' },
+    { value: '8_8_HORAS', label: '8/8 Horas' },
+    { value: '12_12_HORAS', label: '12/12 Horas' },
+    { value: '1X_AO_DIA', label: '1x Ao Dia' },
+    { value: '2X_AO_DIA', label: '2x Ao Dia' },
+];
 
-/**
- * Define o formato dos dados para criar uma dispensação avulsa via API.
- */
-export interface DispensacaoAvulsaPayload {
-    pacienteId: string;
-    medicamentos: MedicamentoItem[];
-}
+// Unidades de medida comuns
+export const UNIDADES_MEDIDA = [
+    { value: 'COM', label: 'COM - Comprimido' },
+    { value: 'CAP', label: 'CAP - Cápsula' },
+    { value: 'ML', label: 'ML - Mililitro' },
+    { value: 'MG', label: 'MG - Miligrama' },
+    { value: 'G', label: 'G - Grama' },
+    { value: 'GTS', label: 'GTS - Gotas' },
+    { value: 'AMP', label: 'AMP - Ampola' },
+    { value: 'FR', label: 'FR - Frasco' },
+    { value: 'CX', label: 'CX - Caixa' },
+    { value: 'UN', label: 'UN - Unidade' },
+];
+
+// Vias de administração comuns
+export const VIAS_ADMINISTRACAO = [
+    { value: 'VO', label: 'VO - Via Oral' },
+    { value: 'IV', label: 'IV - Intravenosa' },
+    { value: 'IM', label: 'IM - Intramuscular' },
+    { value: 'SC', label: 'SC - Subcutânea' },
+    { value: 'ID', label: 'ID - Intradérmica' },
+    { value: 'IN', label: 'IN - Intranasal' },
+    { value: 'OF', label: 'OF - Oftálmica' },
+    { value: 'OT', label: 'OT - Otológica' },
+    { value: 'TD', label: 'TD - Tópica/Dérmica' },
+    { value: 'RT', label: 'RT - Retal' },
+    { value: 'VG', label: 'VG - Vaginal' },
+    { value: 'INH', label: 'INH - Inalatória' },
+];

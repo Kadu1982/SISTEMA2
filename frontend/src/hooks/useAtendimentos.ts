@@ -5,17 +5,19 @@ import { atendimentoService, Atendimento, AtendimentoRequest } from "@/services/
 export function useAtendimentos(pacienteId?: string) {
   return useQuery({
     queryKey: ["atendimentos", pacienteId],
-    queryFn: () => {
+    queryFn: async () => {
       if (pacienteId) {
-        return atendimentoService.listarPorPaciente(pacienteId);
+        const atendimentos = await atendimentoService.listarPorPaciente(pacienteId);
+        console.log("📋 Atendimentos carregados para paciente", pacienteId, ":", atendimentos.length);
+        return atendimentos;
       } else {
         return atendimentoService.listarTodos();
       }
     },
-    enabled: true, // Sempre habilitado
-    staleTime: 5 * 60 * 1000, // 5 minutos
-    retry: 3,
-    refetchOnWindowFocus: false,
+    enabled: !!pacienteId, // ✅ CORRIGIDO: Só habilitar quando houver pacienteId
+    staleTime: 1 * 60 * 1000, // ✅ REDUZIDO: 1 minuto para atualizar mais rápido
+    retry: 2,
+    refetchOnWindowFocus: true, // ✅ HABILITADO: Recarregar quando voltar à janela
   });
 }
 

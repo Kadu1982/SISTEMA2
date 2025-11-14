@@ -9,6 +9,7 @@ import { ptBR } from "date-fns/locale";
 import { Clock, User, MapPin, Stethoscope, Settings, Search, RefreshCw, Maximize2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 interface BarraSuperiorAtendimentoProps {
     pacienteNome?: string;
@@ -20,6 +21,8 @@ interface BarraSuperiorAtendimentoProps {
     setor?: string;
     especialidade?: string;
     dataInicioAtendimento?: Date | string;
+    demandaEspontanea?: boolean;
+    onDemandaEspontaneaChange?: (checked: boolean) => void;
     onSettingsClick?: () => void;
     onSearchClick?: () => void;
     onRefreshClick?: () => void;
@@ -36,6 +39,8 @@ export const BarraSuperiorAtendimento: React.FC<BarraSuperiorAtendimentoProps> =
     setor,
     especialidade,
     dataInicioAtendimento,
+    demandaEspontanea = false,
+    onDemandaEspontaneaChange,
     onSettingsClick,
     onSearchClick,
     onRefreshClick,
@@ -70,7 +75,8 @@ export const BarraSuperiorAtendimento: React.FC<BarraSuperiorAtendimentoProps> =
         return () => clearInterval(interval);
     }, [dataInicioAtendimento]);
 
-    if (!pacienteNome) {
+    // Se não há paciente mas há toggle de demanda espontânea, ainda mostra a barra
+    if (!pacienteNome && !onDemandaEspontaneaChange) {
         return null;
     }
 
@@ -79,37 +85,39 @@ export const BarraSuperiorAtendimento: React.FC<BarraSuperiorAtendimentoProps> =
             <div className="container mx-auto px-4 py-3">
                 <div className="flex items-center justify-between gap-4">
                     {/* Informações do Paciente */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <User className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                                <div className="min-w-0">
-                                    <div className="font-semibold text-gray-900 truncate">
-                                        {pacienteNome}
-                                        {pacienteIdade !== null && pacienteIdade !== undefined && (
-                                            <span className="text-gray-600 font-normal ml-2">
-                                                {pacienteIdade} {pacienteIdade === 1 ? "ano" : "anos"}
-                                            </span>
-                                        )}
-                                        {pacienteSexo && (
-                                            <Badge variant="outline" className="ml-2 text-xs">
-                                                {pacienteSexo}
-                                            </Badge>
+                    {pacienteNome && (
+                        <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-3 flex-wrap">
+                                <div className="flex items-center gap-2 min-w-0">
+                                    <User className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                                    <div className="min-w-0">
+                                        <div className="font-semibold text-gray-900 truncate">
+                                            {pacienteNome}
+                                            {pacienteIdade !== null && pacienteIdade !== undefined && (
+                                                <span className="text-gray-600 font-normal ml-2">
+                                                    {pacienteIdade} {pacienteIdade === 1 ? "ano" : "anos"}
+                                                </span>
+                                            )}
+                                            {pacienteSexo && (
+                                                <Badge variant="outline" className="ml-2 text-xs">
+                                                    {pacienteSexo}
+                                                </Badge>
+                                            )}
+                                        </div>
+                                        {pacienteMunicipio && (
+                                            <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
+                                                <MapPin className="h-3 w-3" />
+                                                <span className="truncate">{pacienteMunicipio}</span>
+                                            </div>
                                         )}
                                     </div>
-                                    {pacienteMunicipio && (
-                                        <div className="text-sm text-gray-600 flex items-center gap-1 mt-1">
-                                            <MapPin className="h-3 w-3" />
-                                            <span className="truncate">{pacienteMunicipio}</span>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
+                            {pacienteEndereco && (
+                                <div className="text-xs text-gray-500 mt-1 truncate">{pacienteEndereco}</div>
+                            )}
                         </div>
-                        {pacienteEndereco && (
-                            <div className="text-xs text-gray-500 mt-1 truncate">{pacienteEndereco}</div>
-                        )}
-                    </div>
+                    )}
 
                     {/* Informações do Atendimento */}
                     <div className="flex items-center gap-4 flex-wrap">
@@ -124,19 +132,29 @@ export const BarraSuperiorAtendimento: React.FC<BarraSuperiorAtendimentoProps> =
                         )}
                     </div>
 
-                    {/* Timer de Atendimento */}
-                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200">
-                        <Clock className="h-4 w-4 text-blue-600" />
-                        <div className="text-sm font-mono font-semibold text-blue-900">
-                            <span className="text-xs text-gray-600 mr-1">Tempo de atendimento</span>
-                            <div className="flex items-center gap-1">
-                                <span>{tempoDecorrido.split(":")[0]}</span>
-                                <span className="text-gray-400">:</span>
-                                <span>{tempoDecorrido.split(":")[1]}</span>
-                                <span className="text-gray-400">:</span>
-                                <span>{tempoDecorrido.split(":")[2]}</span>
+                    {/* Timer de Atendimento e Demanda Espontânea */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-md border border-blue-200">
+                            <Clock className="h-4 w-4 text-blue-600" />
+                            <div className="text-sm font-mono font-semibold text-blue-900">
+                                <span className="text-xs text-gray-600 mr-1">Tempo de atendimento</span>
+                                <div className="flex items-center gap-1">
+                                    <span>{tempoDecorrido.split(":")[0]}</span>
+                                    <span className="text-gray-400">:</span>
+                                    <span>{tempoDecorrido.split(":")[1]}</span>
+                                    <span className="text-gray-400">:</span>
+                                    <span>{tempoDecorrido.split(":")[2]}</span>
+                                </div>
                             </div>
                         </div>
+                        
+                        {/* Demanda Espontânea */}
+                        {onDemandaEspontaneaChange && (
+                            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md border border-gray-200 bg-white">
+                                <span className="text-sm text-gray-700 whitespace-nowrap">Demanda Espontânea</span>
+                                <Switch checked={demandaEspontanea} onCheckedChange={onDemandaEspontaneaChange} />
+                            </div>
+                        )}
                     </div>
 
                     {/* Botões de Ação */}

@@ -6,8 +6,8 @@
 // para evitar o erro do <Slot.SlotClone> do Radix (via <FormControl>).
 // -----------------------------------------------------------------------------
 
-import React, { useState, useEffect } from "react";
-import { useForm } from "react-hook-form";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 
@@ -26,10 +26,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import CidBusca from "@/components/atendimento/CidBusca";
 import MotivoDesfechoSelect from "@/components/atendimento/MotivoDesfechoSelect";
 import RemumeBusca from "@/components/atendimento/RemumeBusca";
+import PrescricaoMedicamentoForm from "@/components/prescricao/PrescricaoMedicamentoForm";
 
 import { Paciente } from "@/types/paciente/Paciente";
 import { Cid } from "@/types/Cid";
 import { MedicamentoRemume } from "@/types/Remume";
+import { PrescricaoMedicamento } from "@/types/prescricao";
 
 import { toast } from "sonner";
 import apiService from "@/services/apiService";
@@ -87,13 +89,29 @@ const atendimentoSchema = z
     })
     .refine(
         (data) => {
-            // Regra de negócio: pelo menos 1 entre RFE e Diagnóstico do CIAP
-            const hasRfe = !!data.ciapRfe;
-            const hasDiag = Array.isArray(data.ciapDiagnosticos) && data.ciapDiagnosticos.length > 0;
+            // Regra de negócio: pelo menos 1 entre RFE e Diagnóstico do CIAP (se houver dados CIAP)
+            // Verificar se ciapRfe existe, não é undefined/null e não é string vazia
+            const hasRfe = data.ciapRfe !== undefined && 
+                          data.ciapRfe !== null && 
+                          typeof data.ciapRfe === 'string' && 
+                          data.ciapRfe.trim().length > 0;
+            // Verificar se ciapDiagnosticos tem pelo menos um item válido
+            const hasDiag = Array.isArray(data.ciapDiagnosticos) && 
+                           data.ciapDiagnosticos.length > 0 &&
+                           data.ciapDiagnosticos.some((d: string) => d && d.trim().length > 0);
+            
+            // Se ambos estão vazios/undefined, permitir (CIAP é opcional)
+            // A validação só falha se o usuário começou a preencher mas não completou
+            // Se ambos estão vazios, é considerado válido (CIAP não preenchido)
+            if (!hasRfe && !hasDiag) {
+                return true; // CIAP é opcional, então ambos vazios é válido
+            }
+            
+            // Se pelo menos um está preenchido, é válido
             return hasRfe || hasDiag;
         },
         {
-            message: "Informe pelo menos 1 entre RFE (01–29) ou Diagnóstico (70–99) do CIAP-2.",
+            message: "Se preencher CIAP, informe pelo menos 1 entre RFE (01–29) ou Diagnóstico (70–99) do CIAP-2.",
             path: ["ciapRfe"],
         }
     )
@@ -138,6 +156,7 @@ interface AtendimentoFormProps {
     initialData?: Partial<AtendimentoFormData>;
     atendimentoId?: string;
     readOnly?: boolean;
+    hideSaveButton?: boolean;
 }
 
 // ✅ INTERFACE PARA DADOS DA TRIAGEM
@@ -165,11 +184,13 @@ export const AtendimentoForm = ({
                                     initialData,
                                     atendimentoId,
                                     readOnly = false,
+                                    hideSaveButton = false,
                                 }: AtendimentoFormProps) => {
     // ✅ ESTADOS LOCAIS
     const [pacienteSelecionado, setPacienteSelecionado] = useState<Paciente | null>(null);
     const [cidSelecionado, setCidSelecionado] = useState<Cid | null>(null);
     const [medicamentoRemumeSelecionado, setMedicamentoRemumeSelecionado] = useState<MedicamentoRemume | null>(null);
+    const [prescricoesMedicamentos, setPrescricoesMedicamentos] = useState<PrescricaoMedicamento[]>([]);
     const [dadosTriagem, setDadosTriagem] = useState<DadosTriagem | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isEditing, setIsEditing] = useState(!atendimentoId);
@@ -293,9 +314,83 @@ export const AtendimentoForm = ({
         defaultValues: getDefaultValues(),
     });
 
+    // ✅ CALLBACKS ESTÁVEIS para MotivoDesfechoSelect (evita loops infinitos)
+    // Usando apenas setValue que é estável entre renders
+    const { setValue } = form;
+    
+    const handleMotivoChange = useCallback((value: string) => {
+        setValue("motivoDesfecho", value, { shouldValidate: false, shouldDirty: true });
+        if (value !== "03") {
+            setValue("especialidadeEncaminhamento", "", { shouldValidate: false, shouldDirty: false });
+        }
+        if (value !== "02" && value !== "04") {
+            setValue("setorEncaminhamento", "", { shouldValidate: false, shouldDirty: false });
+            setValue("tiposCuidadosEnfermagem", [], { shouldValidate: false, shouldDirty: false });
+        }
+    }, [setValue]);
+
+    const handleEspecialidadeChange = useCallback((value: string) => {
+        setValue("especialidadeEncaminhamento", value, { shouldValidate: false, shouldDirty: true });
+    }, [setValue]);
+
+    const handleSetorChange = useCallback((value: string) => {
+        setValue("setorEncaminhamento", value, { shouldValidate: false, shouldDirty: true });
+    }, [setValue]);
+
+    const handleTiposCuidadosChange = useCallback((value: string[]) => {
+        setValue("tiposCuidadosEnfermagem", value, { shouldValidate: false, shouldDirty: true });
+    }, [setValue]);
+
+    // ✅ Usar useWatch para observar valores sem causar re-renderizações desnecessárias
+    // Usar defaultValue para evitar valores undefined que podem causar problemas
+    const motivoDesfechoWatch = useWatch({ control: form.control, name: "motivoDesfecho", defaultValue: "01" });
+    const especialidadeWatch = useWatch({ control: form.control, name: "especialidadeEncaminhamento", defaultValue: "" });
+    const setorWatch = useWatch({ control: form.control, name: "setorEncaminhamento", defaultValue: "" });
+    const tiposCuidadosWatchRaw = useWatch({ control: form.control, name: "tiposCuidadosEnfermagem", defaultValue: [] });
+    
+    // ✅ Estabilizar referência do array para evitar re-renderizações desnecessárias
+    // Comparar arrays por conteúdo, não por referência
+    const tiposCuidadosWatch = useMemo(() => {
+        if (!Array.isArray(tiposCuidadosWatchRaw)) {
+            return [];
+        }
+        // Retornar array ordenado e filtrado para garantir estabilidade
+        return [...tiposCuidadosWatchRaw].sort();
+    }, [tiposCuidadosWatchRaw?.length, tiposCuidadosWatchRaw?.join(',')]); // Comparar por tamanho e conteúdo
+
+    // ✅ Ref para rastrear se já inicializou para evitar resets múltiplos
+    const initializedRef = useRef<string | null>(null);
+    const previousInitialDataRef = useRef<string | null>(null);
+    
     // ✅ EFEITO: dados iniciais / prefill / triagem
     useEffect(() => {
-        if (!initialData) return;
+        if (!initialData) {
+            // Se não há initialData, resetar o ref para permitir inicialização futura
+            initializedRef.current = null;
+            previousInitialDataRef.current = null;
+            return;
+        }
+        
+        // Criar uma chave única baseada nos dados iniciais para evitar resets desnecessários
+        const initialDataKey = `${initialData.pacienteId || 'new'}-${initialData.id || 'new'}`;
+        
+        // Serializar initialData para comparação profunda
+        const initialDataStr = JSON.stringify({
+            pacienteId: initialData.pacienteId,
+            id: initialData.id,
+            queixaPrincipal: initialData.queixaPrincipal,
+            observacoes: initialData.observacoes
+        });
+        
+        // Só resetar se os dados iniciais realmente mudaram (comparação profunda)
+        if (initializedRef.current === initialDataKey && previousInitialDataRef.current === initialDataStr) {
+            console.log("⏭️ [FORM] Dados já inicializados e não mudaram, pulando reset");
+            return;
+        }
+        
+        console.log("🔄 [FORM] Inicializando formulário com dados:", initialDataKey);
+        initializedRef.current = initialDataKey;
+        previousInitialDataRef.current = initialDataStr;
 
         form.reset(getDefaultValues());
 
@@ -312,13 +407,11 @@ export const AtendimentoForm = ({
             setDadosTriagem(dadosExtraidos);
         }
 
-        // Configurar paciente se tiver ID
+        // Configurar paciente se tiver ID - será carregado no useEffect abaixo
         if (initialData.pacienteId) {
+            // Inicializa com ID, o nome será carregado no useEffect
             setPacienteSelecionado({
                 id: parseInt(initialData.pacienteId),
-                nomeCompleto: "Paciente Selecionado",
-                cpf: "",
-                dataNascimento: "",
             } as Paciente);
         }
 
@@ -329,7 +422,7 @@ export const AtendimentoForm = ({
                 descricao: initialData.diagnostico || "CID Selecionado",
             } as Cid);
         }
-    }, [initialData, form]);
+    }, [initialData]); // Removido 'form' das dependências - form.reset é estável
 
     // Limpa semanas se não gestante
     useEffect(() => {
@@ -339,14 +432,24 @@ export const AtendimentoForm = ({
     // ✅ SINCRONIZA ESTADO CIAP COM O FORMULÁRIO
     useEffect(() => {
         // Sincroniza ciapRfe (array -> string)
-        const ciapRfeValue = ciap.ciapRfe[0] || undefined;
-        form.setValue("ciapRfe", ciapRfeValue, { shouldValidate: true, shouldDirty: false });
+        // Usar undefined em vez de string vazia para passar na validação quando vazio
+        const ciapRfeValue = ciap.ciapRfe && ciap.ciapRfe.length > 0 && ciap.ciapRfe[0] 
+            ? ciap.ciapRfe[0] 
+            : undefined;
+        form.setValue("ciapRfe", ciapRfeValue, { shouldValidate: false, shouldDirty: false });
         
         // Sincroniza ciapDiagnosticos (array -> array)
-        form.setValue("ciapDiagnosticos", ciap.ciapDiagnosticos || [], { shouldValidate: true, shouldDirty: false });
+        // Usar array vazio em vez de undefined para manter consistência
+        const ciapDiagnosticosValue = Array.isArray(ciap.ciapDiagnosticos) && ciap.ciapDiagnosticos.length > 0
+            ? ciap.ciapDiagnosticos
+            : [];
+        form.setValue("ciapDiagnosticos", ciapDiagnosticosValue, { shouldValidate: false, shouldDirty: false });
         
         // Sincroniza ciapProcedimentos (array -> array)
-        form.setValue("ciapProcedimentos", ciap.ciapProcedimentos || [], { shouldValidate: true, shouldDirty: false });
+        const ciapProcedimentosValue = Array.isArray(ciap.ciapProcedimentos) && ciap.ciapProcedimentos.length > 0
+            ? ciap.ciapProcedimentos
+            : [];
+        form.setValue("ciapProcedimentos", ciapProcedimentosValue, { shouldValidate: false, shouldDirty: false });
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [ciap.ciapRfe, ciap.ciapDiagnosticos, ciap.ciapProcedimentos]);
 
@@ -401,6 +504,17 @@ export const AtendimentoForm = ({
 
             try {
                 const { data } = await apiService.get(`/pacientes/${p.id}`);
+                
+                // Se o paciente foi inicializado apenas com ID, atualiza com os dados completos
+                if (!p.nomeCompleto || p.nomeCompleto === "Paciente Selecionado") {
+                    setPacienteSelecionado({
+                        ...p,
+                        nomeCompleto: (data as any)?.nomeCompleto || (data as any)?.nome || "Paciente",
+                        cpf: (data as any)?.cpf || p.cpf,
+                        dataNascimento: (data as any)?.dataNascimento || p.dataNascimento,
+                    } as Paciente);
+                }
+                
                 const bairro = (data as any)?.bairro || "";
                 const municipio = (data as any)?.municipio || "";
                 const equipe = (data as any)?.prontuarioFamiliar || "";
@@ -418,9 +532,18 @@ export const AtendimentoForm = ({
                 } else {
                     setAlergiasPaciente([]);
                 }
-            } catch {
+            } catch (error: any) {
+                console.error(`Erro ao carregar informações adicionais do paciente ${p.id}:`, error);
+                // Define valores padrão em caso de erro para não quebrar a aplicação
                 setVinculoTerritorio("");
                 setAlergiasPaciente([]);
+                // Se o paciente não tinha nome completo, tenta usar o que já tem
+                if (!p.nomeCompleto || p.nomeCompleto === "Paciente Selecionado") {
+                    setPacienteSelecionado({
+                        ...p,
+                        nomeCompleto: p.nomeCompleto || "Paciente",
+                    } as Paciente);
+                }
             }
 
             try {
@@ -556,7 +679,7 @@ export const AtendimentoForm = ({
     };
 
     return (
-        <div className="w-full max-w-6xl mx-auto space-y-6">
+        <div className="w-full space-y-6">
             {/* Barra de Ações */}
             <div className="flex items-center justify-end gap-2">
                 {!readOnly && atendimentoId && (
@@ -568,6 +691,7 @@ export const AtendimentoForm = ({
 
             <Form {...form}>
                 <form 
+                    id="atendimento-form"
                     onSubmit={form.handleSubmit(
                         handleSubmit,
                         (errors) => {
@@ -580,7 +704,8 @@ export const AtendimentoForm = ({
                             
                             // Verifica erros específicos
                             if (errors.ciapRfe) {
-                                errorMessages.push(errors.ciapRfe.message || "Informe pelo menos 1 RFE (01–29) ou Diagnóstico (70–99) do CIAP-2.");
+                                const ciapMessage = errors.ciapRfe.message || "Informe pelo menos 1 RFE (01–29) ou Diagnóstico (70–99) do CIAP-2.";
+                                errorMessages.push(ciapMessage);
                             }
                             if (errors.cid10) {
                                 errorMessages.push(errors.cid10.message || "O campo CID é obrigatório.");
@@ -618,44 +743,76 @@ export const AtendimentoForm = ({
                 >
                     {/* ✅ ESTRUTURA DE TABS */}
                     <Tabs defaultValue="dados-clinicos" className="w-full">
-                        <TabsList className="grid w-full grid-cols-9">
-                            <TabsTrigger value="dados-usuario" className="flex items-center gap-2">
-                                <User className="h-4 w-4" />
-                                <span className="hidden sm:inline">Dados do Usuário</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="dados-triagem" className="flex items-center gap-2">
-                                <ClipboardList className="h-4 w-4" />
-                                <span className="hidden sm:inline">Triagem</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="dados-clinicos" className="flex items-center gap-2">
-                                <Stethoscope className="h-4 w-4" />
-                                <span className="hidden sm:inline">Dados Clínicos</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="prescricao" className="flex items-center gap-2">
-                                <Pill className="h-4 w-4" />
-                                <span className="hidden sm:inline">Prescrição</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="solicitar-exames" className="flex items-center gap-2">
-                                <FlaskConical className="h-4 w-4" />
-                                <span className="hidden sm:inline">Solicitar Exames</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="procedimentos-realizados" className="flex items-center gap-2">
-                                <Activity className="h-4 w-4" />
-                                <span className="hidden sm:inline">Procedimentos</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="diagnostico" className="flex items-center gap-2">
-                                <FileText className="h-4 w-4" />
-                                <span className="hidden sm:inline">Diagnóstico</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="encaminhamentos" className="flex items-center gap-2">
-                                <Send className="h-4 w-4" />
-                                <span className="hidden sm:inline">Encaminhamentos</span>
-                            </TabsTrigger>
-                            <TabsTrigger value="desfecho" className="flex items-center gap-2">
-                                <CheckCircle className="h-4 w-4" />
-                                <span className="hidden sm:inline">Desfecho</span>
-                            </TabsTrigger>
-                        </TabsList>
+                        <div className="w-full overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                            <TabsList className="inline-flex h-auto min-w-max gap-1.5 p-1.5 bg-muted rounded-md">
+                                <TabsTrigger 
+                                    value="dados-usuario" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Dados do Usuário</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="dados-triagem" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <ClipboardList className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Triagem</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="dados-clinicos" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <Stethoscope className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Dados Clínicos</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="prescricao" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <Pill className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Prescrição</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="solicitar-exames" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <FlaskConical className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline">Solicitar Exames</span>
+                                    <span className="sm:hidden">Exames</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="procedimentos-realizados" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <Activity className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline">Procedimentos</span>
+                                    <span className="sm:hidden">Proced.</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="diagnostico" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Diagnóstico</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="encaminhamentos" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <Send className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span className="hidden sm:inline">Encaminhamentos</span>
+                                    <span className="sm:hidden">Encamin.</span>
+                                </TabsTrigger>
+                                <TabsTrigger 
+                                    value="desfecho" 
+                                    className="flex items-center gap-1.5 px-3 py-2 text-xs sm:text-sm whitespace-nowrap min-w-fit"
+                                >
+                                    <CheckCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                    <span>Desfecho</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
 
                         {/* ✅ ABA: DADOS DO USUÁRIO */}
                         <TabsContent value="dados-usuario" className="space-y-4 mt-4">
@@ -724,26 +881,26 @@ export const AtendimentoForm = ({
                                 </div>
                             )}
 
-                                    {/* Saúde da Mulher (somente visualização, vindo do Acolhimento) */}
-                                    <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
-                                        <Label className="text-sm font-medium">Saúde da Mulher (Acolhimento)</Label>
-                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 text-sm">
-                                            <div>
-                                                <div className="text-gray-600">Data da Última Menstruação (DUM)</div>
-                                                <div className="mt-1 font-medium text-gray-800">{dumData || "Não informado"}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-600">Gestante</div>
-                                                <div className="mt-1 font-medium text-gray-800">{gestante ? "Sim" : "Não"}</div>
-                                            </div>
-                                            <div>
-                                                <div className="text-gray-600">Semanas de Gestação</div>
-                                                <div className="mt-1 font-medium text-gray-800">
-                                                    {gestante && semanasGestacao ? `${semanasGestacao} semana${Number(semanasGestacao) > 1 ? "s" : ""}` : "—"}
-                                                </div>
-                                            </div>
+                            {/* Saúde da Mulher (somente visualização, vindo do Acolhimento) */}
+                            <div className="border border-gray-200 rounded-md p-3 bg-gray-50">
+                                <Label className="text-sm font-medium">Saúde da Mulher (Acolhimento)</Label>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2 text-sm">
+                                    <div>
+                                        <div className="text-gray-600">Data da Última Menstruação (DUM)</div>
+                                        <div className="mt-1 font-medium text-gray-800">{dumData || "Não informado"}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600">Gestante</div>
+                                        <div className="mt-1 font-medium text-gray-800">{gestante ? "Sim" : "Não"}</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-gray-600">Semanas de Gestação</div>
+                                        <div className="mt-1 font-medium text-gray-800">
+                                            {gestante && semanasGestacao ? `${semanasGestacao} semana${Number(semanasGestacao) > 1 ? "s" : ""}` : "—"}
                                         </div>
                                     </div>
+                                </div>
+                            </div>
                                 </CardContent>
                             </Card>
                         </TabsContent>
@@ -839,19 +996,19 @@ export const AtendimentoForm = ({
 
                                     {/* Queixa principal (triagem) */}
                                     {initialData?.queixaPrincipal && (
-                                        <FormField
-                                            control={form.control}
+                            <FormField
+                                control={form.control}
                                             name="queixaPrincipal"
-                                            render={({ field }) => (
-                                                <FormItem>
+                                render={({ field }) => (
+                                    <FormItem>
                                                     <FormLabel>Queixa Principal (da Triagem)</FormLabel>
-                                                    <FormControl>
+                                        <FormControl>
                                                         <Textarea {...field} readOnly className="bg-gray-50" rows={2} />
-                                                    </FormControl>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
                                     )}
                                 </CardContent>
                             </Card>
@@ -897,132 +1054,18 @@ export const AtendimentoForm = ({
                                 )}
                             />
 
-                                    {/* ORIENTAÇÕES */}
-                            <FormField
-                                control={form.control}
-                                        name="orientacoes"
-                                render={({ field }) => (
-                                    <FormItem>
-                                                <FormLabel>Orientações ao Paciente</FormLabel>
-                                        <FormControl>
-                                                    <Textarea {...field} placeholder="Cuidados, restrições, sinais de alerta..." rows={3} disabled={!isEditing || readOnly} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
-
-                                    {/* RETORNO */}
-                            <FormField
-                                control={form.control}
-                                        name="retorno"
-                                render={({ field }) => (
-                                    <FormItem>
-                                                <FormLabel>Orientações de Retorno</FormLabel>
-                                        <FormControl>
-                                                    <Input {...field} placeholder="Ex: 7 dias, 15 dias, 1 mês, SN (se necessário)..." disabled={!isEditing || readOnly} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
-                            />
                                 </CardContent>
                             </Card>
                         </TabsContent>
 
                         {/* ✅ ABA: PRESCRIÇÃO */}
                         <TabsContent value="prescricao" className="space-y-4 mt-4">
-                    <Card>
-                        <CardHeader>
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Pill className="h-5 w-5" />
-                                        Prescrição de Medicamentos
-                                    </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {/* REMUME - Relação Municipal de Medicamentos Essenciais */}
-                            <div className="border border-blue-200 rounded-lg p-4 bg-blue-50/30">
-                                <h3 className="text-sm font-semibold text-blue-900 mb-2">REMUME - Relação Municipal de Medicamentos Essenciais</h3>
-                                <p className="text-xs text-blue-700 mb-3">
-                                    Busque medicamentos disponíveis na rede municipal de saúde
-                                </p>
-                                <div className="border border-blue-100 rounded p-3 bg-white">
-                                    <RemumeBusca
-                                        onMedicamentoSelecionado={setMedicamentoRemumeSelecionado}
-                                        medicamentoSelecionado={medicamentoRemumeSelecionado}
-                                        placeholder="Digite o nome do medicamento ou princípio ativo..."
-                                        disabled={!isEditing || readOnly}
-                                    />
-                                </div>
-                            </div>
-
-                            {/* PRESCRIÇÃO */}
-                            <FormField
-                                control={form.control}
-                                name="prescricao"
-                                render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Prescrição</FormLabel>
-                                        <FormControl>
-                                            <Textarea {...field} placeholder="Medicamentos, dosagens, posologia..." rows={6} disabled={!isEditing || readOnly} />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )}
+                            <PrescricaoMedicamentoForm
+                                value={prescricoesMedicamentos}
+                                onChange={setPrescricoesMedicamentos}
+                                disabled={!isEditing || readOnly}
+                                atendimentoId={atendimentoId}
                             />
-
-                            {/* APRAZAMENTO DE RECEITAS E DIAS DE TRATAMENTO */}
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                                <FormField
-                                    control={form.control}
-                                    name="aprazamento"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Aprazamento de Receitas</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={!isEditing || readOnly}>
-                                                <FormControl>
-                                                    <SelectTrigger>
-                                                        <SelectValue placeholder="Selecione o aprazamento..." />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="1_1_HORA">1/1 Hora</SelectItem>
-                                                    <SelectItem value="2_2_HORAS">2/2 Horas</SelectItem>
-                                                    <SelectItem value="4_4_HORAS">4/4 Horas</SelectItem>
-                                                    <SelectItem value="6_6_HORAS">6/6 Horas</SelectItem>
-                                                    <SelectItem value="8_8_HORAS">8/8 Horas</SelectItem>
-                                                    <SelectItem value="12_12_HORAS">12/12 Horas</SelectItem>
-                                                    <SelectItem value="1X_AO_DIA">1x Ao Dia</SelectItem>
-                                                    <SelectItem value="2X_AO_DIA">2x Ao Dia</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
-                                <FormField
-                                    control={form.control}
-                                    name="diasTratamento"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel>Dias de Tratamento</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    type="number"
-                                                    placeholder="Ex: 7, 14, 30..."
-                                                    min="1"
-                                                    disabled={!isEditing || readOnly}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
-                                </CardContent>
-                            </Card>
                         </TabsContent>
 
                         {/* ✅ ABA: HIPÓTESE DIAGNÓSTICA (CID) */}
@@ -1518,42 +1561,60 @@ export const AtendimentoForm = ({
                                         <FormItem>
                                             <FormControl>
                                                 <MotivoDesfechoSelect
-                                                    motivoValue={field.value}
-                                                    especialidadeValue={form.getValues("especialidadeEncaminhamento")}
-                                                            setorValue={form.getValues("setorEncaminhamento")}
-                                                            tiposCuidadosValue={form.getValues("tiposCuidadosEnfermagem") || []}
+                                                    motivoValue={field.value || motivoDesfechoWatch || "01"}
+                                                    especialidadeValue={especialidadeWatch || ""}
+                                                    setorValue={setorWatch || ""}
+                                                    tiposCuidadosValue={Array.isArray(tiposCuidadosWatch) ? tiposCuidadosWatch : []}
                                                     onMotivoChange={(value) => {
                                                         field.onChange(value);
-                                                        if (value !== "03") {
-                                                            form.setValue("especialidadeEncaminhamento", "");
-                                                        }
-                                                                if (value !== "02" && value !== "04") {
-                                                                    form.setValue("setorEncaminhamento", "");
-                                                                    form.setValue("tiposCuidadosEnfermagem", []);
-                                                                }
+                                                        handleMotivoChange(value);
                                                     }}
-                                                    onEspecialidadeChange={(value) => {
-                                                        form.setValue("especialidadeEncaminhamento", value);
-                                                    }}
-                                                            onSetorChange={(value) => {
-                                                                form.setValue("setorEncaminhamento", value);
-                                                            }}
-                                                            onTiposCuidadosChange={(value) => {
-                                                                form.setValue("tiposCuidadosEnfermagem", value);
-                                                            }}
+                                                    onEspecialidadeChange={handleEspecialidadeChange}
+                                                    onSetorChange={handleSetorChange}
+                                                    onTiposCuidadosChange={handleTiposCuidadosChange}
                                                     disabled={!isEditing || readOnly}
                                                 />
                                             </FormControl>
                                             <FormMessage />
-                                            {form.watch("motivoDesfecho") === "03" &&
-                                                !form.getValues("especialidadeEncaminhamento") && (
+                                            {motivoDesfechoWatch === "03" &&
+                                                !especialidadeWatch && (
                                                     <FormMessage>Especialidade é obrigatória quando o motivo for Encaminhamento.</FormMessage>
                                                 )}
-                                                    {(form.watch("motivoDesfecho") === "02" || 
-                                                      form.watch("motivoDesfecho") === "04") &&
-                                                        !form.getValues("setorEncaminhamento") && (
+                                                    {(motivoDesfechoWatch === "02" || 
+                                                      motivoDesfechoWatch === "04") &&
+                                                        !setorWatch && (
                                                             <FormMessage>Setor é obrigatório quando o motivo for Alta se melhora ou Alta após medicação/procedimento.</FormMessage>
-                                                        )}
+                                                )}
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* ORIENTAÇÕES AO PACIENTE */}
+                                <FormField
+                                    control={form.control}
+                                    name="orientacoes"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Orientações ao Paciente</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} placeholder="Cuidados, restrições, sinais de alerta..." rows={3} disabled={!isEditing || readOnly} />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {/* ORIENTAÇÕES DE RETORNO */}
+                                <FormField
+                                    control={form.control}
+                                    name="retorno"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Orientações de Retorno</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="Ex: 7 dias, 15 dias, 1 mês, SN (se necessário)..." disabled={!isEditing || readOnly} />
+                                            </FormControl>
+                                            <FormMessage />
                                         </FormItem>
                                     )}
                                 />
@@ -1564,7 +1625,7 @@ export const AtendimentoForm = ({
                     </Tabs>
 
                     {/* ✅ BOTÕES DE AÇÃO */}
-                    {isEditing && !readOnly && (
+                    {isEditing && !readOnly && !hideSaveButton && (
                         <Card>
                             <CardContent className="pt-6">
                                 <div className="flex justify-end space-x-4">

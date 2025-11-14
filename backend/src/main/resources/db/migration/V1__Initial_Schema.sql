@@ -90,29 +90,63 @@ CREATE TABLE IF NOT EXISTS perfil_permissoes (
 -- ===============================
 
 -- Inserir unidade de saúde padrão
+-- Usando WHERE NOT EXISTS para compatibilidade com H2 e PostgreSQL
 INSERT INTO unidades_saude (nome, codigo_cnes, tipo, ativa, data_criacao, criado_por)
-VALUES ('Unidade de Saúde Padrão', '0000001', 'UBS', TRUE, NOW(), 'sistema')
-    ON CONFLICT (codigo_cnes) DO NOTHING;
+SELECT 'Unidade de Saúde Padrão', '0000001', 'UBS', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM unidades_saude WHERE codigo_cnes = '0000001');
 
 -- Inserir perfis padrão
+-- Usando WHERE NOT EXISTS para compatibilidade com H2 e PostgreSQL
 INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
-VALUES
-    ('ADMINISTRADOR_SISTEMA', 'Administrador do Sistema com acesso total', TRUE, NOW(), 'sistema'),
-    ('RECEPCIONISTA', 'Recepcionista com acesso à agenda e cadastro de pacientes', TRUE, NOW(), 'sistema'),
-    ('MEDICO', 'Médico com acesso a prontuários e atendimentos', TRUE, NOW(), 'sistema'),
-    ('ENFERMEIRO', 'Enfermeiro com acesso a triagem e procedimentos', TRUE, NOW(), 'sistema'),
-    ('FARMACEUTICO', 'Farmacêutico com acesso à dispensação de medicamentos', TRUE, NOW(), 'sistema'),
-    ('DENTISTA', 'Dentista com acesso a prontuários odontológicos', TRUE, NOW(), 'sistema'),
-    ('TECNICO_ENFERMAGEM', 'Técnico de Enfermagem com acesso limitado a procedimentos', TRUE, NOW(), 'sistema'),
-    ('TECNICO_HIGIENE_DENTAL', 'Técnico de Higiene Dental com acesso limitado a procedimentos', TRUE, NOW(), 'sistema'),
-    ('GESTOR', 'Gestor com acesso a relatórios e indicadores', TRUE, NOW(), 'sistema'),
-    ('USUARIO_SISTEMA', 'Usuário básico do sistema', TRUE, NOW(), 'sistema')
-    ON CONFLICT (nome) DO NOTHING;
+SELECT 'ADMINISTRADOR_SISTEMA', 'Administrador do Sistema com acesso total', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'ADMINISTRADOR_SISTEMA');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'RECEPCIONISTA', 'Recepcionista com acesso à agenda e cadastro de pacientes', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'RECEPCIONISTA');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'MEDICO', 'Médico com acesso a prontuários e atendimentos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'MEDICO');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'ENFERMEIRO', 'Enfermeiro com acesso a triagem e procedimentos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'ENFERMEIRO');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'FARMACEUTICO', 'Farmacêutico com acesso à dispensação de medicamentos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'FARMACEUTICO');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'DENTISTA', 'Dentista com acesso a prontuários odontológicos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'DENTISTA');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'TECNICO_ENFERMAGEM', 'Técnico de Enfermagem com acesso limitado a procedimentos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'TECNICO_ENFERMAGEM');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'TECNICO_HIGIENE_DENTAL', 'Técnico de Higiene Dental com acesso limitado a procedimentos', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'TECNICO_HIGIENE_DENTAL');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'GESTOR', 'Gestor com acesso a relatórios e indicadores', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'GESTOR');
+
+INSERT INTO perfis (nome, descricao, sistema_perfil, data_criacao, criado_por)
+SELECT 'USUARIO_SISTEMA', 'Usuário básico do sistema', TRUE, NOW(), 'sistema'
+WHERE NOT EXISTS (SELECT 1 FROM perfis WHERE nome = 'USUARIO_SISTEMA');
 
 -- Inserir permissões para ADMINISTRADOR_SISTEMA
+-- Usando WHERE NOT EXISTS para compatibilidade com H2 e PostgreSQL
 INSERT INTO perfil_permissoes (perfil_id, permissao)
-SELECT id, 'ADMIN_SISTEMA' FROM perfis WHERE nome = 'ADMINISTRADOR_SISTEMA'
-    ON CONFLICT DO NOTHING;
+SELECT p.id, 'ADMIN_SISTEMA' 
+FROM perfis p 
+WHERE p.nome = 'ADMINISTRADOR_SISTEMA'
+AND NOT EXISTS (
+    SELECT 1 FROM perfil_permissoes pp 
+    WHERE pp.perfil_id = p.id AND pp.permissao = 'ADMIN_SISTEMA'
+);
 
 -- ===============================
 -- OUTRAS TABELAS DO SISTEMA

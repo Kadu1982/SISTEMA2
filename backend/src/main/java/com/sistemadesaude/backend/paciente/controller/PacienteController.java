@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Controlador REST para operações relacionadas a pacientes.
@@ -59,14 +60,18 @@ public class PacienteController {
         try {
             log.info("🔍 Buscando paciente por ID: {}", id);
             PacienteDTO paciente = pacienteService.buscarPacientePorId(id);
-            log.info("✅ Paciente encontrado: {}", paciente.getNomeCompleto());
+            log.info("✅ Paciente encontrado: {}", paciente != null ? paciente.getNomeCompleto() : "null");
             return ResponseEntity.ok(paciente);
         } catch (ResourceNotFoundException e) {
             log.warn("⚠️ Paciente não encontrado com ID: {}", id);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
             log.error("❌ Erro interno ao buscar paciente por ID {}: {}", id, e.getMessage(), e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            log.error("❌ Stack trace completo:", e);
+            // Retorna erro mais detalhado para debug
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .header("X-Error-Message", e.getMessage() != null ? e.getMessage() : "Erro desconhecido")
+                    .build();
         }
     }
 
@@ -215,10 +220,11 @@ public class PacienteController {
     /**
      * Busca pacientes por termo geral (endpoint /search).
      * Este endpoint é usado pelo frontend para busca unificada.
+     * Busca por múltiplos critérios: nome, CPF, CNS, nome social, nome da mãe.
      */
     @GetMapping("/search")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<List<PacienteListDTO>> searchPacientes(
+    public ResponseEntity<List<PacienteDTO>> searchPacientes(
             @RequestParam String term,
             @RequestParam(required = false, defaultValue = "20") Integer limit) {
         try {
@@ -230,23 +236,8 @@ public class PacienteController {
                 return ResponseEntity.ok(Collections.emptyList());
             }
 
-            // Busca por nome (principal)
-            List<PacienteListDTO> pacientes = pacienteService.buscarPacientesPorNome(termoBusca);
-
-            // Se não encontrou por nome, tenta por CPF ou CNS
-            if (pacientes.isEmpty()) {
-                // Tenta CPF
-                PacienteDTO porCpf = pacienteService.buscarPorCpf(termoBusca);
-                if (porCpf != null) {
-                    return ResponseEntity.ok(Collections.singletonList(convertToListDTO(porCpf)));
-                }
-
-                // Tenta CNS
-                PacienteDTO porCns = pacienteService.buscarPorCns(termoBusca);
-                if (porCns != null) {
-                    return ResponseEntity.ok(Collections.singletonList(convertToListDTO(porCns)));
-                }
-            }
+            // Busca por múltiplos critérios (nome, CPF, CNS, nome social, nome da mãe)
+            List<PacienteDTO> pacientes = pacienteService.buscarPorMultiplosCriterios(termoBusca);
 
             // Limita resultados se necessário
             if (limit != null && limit > 0 && pacientes.size() > limit) {
@@ -264,19 +255,30 @@ public class PacienteController {
 
     /**
      * Endpoint de busca unificada (mantido para compatibilidade).
+     * ✅ CORRIGIDO: Suporta também parâmetro 'query' para compatibilidade com frontend
      */
-    @GetMapping("/buscar")
+    @GetMapping({"/buscar", "/busca"})
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<PacienteListDTO>> buscarPacientes(
             @RequestParam(required = false) String nome,
+            @RequestParam(required = false) String query,
             @RequestParam(required = false) String cpf,
             @RequestParam(required = false) String cns) {
 
         try {
-            log.info("🔍 Busca unificada - nome: {}, cpf: {}, cns: {}", nome, cpf, cns);
-            if (nome != null && !nome.trim().isEmpty()) {
-                List<PacienteListDTO> pacientes = pacienteService.buscarPacientesPorNome(nome.trim());
-                log.info("✅ Encontrados {} paciente(s) por nome", pacientes.size());
+            // ✅ CORRIGIDO: Usar 'query' se fornecido, caso contrário usar 'nome'
+            String termoBusca = (query != null && !query.trim().isEmpty()) ? query.trim() : 
+                               (nome != null && !nome.trim().isEmpty()) ? nome.trim() : null;
+            
+            log.info("🔍 Busca unificada - termo: {}, cpf: {}, cns: {}", termoBusca, cpf, cns);
+            
+            if (termoBusca != null && !termoBusca.isEmpty()) {
+                // Busca por múltiplos critérios quando usar 'query' ou 'nome'
+                List<PacienteDTO> pacientesDTO = pacienteService.buscarPorMultiplosCriterios(termoBusca);
+                List<PacienteListDTO> pacientes = pacientesDTO.stream()
+                    .map(this::convertToListDTO)
+                    .collect(Collectors.toList());
+                log.info("✅ Encontrados {} paciente(s) por termo: {}", pacientes.size(), termoBusca);
                 return ResponseEntity.ok(pacientes);
             }
             if (cpf != null && !cpf.trim().isEmpty()) {
@@ -300,6 +302,92 @@ public class PacienteController {
         } catch (Exception e) {
             log.error("❌ Erro interno na busca unificada: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Collections.emptyList());
+        }
+    }
+
+    /**
+     * Busca paciente por documento (CPF ou CNS).
+     * Endpoint usado pelo frontend para busca unificada por documentos.
+     * Suporta busca parcial quando tiver 3+ dígitos.
+     */
+    @GetMapping("/por-documento")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<PacienteDTO> buscarPorDocumento(
+            @RequestParam(required = false) String cpf,
+            @RequestParam(required = false) String cns) {
+        try {
+            log.info("🔍 Buscando paciente por documento - CPF: {}, CNS: {}", cpf, cns);
+            
+            // Validação: pelo menos um parâmetro deve ser fornecido
+            if ((cpf == null || cpf.trim().isEmpty()) && (cns == null || cns.trim().isEmpty())) {
+                log.warn("⚠️ Nenhum parâmetro de documento fornecido");
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Remove máscaras e caracteres não numéricos
+            String cpfLimpo = cpf != null ? cpf.replaceAll("[^0-9]", "") : null;
+            String cnsLimpo = cns != null ? cns.replaceAll("[^0-9]", "") : null;
+            
+            // Se tem menos de 3 dígitos, não busca
+            if ((cpfLimpo == null || cpfLimpo.length() < 3) && (cnsLimpo == null || cnsLimpo.length() < 3)) {
+                log.debug("⚠️ Documento muito curto (menos de 3 dígitos)");
+                return ResponseEntity.notFound().build();
+            }
+            
+            // Se tem 11 dígitos (CPF completo), busca exata primeiro
+            if (cpfLimpo != null && cpfLimpo.length() == 11) {
+                try {
+                    PacienteDTO paciente = pacienteService.buscarPorCpf(cpfLimpo);
+                    if (paciente != null) {
+                        log.info("✅ Paciente encontrado por CPF completo: {}", paciente.getNomeCompleto());
+                        return ResponseEntity.ok(paciente);
+                    }
+                } catch (Exception e) {
+                    log.warn("⚠️ Erro ao buscar por CPF completo {}: {}", cpfLimpo, e.getMessage());
+                }
+            }
+            
+            // Se tem 15 dígitos (CNS completo), busca exata primeiro
+            if (cnsLimpo != null && cnsLimpo.length() == 15) {
+                try {
+                    PacienteDTO paciente = pacienteService.buscarPorCns(cnsLimpo);
+                    if (paciente != null) {
+                        log.info("✅ Paciente encontrado por CNS completo: {}", paciente.getNomeCompleto());
+                        return ResponseEntity.ok(paciente);
+                    }
+                } catch (Exception e) {
+                    log.warn("⚠️ Erro ao buscar por CNS completo {}: {}", cnsLimpo, e.getMessage());
+                }
+            }
+            
+            // Busca parcial usando múltiplos critérios (funciona para CPF/CNS parcial com 3+ dígitos)
+            String termoBusca = cpfLimpo != null && !cpfLimpo.isEmpty() ? cpfLimpo : cnsLimpo;
+            if (termoBusca != null && termoBusca.length() >= 3) {
+                try {
+                    log.debug("🔍 Tentando busca parcial com termo: '{}'", termoBusca);
+                    List<PacienteDTO> pacientes = pacienteService.buscarPorMultiplosCriterios(termoBusca);
+                    log.debug("📊 Busca parcial retornou {} paciente(s)", pacientes.size());
+                    if (!pacientes.isEmpty()) {
+                        // Retorna o primeiro resultado (já ordenado por relevância)
+                        log.info("✅ Paciente encontrado por busca parcial: {} (CPF: {})", 
+                                pacientes.get(0).getNomeCompleto(), 
+                                pacientes.get(0).getCpf());
+                        return ResponseEntity.ok(pacientes.get(0));
+                    } else {
+                        log.debug("⚠️ Nenhum paciente encontrado na busca parcial com termo '{}'", termoBusca);
+                    }
+                } catch (Exception e) {
+                    log.error("❌ Erro ao buscar por múltiplos critérios '{}': {}", termoBusca, e.getMessage(), e);
+                }
+            }
+            
+            log.info("⚠️ Nenhum paciente encontrado com os documentos fornecidos");
+            return ResponseEntity.notFound().build();
+            
+        } catch (Exception e) {
+            log.error("❌ Erro interno ao buscar paciente por documento - CPF: {}, CNS: {}: {}", cpf, cns, e.getMessage(), e);
+            log.error("❌ Stack trace completo:", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 

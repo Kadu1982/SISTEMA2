@@ -13,12 +13,12 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Paciente } from '@/types/paciente/Paciente';
-import { pacientesService } from '@/services/pacientesService.ts';
+import pacientesService, { buscarPacientes, buscarPorDocumento } from '@/services/pacientesService';
 import { removerMascaraCpf } from '@/lib/pacienteUtils';
 
 // ======================= CONFIGURAÇÕES =======================
-const MIN_CHARS_NAME = 1;           // sua regra
-const MIN_DIGITS_DOC = 3;           // CPF/CNS: mínimo para começar
+const MIN_CHARS_NAME = 3;           // mínimo de 3 caracteres para busca por nome
+const MIN_DIGITS_DOC = 3;           // CPF/CNS: mínimo de 3 dígitos para começar
 const DEBOUNCE_MS_DEFAULT = 300;    // debounce padrão
 const ENABLE_CLIENT_FALLBACK = false; // fallback listarTodos()+startsWith (cuidado performance)
 
@@ -46,14 +46,14 @@ export const usePacienteBusca = (): UsePacienteBuscaReturn => {
 
             if (tipo === 'cpf') {
                 const cpf = removerMascaraCpf(termo);
-                const p = await pacienteService.buscarPorCpf(cpf);
-                setPacientes(p ? [p] : []);
+                const p = await buscarPorDocumento({ cpf });
+                setPacientes(p ? [p as unknown as Paciente] : []);
                 return;
             }
 
             if (tipo === 'cartaoSus') {
-                const p = await pacienteService.buscarPorCartaoSus(termo);
-                setPacientes(p ? [p] : []);
+                const p = await buscarPorDocumento({ cns: termo });
+                setPacientes(p ? [p as unknown as Paciente] : []);
                 return;
             }
 
@@ -64,14 +64,15 @@ export const usePacienteBusca = (): UsePacienteBuscaReturn => {
             }
 
             // 1) Backend (startsWith case-insensitive)
-            let resultados = await pacienteService.buscarPorNome(termo.trim());
+            let resultados = await buscarPacientes(termo.trim());
+            resultados = resultados as unknown as Paciente[];
 
             // 2) Fallback opcional no cliente
             if (ENABLE_CLIENT_FALLBACK && resultados.length === 0) {
                 try {
-                    const todos = await pacienteService.listarTodos();
+                    const todos = await pacientesService.getAllPacientes();
                     const lower = termo.trim().toLowerCase();
-                    resultados = todos.filter(p => (p?.nomeCompleto || '').toLowerCase().startsWith(lower));
+                    resultados = (todos as unknown as Paciente[]).filter(p => (p?.nomeCompleto || '').toLowerCase().startsWith(lower));
                 } catch {
                     // mantém vazio
                 }
@@ -114,25 +115,26 @@ export const usePacienteBusca = (): UsePacienteBuscaReturn => {
             try {
                 if (tipo === 'cpf') {
                     const cpf = removerMascaraCpf(termo);
-                    const p = await pacienteService.buscarPorCpf(cpf);
-                    setPacientes(p ? [p] : []);
+                    const p = await buscarPorDocumento({ cpf });
+                    setPacientes(p ? [p as unknown as Paciente] : []);
                     return;
                 }
 
                 if (tipo === 'cartaoSus') {
-                    const p = await pacienteService.buscarPorCartaoSus(termo);
-                    setPacientes(p ? [p] : []);
+                    const p = await buscarPorDocumento({ cns: termo });
+                    setPacientes(p ? [p as unknown as Paciente] : []);
                     return;
                 }
 
                 // tipo === 'nome'
-                let resultados = await pacienteService.buscarPorNome(termo.trim());
+                let resultados = await buscarPacientes(termo.trim());
+                resultados = resultados as unknown as Paciente[];
 
                 if (ENABLE_CLIENT_FALLBACK && resultados.length === 0) {
                     try {
-                        const todos = await pacienteService.listarTodos();
+                        const todos = await pacientesService.getAllPacientes();
                         const lower = termo.trim().toLowerCase();
-                        resultados = todos.filter(p => (p?.nomeCompleto || '').toLowerCase().startsWith(lower));
+                        resultados = (todos as unknown as Paciente[]).filter(p => (p?.nomeCompleto || '').toLowerCase().startsWith(lower));
                     } catch {
                         // mantém vazio
                     }

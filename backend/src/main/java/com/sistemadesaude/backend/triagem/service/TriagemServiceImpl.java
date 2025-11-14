@@ -102,8 +102,12 @@ public class TriagemServiceImpl implements TriagemService {
             // 6. ATUALIZAR FLUXO DO PACIENTE
             atualizarFluxoPaciente(agendamento, triagem);
 
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            log.error("❌ Erro de validação ao salvar triagem: {}", e.getMessage(), e);
+            throw e; // Re-lança exceções de validação sem alterar
         } catch (Exception e) {
             log.error("❌ Erro ao salvar triagem inteligente: {}", e.getMessage(), e);
+            log.error("❌ Stack trace completo:", e);
             throw new RuntimeException("Erro ao salvar triagem: " + e.getMessage(), e);
         }
     }
@@ -278,11 +282,14 @@ public class TriagemServiceImpl implements TriagemService {
      */
     private Triagem criarTriagemInicial(com.sistemadesaude.backend.recepcao.entity.Agendamento agendamento,
                                         com.sistemadesaude.backend.triagem.dto.CriarTriagemRequestDTO request) {
+        LocalDateTime agora = LocalDateTime.now();
         return Triagem.builder()
                 .paciente(agendamento.getPaciente())
                 .agendamento(agendamento)
                 // carimbo da triagem
-                .dataTriagem(java.time.LocalDateTime.now())
+                .dataTriagem(agora)
+                // ✅ CORREÇÃO: Define dataCriacao explicitamente (campo obrigatório)
+                .dataCriacao(agora)
 
                 // 📌 NOVO: Data de referência (ambulatorial)
                 .dataReferenciaAtendimento(request.getDataReferencia())
@@ -493,12 +500,31 @@ public class TriagemServiceImpl implements TriagemService {
 
         try {
             // Buscar triagens não canceladas ordenadas por prioridade
+            // ✅ FILTRO: Excluir pacientes com agendamento FINALIZADO ou ATENDIDO
             List<Triagem> triagens = triagemRepository.findAllByOrderByClassificacaoRiscoAscDataTriagemAsc()
                     .stream()
-                    .filter(triagem -> !Boolean.TRUE.equals(triagem.getCancelada()))
+                    .filter(triagem -> {
+                        // Excluir triagens canceladas
+                        if (Boolean.TRUE.equals(triagem.getCancelada())) {
+                            return false;
+                        }
+                        
+                        // Excluir pacientes com agendamento FINALIZADO
+                        if (triagem.getAgendamento() != null) {
+                            StatusAgendamento status = triagem.getAgendamento().getStatus();
+                            if (status == StatusAgendamento.FINALIZADO) {
+                                log.debug("⏭️ Excluindo paciente {} - agendamento {} com status FINALIZADO", 
+                                    triagem.getPaciente().getId(), 
+                                    triagem.getAgendamento().getId());
+                                return false;
+                            }
+                        }
+                        
+                        return true;
+                    })
                     .collect(Collectors.toList());
 
-            log.info("✅ Encontradas {} triagens ativas para atendimento", triagens.size());
+            log.info("✅ Encontradas {} triagens ativas para atendimento (excluídos FINALIZADOS)", triagens.size());
 
             return triagens.stream()
                     .map(this::converterParaPacienteTriadoDTO)

@@ -6,7 +6,7 @@
 // - Atualização de status: tenta PATCH e cai para PUT.
 // -----------------------------------------------------------------------------
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -174,17 +174,20 @@ async function buscarPacientesGenerico(term: string): Promise<PacienteBusca[]> {
     if (q.length < 3) return [];
 
     // Tentamos múltiplas rotas comuns, parando na primeira que responder OK
+    // ✅ CORRIGIDO: Usar endpoints corretos do backend
     const tentativas = [
-        { url: "/pacientes/busca", params: { query: q } },
-        { url: "/pacientes/busca", params: { nome: q } },
-        { url: "/pacientes", params: { nome: q } },
-        { url: "/pacientes/search", params: { q } },
-        { url: "/pacientes", params: { q } },
+        { url: "/pacientes/search", params: { term: q } }, // Endpoint principal de busca unificada
+        { url: "/pacientes/buscar", params: { nome: q } }, // Endpoint alternativo
+        { url: "/pacientes/buscar/multiplos", params: { termo: q } }, // Busca por múltiplos critérios
+        { url: "/pacientes/buscar/nome/" + encodeURIComponent(q) }, // Busca por nome (path param)
     ];
 
     for (const t of tentativas) {
         try {
-            const resp = await apiService.get(t.url, { params: t.params });
+            // Se a URL já contém o parâmetro (path param), não passar params
+            const resp = t.url.includes("/buscar/nome/") 
+                ? await apiService.get(t.url)
+                : await apiService.get(t.url, { params: t.params });
             const payload: any = (resp as any)?.data ?? resp;
 
             // Aceita formato variado: array direto | { data } | { itens/items/content }
@@ -200,12 +203,12 @@ async function buscarPacientesGenerico(term: string): Promise<PacienteBusca[]> {
 
             const list = arr
                 .map((p: any) => ({
-                    id: Number(p.id ?? p.pacienteId ?? p.codigo ?? p.codigoPaciente),
+                    id: Number(p.id ?? p.pacienteId ?? p.codigo ?? p.codigoPaciente ?? 0),
                     nome: String(p.nomeCompleto ?? p.nome ?? p.nome_social ?? "").trim(),
-                    cartaoSus: p.cns ?? p.cartaoSus ?? p.cartao_sus,
-                    cpf: p.cpf,
+                    cartaoSus: p.cns ?? p.cartaoSus ?? p.cartao_sus ?? null,
+                    cpf: p.cpf ?? null,
                 }))
-                .filter((x) => Number.isFinite(x.id) && x.nome);
+                .filter((x) => Number.isFinite(x.id) && x.id > 0 && x.nome);
 
             if (list.length) return list;
             // se a rota respondeu, mas vazia, ainda assim podemos retornar []
@@ -262,6 +265,75 @@ const AtendimentoMedico: React.FC = () => {
         municipio?: string;
         endereco?: string;
     } | null>(null);
+
+    // ===== Alergias do Paciente
+    const [alergiasPaciente, setAlergiasPaciente] = useState<string[]>([]);
+
+    // =========================
+    // useEffect: Buscar alergias quando pacienteParaAtendimento mudar
+    // =========================
+    useEffect(() => {
+        // Limpa alergias se não há paciente ou é demanda espontânea
+        if (!pacienteParaAtendimento || semTriagem) {
+            console.log("🔍 useEffect alergias: Limpando - sem paciente ou demanda espontânea");
+            setAlergiasPaciente([]);
+            return;
+        }
+
+        let isMounted = true;
+
+        const buscarAlergiasPaciente = async () => {
+            try {
+                console.log("🔍 [ALERGIAS] Iniciando busca - pacienteId:", pacienteParaAtendimento.pacienteId);
+                const response = await apiService.get(`/pacientes/${pacienteParaAtendimento.pacienteId}`);
+                
+                // Tenta diferentes formas de acessar os dados
+                let pacienteData: any = null;
+                if (response && typeof response === 'object') {
+                    pacienteData = (response as any)?.data || response;
+                }
+                
+                console.log("🔍 [ALERGIAS] Resposta bruta:", response);
+                console.log("🔍 [ALERGIAS] Dados do paciente:", pacienteData);
+                
+                const alergiasTexto = pacienteData?.alergias || "";
+                console.log("🔍 [ALERGIAS] Campo alergias extraído:", alergiasTexto, "| Tipo:", typeof alergiasTexto, "| Vazio?", !alergiasTexto);
+                
+                // Verifica se o componente ainda está montado antes de atualizar o estado
+                if (!isMounted) {
+                    console.log("⚠️ [ALERGIAS] Componente desmontado, ignorando atualização");
+                    return;
+                }
+                
+                if (alergiasTexto && typeof alergiasTexto === 'string' && alergiasTexto.trim() !== "") {
+                    const alergiasLista = alergiasTexto
+                        .split(/[\s,;]+/)
+                        .map((a: string) => a.trim().toUpperCase())
+                        .filter((a: string) => a.length > 0);
+                    
+                    console.log("✅ [ALERGIAS] Alergias processadas:", alergiasLista, "| Quantidade:", alergiasLista.length);
+                    setAlergiasPaciente(alergiasLista);
+                    console.log("✅ [ALERGIAS] Estado atualizado com sucesso!");
+                } else {
+                    console.log("⚠️ [ALERGIAS] Nenhuma alergia encontrada - texto vazio ou inválido");
+                    setAlergiasPaciente([]);
+                }
+            } catch (error: any) {
+                console.error("❌ [ALERGIAS] Erro ao buscar alergias:", error);
+                console.error("❌ [ALERGIAS] Detalhes do erro:", error?.response?.data || error?.message);
+                if (isMounted) {
+                    setAlergiasPaciente([]);
+                }
+            }
+        };
+
+        buscarAlergiasPaciente();
+
+        // Cleanup function para evitar atualizações de estado em componente desmontado
+        return () => {
+            isMounted = false;
+        };
+    }, [pacienteParaAtendimento?.pacienteId, semTriagem]);
 
     // =========================
     // Query — triados aguardando atendimento
@@ -430,8 +502,13 @@ const AtendimentoMedico: React.FC = () => {
             const novoAtendimento = await atendimentoService.salvar(payload as any);
 
             if (novoAtendimento?.id) {
-                setPacienteId(String(novoAtendimento.pacienteId ?? payload.pacienteId));
+                const pacienteIdSalvo = String(novoAtendimento.pacienteId ?? payload.pacienteId);
+                setPacienteId(pacienteIdSalvo);
                 setAtendimentoId(String(novoAtendimento.id));
+                
+                // ✅ Invalidar cache do histórico para atualizar imediatamente
+                await queryClient.invalidateQueries({ queryKey: ["atendimentos", pacienteIdSalvo] });
+                console.log("🔄 Cache do histórico invalidado para paciente:", pacienteIdSalvo);
 
                 // Verificar se o motivo de desfecho requer encaminhamento para Cuidados de Enfermagem
                 // Códigos: "02" (Alta se melhora), "04" (Alta após medicação/procedimento)
@@ -446,14 +523,32 @@ const AtendimentoMedico: React.FC = () => {
                         }
 
                         // Converter flags de atividades de enfermagem para atividades
+                        // O backend espera TipoAtividade enum: VACINAS ou PROCEDIMENTOS
                         const atividades: any[] = [];
                         if (data.tiposCuidadosEnfermagem && Array.isArray(data.tiposCuidadosEnfermagem)) {
                             data.tiposCuidadosEnfermagem.forEach((tipo: string) => {
+                                // Mapear tipos do frontend para o enum do backend
+                                let tipoAtividade: string;
+                                let descricao: string;
+                                
+                                if (tipo === "VACINAS") {
+                                    tipoAtividade = "VACINAS";
+                                    descricao = "Aplicação de vacinas";
+                                } else {
+                                    // APLICACAO, CURATIVOS e outros são PROCEDIMENTOS
+                                    tipoAtividade = "PROCEDIMENTOS";
+                                    if (tipo === "APLICACAO") {
+                                        descricao = "Aplicação de medicamentos";
+                                    } else if (tipo === "CURATIVOS") {
+                                        descricao = "Curativos";
+                                    } else {
+                                        descricao = tipo;
+                                    }
+                                }
+                                
                                 atividades.push({
-                                    tipo: tipo,
-                                    descricao: tipo === "APLICACAO" ? "Aplicação de medicamentos" :
-                                              tipo === "CURATIVOS" ? "Curativos" :
-                                              tipo === "VACINAS" ? "Aplicação de vacinas" : tipo,
+                                    tipo: tipoAtividade,
+                                    atividade: descricao, // Campo 'atividade' é obrigatório no backend
                                     situacao: "PENDENTE",
                                     urgente: false
                                 });
@@ -498,6 +593,7 @@ const AtendimentoMedico: React.FC = () => {
                         await atualizarStatusAgendamento(pacienteParaAtendimento.agendamentoId, "FINALIZADO");
                         await queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
                         setPacienteParaAtendimento(null);
+                        setAlergiasPaciente([]);
                         if (data.motivoDesfecho !== "02" && data.motivoDesfecho !== "04") {
                             toast({ title: "Sucesso!", description: "Atendimento salvo e paciente finalizado." });
                         }
@@ -575,7 +671,7 @@ const AtendimentoMedico: React.FC = () => {
                 return;
             }
 
-            // Buscar informações completas do paciente para a barra superior
+            // Buscar informações completas do paciente para a barra superior e alergias
             try {
                 const { data: pacienteData } = await apiService.get(`/pacientes/${paciente.pacienteId}`);
                 setInfoPacienteBarra({
@@ -585,15 +681,21 @@ const AtendimentoMedico: React.FC = () => {
                     municipio: (pacienteData as any)?.municipioResidencia || (pacienteData as any)?.municipio || undefined,
                     endereco: (pacienteData as any)?.enderecoCompleto || (pacienteData as any)?.endereco || undefined,
                 });
-            } catch (error) {
+                
+                // As alergias serão buscadas automaticamente pelo useEffect quando pacienteParaAtendimento for definido
+                // Não precisamos buscar aqui para evitar duplicação
+            } catch (error: any) {
                 console.error("Erro ao buscar dados do paciente:", error);
+                // Define informações básicas mesmo em caso de erro para não quebrar a aplicação
                 setInfoPacienteBarra({
-                    nome: paciente.nomeCompleto,
-                    idade: paciente.idade,
+                    nome: paciente.nomeCompleto || "Paciente",
+                    idade: paciente.idade || undefined,
                     sexo: undefined,
                     municipio: undefined,
                     endereco: undefined,
                 });
+                // As alergias serão buscadas pelo useEffect mesmo em caso de erro na busca de dados básicos
+                // Não mostra toast de erro para não poluir a interface - o erro já foi logado no console
             }
 
             await atualizarStatusAgendamento(paciente.agendamentoId, "EM_ATENDIMENTO");
@@ -652,7 +754,7 @@ const AtendimentoMedico: React.FC = () => {
     // Render
     // =========================
     return (
-        <div className="container mx-auto py-8">
+        <div className="w-full px-4 py-4">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
                 <TabsList className="mb-4">
                     <TabsTrigger value="triados">Pacientes Triados</TabsTrigger>
@@ -667,8 +769,8 @@ const AtendimentoMedico: React.FC = () => {
                     <TabsTrigger value="documentos" disabled={!pacienteId}>
                         Documentos
                     </TabsTrigger>
-                    <TabsTrigger value="historico" disabled={!pacienteId}>
-                        Histórico
+                    <TabsTrigger value="historico">
+                        Histórico / PEP
                     </TabsTrigger>
                 </TabsList>
 
@@ -820,37 +922,27 @@ const AtendimentoMedico: React.FC = () => {
                 {/* NOVO ATENDIMENTO */}
                 <TabsContent value="novo">
                     {/* ✅ BARRA SUPERIOR FIXA */}
-                    {(pacienteParaAtendimento || pacienteSelecionadoLivre) && (
-                        <BarraSuperiorAtendimento
-                            pacienteNome={infoPacienteBarra?.nome || pacienteParaAtendimento?.nomeCompleto || pacienteSelecionadoLivre?.nome}
-                            pacienteIdade={infoPacienteBarra?.idade ?? pacienteParaAtendimento?.idade ?? null}
-                            pacienteSexo={infoPacienteBarra?.sexo || undefined}
-                            pacienteMunicipio={infoPacienteBarra?.municipio || undefined}
-                            pacienteEndereco={infoPacienteBarra?.endereco || undefined}
-                            setor={pacienteParaAtendimento?.setor || undefined}
-                            especialidade={pacienteParaAtendimento?.especialidade || undefined}
-                            dataInicioAtendimento={dataInicioAtendimento || undefined}
-                            onRefreshClick={() => {
-                                queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
-                                toast({ title: "Atualizado", description: "Lista de pacientes atualizada." });
-                            }}
-                        />
-                    )}
+                    <BarraSuperiorAtendimento
+                        pacienteNome={infoPacienteBarra?.nome || pacienteParaAtendimento?.nomeCompleto || pacienteSelecionadoLivre?.nome}
+                        pacienteIdade={infoPacienteBarra?.idade ?? pacienteParaAtendimento?.idade ?? null}
+                        pacienteSexo={infoPacienteBarra?.sexo || undefined}
+                        pacienteMunicipio={infoPacienteBarra?.municipio || undefined}
+                        pacienteEndereco={infoPacienteBarra?.endereco || undefined}
+                        setor={pacienteParaAtendimento?.setor || undefined}
+                        especialidade={pacienteParaAtendimento?.especialidade || undefined}
+                        dataInicioAtendimento={dataInicioAtendimento || undefined}
+                        demandaEspontanea={semTriagem}
+                        onDemandaEspontaneaChange={setSemTriagem}
+                        onRefreshClick={() => {
+                            queryClient.invalidateQueries({ queryKey: ["pacientesTriados"] });
+                            toast({ title: "Atualizado", description: "Lista de pacientes atualizada." });
+                        }}
+                    />
 
-                    <Card className="mb-6">
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <div>
-                                <CardTitle>Novo Atendimento</CardTitle>
-                                <CardDescription>Você pode iniciar a partir da triagem ou pela demanda espontânea.</CardDescription>
-                            </div>
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-muted-foreground">Demanda Espontânea</span>
-                                <Switch checked={semTriagem} onCheckedChange={setSemTriagem} />
-                            </div>
-                        </CardHeader>
-
-                        {semTriagem && (
-                            <CardContent className="space-y-3">
+                    {/* Busca de Paciente para Demanda Espontânea */}
+                    {semTriagem && (
+                        <Card className="mb-6">
+                            <CardContent className="space-y-3 pt-6">
                                 <div className="grid gap-2">
                                     <label className="text-sm font-medium text-gray-700">Buscar paciente (nome/CPF/SUS)</label>
                                     <div className="flex gap-2">
@@ -904,16 +996,46 @@ const AtendimentoMedico: React.FC = () => {
                                     )}
                                 </div>
                             </CardContent>
-                        )}
-                    </Card>
+                        </Card>
+                    )}
 
                     {pacienteParaAtendimento && !semTriagem && (
                         <Card className="mb-6">
-                            <CardHeader>
-                                <CardTitle className="text-xl text-blue-900">{pacienteParaAtendimento.nomeCompleto}</CardTitle>
-                                <CardDescription className="text-sm">SUS: {pacienteParaAtendimento.cartaoSus}</CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-4 pt-6">
+                                {/* Alergias do Paciente - Tags vermelhas */}
+                                {(() => {
+                                    const temAlergias = Array.isArray(alergiasPaciente) && alergiasPaciente.length > 0;
+                                    console.log("🎨 [RENDER] Card alergias - temAlergias:", temAlergias, "| alergiasPaciente:", alergiasPaciente, "| length:", alergiasPaciente?.length);
+                                    
+                                    if (!temAlergias) {
+                                        return null;
+                                    }
+                                    
+                                    return (
+                                        <div className="mb-4">
+                                            <div className="text-sm font-medium text-red-700 mb-2 flex items-center gap-2">
+                                                <AlertCircle className="h-4 w-4" />
+                                                Alergias Conhecidas - ATENÇÃO!
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {alergiasPaciente.map((alergia, idx) => {
+                                                    console.log("🎨 [RENDER] Renderizando badge alergia:", alergia, "| idx:", idx);
+                                                    return (
+                                                        <Badge
+                                                            key={`alergia-${idx}-${alergia}`}
+                                                            variant="destructive"
+                                                            className="bg-red-600 hover:bg-red-700 text-white font-semibold px-3 py-1 text-sm"
+                                                        >
+                                                            {alergia}
+                                                        </Badge>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                                
+                                {/* Queixa Acolhimento */}
                                 {pacienteParaAtendimento.queixaPrincipal && (
                                     <div>
                                         <div className="text-sm font-medium text-gray-700">Queixa Acolhimento</div>
@@ -962,15 +1084,18 @@ const AtendimentoMedico: React.FC = () => {
                         onSave={handleSaveAtendimento}
                         onCancel={() => {
                             setPacienteParaAtendimento(null);
+                            setAlergiasPaciente([]);
                             setActiveTab("triados");
                         }}
                         isLoading={isLoading}
-                        initialData={
-                            pacienteParaAtendimento && !semTriagem
-                                ? {
-                                    pacienteId: pacienteParaAtendimento.pacienteId.toString(),
-                                    queixaPrincipal: pacienteParaAtendimento.queixaPrincipal,
-                                    observacoes: `DADOS DA TRIAGEM:
+                        initialData={useMemo(() => {
+                            if (!pacienteParaAtendimento || semTriagem) {
+                                return undefined;
+                            }
+                            return {
+                                pacienteId: pacienteParaAtendimento.pacienteId.toString(),
+                                queixaPrincipal: pacienteParaAtendimento.queixaPrincipal,
+                                observacoes: `DADOS DA TRIAGEM:
 ${pacienteParaAtendimento.escalaDor !== undefined ? `Escala de Dor: ${pacienteParaAtendimento.escalaDor}/10` : ""}
 Profissional da Triagem: ${pacienteParaAtendimento.profissionalTriagem}
 Horário da Triagem: ${formatarHorario(pacienteParaAtendimento.horarioTriagem)}
@@ -983,9 +1108,22 @@ ${pacienteParaAtendimento.saturacaoOxigenio !== undefined ? `Saturação O₂: $
 
 OBSERVAÇÕES DA TRIAGEM:
 ${pacienteParaAtendimento.observacoes || "Nenhuma observação registrada"}`,
-                                }
-                                : undefined
-                        }
+                            };
+                        }, [
+                            pacienteParaAtendimento?.pacienteId,
+                            pacienteParaAtendimento?.queixaPrincipal,
+                            pacienteParaAtendimento?.escalaDor,
+                            pacienteParaAtendimento?.profissionalTriagem,
+                            pacienteParaAtendimento?.horarioTriagem,
+                            pacienteParaAtendimento?.pressaoArterial,
+                            pacienteParaAtendimento?.temperatura,
+                            pacienteParaAtendimento?.peso,
+                            pacienteParaAtendimento?.altura,
+                            pacienteParaAtendimento?.frequenciaCardiaca,
+                            pacienteParaAtendimento?.saturacaoOxigenio,
+                            pacienteParaAtendimento?.observacoes,
+                            semTriagem
+                        ])}
                     />
                 </TabsContent>
 
@@ -994,18 +1132,99 @@ ${pacienteParaAtendimento.observacoes || "Nenhuma observação registrada"}`,
                 </TabsContent>
 
                 <TabsContent value="historico">
-                    {pacienteId && (
-                        <div className="space-y-6">
-                            {/* Histórico clínico existente */}
-                            <HistoricoAtendimentos pacienteId={pacienteId} />
+                    <div className="space-y-6">
+                        {/* Busca de paciente para histórico/PEP */}
+                        {!pacienteId && (
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Buscar Paciente para Histórico / PEP</CardTitle>
+                                    <CardDescription>
+                                        Digite o nome, CPF ou Cartão SUS do paciente para visualizar o Prontuário Eletrônico
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <div className="relative">
+                                            <Input
+                                                placeholder="Buscar paciente (nome/CPF/SUS)..."
+                                                value={buscaPaciente}
+                                                onChange={(e) => {
+                                                    setBuscaPaciente(e.target.value);
+                                                    if (e.target.value.trim().length >= 3) {
+                                                        executarBuscaPacientes(e.target.value);
+                                                    } else {
+                                                        setResultadosBusca([]);
+                                                    }
+                                                }}
+                                                className="pr-10"
+                                            />
+                                            {buscandoPac && (
+                                                <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        
+                                        {resultadosBusca.length > 0 && (
+                                            <div className="border rounded-md max-h-60 overflow-y-auto">
+                                                {resultadosBusca.map((p) => (
+                                                    <div
+                                                        key={p.id}
+                                                        onClick={() => {
+                                                            setPacienteId(String(p.id));
+                                                            setBuscaPaciente("");
+                                                            setResultadosBusca([]);
+                                                        }}
+                                                        className="p-3 hover:bg-muted cursor-pointer border-b last:border-b-0"
+                                                    >
+                                                        <div className="font-medium">{p.nome}</div>
+                                                        {p.cartaoSus && (
+                                                            <div className="text-sm text-muted-foreground">SUS: {p.cartaoSus}</div>
+                                                        )}
+                                                        {p.cpf && (
+                                                            <div className="text-sm text-muted-foreground">CPF: {p.cpf}</div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        
+                                        {buscaPaciente.length >= 3 && resultadosBusca.length === 0 && !buscandoPac && (
+                                            <div className="text-sm text-muted-foreground text-center py-4">
+                                                Nenhum paciente encontrado
+                                            </div>
+                                        )}
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        )}
+                        
+                        {/* Histórico quando paciente selecionado */}
+                        {pacienteId && (
+                            <div className="space-y-6">
+                                {/* Botão para trocar paciente */}
+                                <div className="flex justify-between items-center">
+                                    <h2 className="text-2xl font-bold">Prontuário Eletrônico do Paciente (PEP)</h2>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => {
+                                            setPacienteId("");
+                                            setAtendimentoId("");
+                                        }}
+                                    >
+                                        Trocar Paciente
+                                    </Button>
+                                </div>
+                                
+                                {/* Histórico clínico existente */}
+                                <HistoricoAtendimentos pacienteId={pacienteId} />
 
-                            {/* Histórico de agendamentos com filtros (reuso do endpoint já existente) */}
-                            <div className="mt-2">
-                                <h3 className="text-lg font-semibold mb-2">Histórico de Agendamentos</h3>
-                                <HistoricoAgendamentosPaciente pacienteId={pacienteId} />
+                                {/* Histórico de agendamentos com filtros (reuso do endpoint já existente) */}
+                                <div className="mt-2">
+                                    <h3 className="text-lg font-semibold mb-2">Histórico de Agendamentos</h3>
+                                    <HistoricoAgendamentosPaciente pacienteId={pacienteId} />
+                                </div>
                             </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </TabsContent>
             </Tabs>
 

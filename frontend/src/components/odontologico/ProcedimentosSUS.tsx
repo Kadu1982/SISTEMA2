@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, PlusCircle, Trash2, Loader2, Save } from "lucide-react";
 
@@ -170,10 +171,10 @@ const ProcedimentosSUS: React.FC<Props> = ({ atendimentoId, value, onChange, rea
     // ------------------------------- render -----------------------------------
     return (
         <Card className="w-full">
-            <CardHeader>
-                <CardTitle>Procedimentos SIA/SUS</CardTitle>
+            <CardHeader className="pb-3">
+                <CardTitle className="text-base">Procedimentos SIA/SUS</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-4">
                 {/* Busca */}
                 <div>
                     <div className="relative">
@@ -215,109 +216,110 @@ const ProcedimentosSUS: React.FC<Props> = ({ atendimentoId, value, onChange, rea
 
                 {/* Selecionados */}
                 <div className="space-y-3">
-                    <div className="font-medium">Selecionados</div>
+                    <div className="font-medium text-sm">Selecionados ({fields.length})</div>
                     {fields.length === 0 ? (
-                        <div className="text-sm text-gray-500">Nenhum procedimento adicionado.</div>
+                        <div className="text-xs text-gray-500">Nenhum procedimento adicionado.</div>
                     ) : (
-                        <div className="border rounded-lg overflow-hidden">
-                            <div className="grid grid-cols-12 bg-gray-50 px-3 py-2 text-xs font-medium">
-                                <div className="col-span-2">Código</div>
-                                <div className="col-span-4">Descrição</div>
-                                <div className="col-span-1 text-center">Qtd</div>
-                                <div className="col-span-1 text-center">Dente</div>
-                                <div className="col-span-3">Faces</div>
-                                <div className="col-span-1 text-center">Ações</div>
-                            </div>
+                        <div className="border rounded-lg overflow-hidden max-h-96 overflow-y-auto">
                             <div className="divide-y">
                                 {fields.map((f, idx) => {
                                     const exigeDente = itens[idx]?.procedimento?.exigeDente;
                                     const exigeFace = itens[idx]?.procedimento?.exigeFace;
 
                                     return (
-                                        <div key={f.id} className="grid grid-cols-12 items-start gap-2 px-3 py-2">
-                                            <div className="col-span-2">
-                                                <Badge className="font-mono">{itens[idx]?.procedimento?.codigo}</Badge>
-                                            </div>
-                                            <div className="col-span-4 text-sm">{itens[idx]?.procedimento?.descricao}</div>
-
-                                            {/* quantidade */}
-                                            <div className="col-span-1">
-                                                <Input
-                                                    type="number"
-                                                    min={1}
-                                                    value={itens[idx].quantidade ?? 1}
-                                                    onChange={(e) =>
-                                                        setValue(`itens.${idx}.quantidade`, Number(e.target.value) || 1)
-                                                    }
-                                                />
-                                            </div>
-
-                                            {/* dente */}
-                                            <div className="col-span-1">
-                                                <Input
-                                                    type="number"
-                                                    placeholder="11..48"
-                                                    disabled={!exigeDente || readOnly}
-                                                    value={itens[idx].dente ?? ""}
-                                                    onChange={(e) =>
-                                                        setValue(
-                                                            `itens.${idx}.dente`,
-                                                            e.target.value ? Number(e.target.value) : undefined
-                                                        )
-                                                    }
-                                                />
-                                            </div>
-
-                                            {/* faces */}
-                                            <div className="col-span-3">
-                                                <div
-                                                    className={`flex flex-wrap gap-2 ${
-                                                        !exigeFace ? "opacity-60 pointer-events-none" : ""
-                                                    }`}
-                                                >
-                                                    {(["M", "D", "O", "V", "P", "L"] as Face[]).map((face) => {
-                                                        const atual = new Set(itens[idx].faces ?? []);
-                                                        const checked = atual.has(face);
-                                                        return (
-                                                            <label key={face} className="flex items-center gap-1 text-xs select-none">
-                                                                <input
-                                                                    type="checkbox"
-                                                                    className="h-3 w-3"
-                                                                    disabled={!exigeFace || readOnly}
-                                                                    checked={checked}
-                                                                    onChange={(e) => {
-                                                                        const next = new Set(itens[idx].faces ?? []);
-                                                                        if (e.target.checked) next.add(face);
-                                                                        else next.delete(face);
-                                                                        setValue(`itens.${idx}.faces`, Array.from(next) as Face[]);
-                                                                    }}
-                                                                />
-                                                                {face}
-                                                            </label>
-                                                        );
-                                                    })}
+                                        <div key={f.id} className="p-3">
+                                            <div className="grid grid-cols-12 gap-3 items-start">
+                                                {/* Código e Descrição */}
+                                                <div className="col-span-12 md:col-span-4">
+                                                    <Badge className="font-mono text-xs mb-1">{itens[idx]?.procedimento?.codigo}</Badge>
+                                                    <p className="text-sm font-medium mt-1">{itens[idx]?.procedimento?.descricao}</p>
                                                 </div>
-                                            </div>
 
-                                            <div className="col-span-1 flex justify-center">
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    onClick={() => remove(idx)}
-                                                    disabled={readOnly}
-                                                    title="Remover"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                                {/* Quantidade e Dente */}
+                                                <div className="col-span-6 md:col-span-2">
+                                                    <Label className="text-xs mb-1 block">Quantidade</Label>
+                                                    <Input
+                                                        type="number"
+                                                        min={1}
+                                                        className="h-9 text-sm"
+                                                        value={itens[idx].quantidade ?? 1}
+                                                        onChange={(e) =>
+                                                            setValue(`itens.${idx}.quantidade`, Number(e.target.value) || 1)
+                                                        }
+                                                    />
+                                                </div>
 
-                                            {/* observação (linha inteira) */}
-                                            <div className="col-span-12">
-                                                <Textarea
-                                                    placeholder="Observações (opcional)…"
-                                                    value={itens[idx].observacao ?? ""}
-                                                    onChange={(e) => setValue(`itens.${idx}.observacao`, e.target.value)}
-                                                />
+                                                <div className="col-span-6 md:col-span-2">
+                                                    <Label className="text-xs mb-1 block">Dente</Label>
+                                                    <Input
+                                                        type="number"
+                                                        placeholder="11..48"
+                                                        className="h-9 text-sm"
+                                                        disabled={!exigeDente || readOnly}
+                                                        value={itens[idx].dente ?? ""}
+                                                        onChange={(e) =>
+                                                            setValue(
+                                                                `itens.${idx}.dente`,
+                                                                e.target.value ? Number(e.target.value) : undefined
+                                                            )
+                                                        }
+                                                    />
+                                                </div>
+
+                                                {/* Faces */}
+                                                {exigeFace && (
+                                                    <div className="col-span-12 md:col-span-3">
+                                                        <Label className="text-xs mb-1 block">Faces</Label>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {(["M", "D", "O", "V", "P", "L"] as Face[]).map((face) => {
+                                                                const atual = new Set(itens[idx].faces ?? []);
+                                                                const checked = atual.has(face);
+                                                                return (
+                                                                    <label key={face} className="flex items-center gap-1 text-xs select-none">
+                                                                        <input
+                                                                            type="checkbox"
+                                                                            className="h-3 w-3"
+                                                                            disabled={readOnly}
+                                                                            checked={checked}
+                                                                            onChange={(e) => {
+                                                                                const next = new Set(itens[idx].faces ?? []);
+                                                                                if (e.target.checked) next.add(face);
+                                                                                else next.delete(face);
+                                                                                setValue(`itens.${idx}.faces`, Array.from(next) as Face[]);
+                                                                            }}
+                                                                        />
+                                                                        {face}
+                                                                    </label>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Ações */}
+                                                <div className="col-span-12 md:col-span-1 flex justify-end md:justify-start">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-9 w-9"
+                                                        onClick={() => remove(idx)}
+                                                        disabled={readOnly}
+                                                        title="Remover"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+
+                                                {/* Observação - linha inteira */}
+                                                <div className="col-span-12">
+                                                    <Label className="text-xs mb-1 block">Observações</Label>
+                                                    <Textarea
+                                                        placeholder="Observações (opcional)…"
+                                                        className="text-sm h-20"
+                                                        value={itens[idx].observacao ?? ""}
+                                                        onChange={(e) => setValue(`itens.${idx}.observacao`, e.target.value)}
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     );
@@ -327,12 +329,14 @@ const ProcedimentosSUS: React.FC<Props> = ({ atendimentoId, value, onChange, rea
                     )}
 
                     {/* Ações */}
-                    <div className="flex justify-end">
-                        <Button onClick={handleSubmit(onSalvarSubmit)} disabled={readOnly}>
-                            <Save className="h-4 w-4 mr-2" />
-                            Salvar
-                        </Button>
-                    </div>
+                    {fields.length > 0 && (
+                        <div className="flex justify-end pt-2">
+                            <Button onClick={handleSubmit(onSalvarSubmit)} disabled={readOnly}>
+                                <Save className="h-4 w-4 mr-2" />
+                                Salvar Procedimentos
+                            </Button>
+                        </div>
+                    )}
                 </div>
             </CardContent>
         </Card>

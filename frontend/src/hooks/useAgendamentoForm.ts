@@ -1,6 +1,7 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import { Paciente } from '@/types/paciente/Paciente';
+import { getEspecialidadesPorTipo } from '@/types/Agendamento';
 
 // Interfaces para os tipos de dados
 export interface AgendamentoFormData {
@@ -58,8 +59,20 @@ export const useAgendamentoForm = () => {
     const [prioridade, setPrioridade] = useState<string>('NORMAL');
     const [observacoes, setObservacoes] = useState<string>('');
 
-    // ✅ CORREÇÃO: Especialidades disponíveis com estrutura correta
-    const especialidadesDisponiveis = ESPECIALIDADES_MOCK;
+    // ✅ CORREÇÃO: Especialidades disponíveis baseadas no tipo de atendimento
+    const especialidadesDisponiveis = useMemo(() => {
+        if (!tipoAtendimento) {
+            return [];
+        }
+        return getEspecialidadesPorTipo(tipoAtendimento);
+    }, [tipoAtendimento]);
+
+    // Limpar especialidade quando o tipo de atendimento mudar
+    useEffect(() => {
+        if (tipoAtendimento) {
+            setEspecialidade('');
+        }
+    }, [tipoAtendimento]);
 
     // Função de validação
     const validateForm = useCallback((): AgendamentoFormErrors => {
@@ -78,7 +91,7 @@ export const useAgendamentoForm = () => {
         }
 
         // ✅ CORREÇÃO: Verificar tipos de consulta corretos
-        if ((tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem') && !especialidade) {
+        if ((tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem' || tipoAtendimento === 'consulta_odontologica') && !especialidade) {
             newErrors.especialidade = 'Selecione uma especialidade para consulta';
         }
 
@@ -138,11 +151,11 @@ export const useAgendamentoForm = () => {
 
     // ✅ CORREÇÃO: Funções auxiliares com lógica correta para tipos de atendimento
     const isEspecialidadeObrigatoria = useCallback(() => {
-        return tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem';
+        return tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem' || tipoAtendimento === 'consulta_odontologica';
     }, [tipoAtendimento]);
 
     const getLabelCampoEspecialidade = useCallback(() => {
-        if (tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem') {
+        if (tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem' || tipoAtendimento === 'consulta_odontologica') {
             return 'Especialidade *';
         }
         return 'Especialidade';
@@ -151,6 +164,9 @@ export const useAgendamentoForm = () => {
     const getPlaceholderCampoEspecialidade = useCallback(() => {
         if (tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem') {
             return 'Selecione a especialidade';
+        }
+        if (tipoAtendimento === 'consulta_odontologica') {
+            return 'Selecione a especialidade odontológica';
         }
         if (tipoAtendimento === 'exame_laboratorial') {
             return 'Selecione os exames laboratoriais';
@@ -166,7 +182,7 @@ export const useAgendamentoForm = () => {
     }, [tipoAtendimento]);
 
     const isConsulta = useCallback(() => {
-        return tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem';
+        return tipoAtendimento === 'consulta_medica' || tipoAtendimento === 'consulta_enfermagem' || tipoAtendimento === 'consulta_odontologica';
     }, [tipoAtendimento]);
 
     return {

@@ -255,18 +255,27 @@ export async function buscarPorDocumento(
         });
         return unwrap<PacienteDTO>(data);
     } catch (err: any) {
+        // 404 significa "não encontrado" - retorna null, não é erro
+        if (err?.response?.status === 404) {
+            return null;
+        }
+        // Outros erros podem tentar fallback
         if (!isFallbackWorthy(err)) throw err;
         // FALLBACK: /pacientes?cpf=&cns=
-        const { data } = await api.get(BASE, {
-            params: { cpf, cns },
-            signal: opts?.signal,
-        });
-        const body = unwrap<any>(data);
-        // Alguns backends retornam um único objeto, outros lista/página
-        if (!body) return null;
-        if (Array.isArray(body)) return body[0] ?? null;
-        if (body.content && Array.isArray(body.content)) return body.content[0] ?? null;
-        return body as PacienteDTO;
+        try {
+            const { data } = await api.get(BASE, {
+                params: { cpf, cns },
+                signal: opts?.signal,
+            });
+            const body = unwrap<any>(data);
+            // Alguns backends retornam um único objeto, outros lista/página
+            if (!body) return null;
+            if (Array.isArray(body)) return body[0] ?? null;
+            if (body.content && Array.isArray(body.content)) return body.content[0] ?? null;
+            return body as PacienteDTO;
+        } catch {
+            return null;
+        }
     }
 }
 

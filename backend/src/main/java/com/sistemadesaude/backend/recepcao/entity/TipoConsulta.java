@@ -77,7 +77,13 @@ public enum TipoConsulta {
      * 🔄 PÓS-OPERATÓRIO
      * Consulta de acompanhamento pós-operatório
      */
-    POS_OPERATORIO("Pós-operatório", "Acompanhamento pós-operatório", 30, false);
+    POS_OPERATORIO("Pós-operatório", "Acompanhamento pós-operatório", 30, false),
+
+    /**
+     * 🦷 CONSULTA ODONTOLÓGICA
+     * Atendimento odontológico
+     */
+    ODONTOLOGICA("Odontológica", "Consulta odontológica", 60, false);
 
     private final String descricao;
     private final String detalhamento;
@@ -114,6 +120,7 @@ public enum TipoConsulta {
             case PSICOLOGICA -> "pink";
             case PRE_OPERATORIO -> "indigo";
             case POS_OPERATORIO -> "violet";
+            case ODONTOLOGICA -> "blue";
         };
     }
 
@@ -129,6 +136,7 @@ public enum TipoConsulta {
             case PROCEDIMENTO -> "PROCEDIMENTO";
             case FARMACEUTICA, PSICOLOGICA -> "CONSULTA_ESPECIALIZADA";
             case PRE_OPERATORIO, POS_OPERATORIO -> "CIRURGIA";
+            case ODONTOLOGICA -> "ODONTOLOGIA";
         };
     }
 
@@ -138,7 +146,7 @@ public enum TipoConsulta {
     public boolean requerSalaEspecializada() {
         return switch (this) {
             case EMERGENCIA, PROCEDIMENTO, PRE_OPERATORIO, POS_OPERATORIO -> true;
-            case URGENCIA, TRIAGEM, CONSULTA, RETORNO, ESPECIALIZADA, FARMACEUTICA, PSICOLOGICA -> false;
+            case URGENCIA, TRIAGEM, CONSULTA, RETORNO, ESPECIALIZADA, FARMACEUTICA, PSICOLOGICA, ODONTOLOGICA -> false;
         };
     }
 
@@ -154,6 +162,7 @@ public enum TipoConsulta {
             case PROCEDIMENTO -> new String[]{"MEDICO", "ENFERMEIRO", "TECNICO"};
             case FARMACEUTICA -> new String[]{"FARMACEUTICO"};
             case PSICOLOGICA -> new String[]{"PSICOLOGO"};
+            case ODONTOLOGICA -> new String[]{"DENTISTA", "ODONTOLOGO"};
             case PRE_OPERATORIO, POS_OPERATORIO -> new String[]{"MEDICO", "ANESTESISTA"};
         };
     }
@@ -167,7 +176,7 @@ public enum TipoConsulta {
             case EMERGENCIA, URGENCIA -> RETORNO;
             case CONSULTA -> RETORNO;
             case PRE_OPERATORIO -> POS_OPERATORIO;
-            case RETORNO, ESPECIALIZADA, PROCEDIMENTO, FARMACEUTICA, PSICOLOGICA, POS_OPERATORIO -> null;
+            case RETORNO, ESPECIALIZADA, PROCEDIMENTO, FARMACEUTICA, PSICOLOGICA, ODONTOLOGICA, POS_OPERATORIO -> null;
         };
     }
 }

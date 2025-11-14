@@ -36,13 +36,44 @@ public class ConfiguracaoAssistenciaSocialService {
      * Se não existir nenhuma configuração, cria uma configuração padrão.
      * @return A configuração atual.
      */
-    @Transactional(readOnly = true)
     public ConfiguracaoAssistenciaSocial getConfiguracao() {
         ConfiguracaoAssistenciaSocial configuracao = configuracaoRepository.findTopByOrderByDataAtualizacaoDesc();
         if (configuracao == null) {
-            configuracao = criarConfiguracaoPadrao();
+            // Chama método separado para criar configuração padrão (fora do contexto read-only)
+            return criarConfiguracaoPadrao();
         }
         return configuracao;
+    }
+    
+    /**
+     * Cria uma configuração padrão para o módulo de Assistência Social.
+     * Método separado para permitir escrita em transação.
+     * @return A configuração padrão criada.
+     */
+    @Transactional
+    private ConfiguracaoAssistenciaSocial criarConfiguracaoPadrao() {
+        ConfiguracaoAssistenciaSocial configuracao = new ConfiguracaoAssistenciaSocial();
+        configuracao.setTempoAtualizacaoTelas(5); // 5 minutos
+        configuracao.setValorSalarioMinimo(new BigDecimal("1320.00")); // Valor do salário mínimo em 2023
+        configuracao.setValorLinhaPobreza(new BigDecimal("218.00")); // Valor da linha de pobreza em 2023
+        configuracao.setValorLinhaExtremaPobreza(new BigDecimal("109.00")); // Valor da linha de extrema pobreza em 2023
+        configuracao.setTempoAtendimentoProfissionais(30); // 30 minutos
+        configuracao.setTempoAlteracaoAtendimentoIndividual(24); // 24 horas
+        configuracao.setTempoAlteracaoContrareferencia(48); // 48 horas
+        configuracao.setTempoAlteracaoDispensacaoBeneficios(24); // 24 horas
+        configuracao.setDesligarIntegranteGrupoServico(true);
+        configuracao.setAlertarDispensacaoBeneficioDuplicado(true);
+        configuracao.setPermitirTransferenciaIntegrantes(false);
+        configuracao.setCampoValorBaseObrigatorio(true);
+        configuracao.setSomenteIntegrantesFamiliaAtendimentoColetivo(false);
+        configuracao.setControleAutomaticoPobreza(true);
+        configuracao.setProfissionaisIndicadoresRma(true);
+        configuracao.setControleSeparadoFamiliaAcolhedora(true);
+        configuracao.setEvitarUnificacaoExclusaoFamiliasAcolhedoras(true);
+        configuracao.setPortalSolicitacaoAcesso(false);
+        configuracao.setDataAtualizacao(LocalDateTime.now());
+        configuracao.setUsuarioAtualizacao("SISTEMA");
+        return configuracaoRepository.save(configuracao);
     }
 
     /**
@@ -247,32 +278,4 @@ public class ConfiguracaoAssistenciaSocialService {
         return vinculoRepository.findByTipoVulnerabilidade(tipoVulnerabilidade);
     }
 
-    /**
-     * Cria uma configuração padrão para o módulo de Assistência Social.
-     * @return A configuração padrão.
-     */
-    private ConfiguracaoAssistenciaSocial criarConfiguracaoPadrao() {
-        ConfiguracaoAssistenciaSocial configuracao = new ConfiguracaoAssistenciaSocial();
-        configuracao.setTempoAtualizacaoTelas(5); // 5 minutos
-        configuracao.setValorSalarioMinimo(new BigDecimal("1320.00")); // Valor do salário mínimo em 2023
-        configuracao.setValorLinhaPobreza(new BigDecimal("218.00")); // Valor da linha de pobreza em 2023
-        configuracao.setValorLinhaExtremaPobreza(new BigDecimal("109.00")); // Valor da linha de extrema pobreza em 2023
-        configuracao.setTempoAtendimentoProfissionais(30); // 30 minutos
-        configuracao.setTempoAlteracaoAtendimentoIndividual(24); // 24 horas
-        configuracao.setTempoAlteracaoContrareferencia(48); // 48 horas
-        configuracao.setTempoAlteracaoDispensacaoBeneficios(24); // 24 horas
-        configuracao.setDesligarIntegranteGrupoServico(true);
-        configuracao.setAlertarDispensacaoBeneficioDuplicado(true);
-        configuracao.setPermitirTransferenciaIntegrantes(false);
-        configuracao.setCampoValorBaseObrigatorio(true);
-        configuracao.setSomenteIntegrantesFamiliaAtendimentoColetivo(false);
-        configuracao.setControleAutomaticoPobreza(true);
-        configuracao.setProfissionaisIndicadoresRma(true);
-        configuracao.setControleSeparadoFamiliaAcolhedora(true);
-        configuracao.setEvitarUnificacaoExclusaoFamiliasAcolhedoras(true);
-        configuracao.setPortalSolicitacaoAcesso(false);
-        configuracao.setDataAtualizacao(LocalDateTime.now());
-        configuracao.setUsuarioAtualizacao("SISTEMA");
-        return configuracaoRepository.save(configuracao);
-    }
 }

@@ -56,4 +56,5 @@ public class PacienteDTO {
     private String etnia;
     private String escolaridade;
     private String situacaoFamiliar;
+    private String alergias;
 }

@@ -682,6 +682,7 @@ const AgendamentoRecepcao: React.FC = () => {
                                                     <SelectContent>
                                                         <SelectItem value="consulta_medica">Consulta Médica</SelectItem>
                                                         <SelectItem value="consulta_enfermagem">Consulta de Enfermagem</SelectItem>
+                                                        <SelectItem value="consulta_odontologica">Consulta Odontológica</SelectItem>
                                                         <SelectItem value="exame_laboratorial">Exame Laboratorial</SelectItem>
                                                         <SelectItem value="exame_imagem">Exame de Imagem</SelectItem>
                                                         <SelectItem value="procedimento">Procedimento</SelectItem>

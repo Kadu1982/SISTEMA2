@@ -1,6 +1,7 @@
 package com.sistemadesaude.backend.triagem.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.sistemadesaude.backend.triagem.entity.ClassificacaoRisco;
 import com.sistemadesaude.backend.triagem.entity.MotivoConsulta;
 import jakarta.validation.constraints.*;
@@ -9,6 +10,7 @@ import lombok.Data;
 import java.time.LocalDate;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class CriarTriagemRequestDTO {
 
     @NotNull(message = "ID do agendamento é obrigatório")

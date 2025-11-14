@@ -67,6 +67,11 @@ const RemumeBusca: React.FC<RemumeBuscaProps> = ({
             setShowResultados(false);
             setResultados([]);
             setActiveIndex(-1);
+        } else if (!busca.trim()) {
+            // Se não há medicamento selecionado e o campo está vazio, limpa tudo
+            setShowResultados(false);
+            setResultados([]);
+            setActiveIndex(-1);
         }
     }, [medicamentoSelecionado]);
 

@@ -26,7 +26,7 @@ import pacientesService, {
 } from '@/services/pacientesService';
 
 // ======================= CONFIG =======================
-const MIN_CHARS_NAME = 1;     // começa com 1 letra
+const MIN_CHARS_NAME = 3;     // mínimo de 3 caracteres para busca por nome
 const DEBOUNCE_MS = 300;      // debounce
 const ENABLE_CLIENT_FALLBACK = false; // opcional
 
@@ -109,21 +109,29 @@ const PacienteBusca: React.FC<PacienteBuscaProps> = ({
         try {
             const apenasNumeros = query.replace(/\D/g, '');
             let pacientes: Paciente[] = [];
+            let buscaPorDocumento = false;
 
-            // CPF primeiro (3~11 dígitos)
-            if (apenasNumeros.length >= 3 && apenasNumeros.length <= 11) {
+            // Se tem apenas números e pelo menos 3 dígitos, tenta buscar por CPF/CNS primeiro
+            if (apenasNumeros.length >= 3) {
                 try {
                     const porDoc = await apiBuscarPorDocumento({ cpf: apenasNumeros }, { signal: controller.signal });
                     if (porDoc) {
                         pacientes = [porDoc as unknown as Paciente];
+                        buscaPorDocumento = true;
                     }
-                } catch {
-                    // ignora erro 404/outros e segue para nome
+                } catch (err: any) {
+                    // 404 é esperado quando não encontra - não é erro, apenas não encontrou
+                    if (err?.response?.status === 404) {
+                        // Não encontrado por CPF, continua para busca por nome
+                    } else {
+                        // Outros erros são ignorados silenciosamente
+                        console.debug('Erro ao buscar por documento:', err);
+                    }
                 }
             }
 
-            // Nome (startsWith) via backend
-            if (pacientes.length === 0) {
+            // Se não encontrou por CPF/CNS ou não tem apenas números, busca por nome
+            if (pacientes.length === 0 && query.trim().length >= MIN_CHARS_NAME) {
                 const lista = await apiBuscarPacientes(query, { signal: controller.signal });
                 pacientes = (lista as unknown as Paciente[]) || [];
             }
@@ -141,7 +149,8 @@ const PacienteBusca: React.FC<PacienteBuscaProps> = ({
 
             // 3) GARANTIA de regra startsWith no cliente (além do backend)
             //    Assim, se o backend retornar algo mais amplo, o front ainda respeita a regra.
-            if (pacientes.length > 0) {
+            //    IMPORTANTE: Não aplica esse filtro quando a busca foi feita por CPF/CNS
+            if (pacientes.length > 0 && !buscaPorDocumento) {
                 const q = query.toLowerCase();
                 pacientes = pacientes.filter((p) => (p?.nomeCompleto || '').toLowerCase().startsWith(q));
             }
