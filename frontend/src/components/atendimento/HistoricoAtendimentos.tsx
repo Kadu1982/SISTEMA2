@@ -18,6 +18,7 @@ type AtendimentoHistorico = {
     diagnostico?: string;
     prescricao?: string;
     observacoes?: string;
+    tipoAtendimento?: string; // Tipo: "AMBULATORIAL", "UPA", etc.
 };
 
 type Props = { pacienteId: string };
@@ -164,10 +165,10 @@ export const HistoricoAtendimentos: React.FC<Props> = ({ pacienteId }) => {
             </CardHeader>
             <CardContent>
                 <div className="space-y-4">
-                    {atendimentos.map((a: AtendimentoHistorico) => (
-                        <Card key={a.id} className="border-l-4 border-l-blue-500 shadow-sm">
+                    {atendimentos.map((a: AtendimentoHistorico, index: number) => (
+                        <Card key={`${a.tipoAtendimento || 'AMBULATORIAL'}-${a.id || index}-${a.dataHora || ''}`} className="border-l-4 border-l-blue-500 shadow-sm">
                             <CardContent className="p-4">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className={`grid grid-cols-1 md:grid-cols-2 ${a.tipoAtendimento ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4`}>
                                     <div className="flex items-center gap-2">
                                         <Calendar className="w-4 h-4 text-gray-500" />
                                         <div>
@@ -189,6 +190,28 @@ export const HistoricoAtendimentos: React.FC<Props> = ({ pacienteId }) => {
                                             <Badge variant="outline" className="text-green-700 border-green-300">Realizado</Badge>
                                         </div>
                                     </div>
+                                    {a.tipoAtendimento && (
+                                        <div className="flex items-center gap-2">
+                                            <Stethoscope className="w-4 h-4 text-purple-500" />
+                                            <div>
+                                                <p className="text-sm text-gray-600">Tipo</p>
+                                                <Badge 
+                                                    variant={a.tipoAtendimento === "UPA" ? "default" : "secondary"} 
+                                                    className={
+                                                        a.tipoAtendimento === "UPA" ? "bg-purple-100 text-purple-700" :
+                                                        a.tipoAtendimento === "ASSISTENCIAL_SOCIAL" ? "bg-green-100 text-green-700" :
+                                                        a.tipoAtendimento === "PROCEDIMENTO_RAPIDO" ? "bg-orange-100 text-orange-700" :
+                                                        ""
+                                                    }
+                                                >
+                                                    {a.tipoAtendimento === "UPA" ? "UPA" :
+                                                     a.tipoAtendimento === "ASSISTENCIAL_SOCIAL" ? "Assistência Social" :
+                                                     a.tipoAtendimento === "PROCEDIMENTO_RAPIDO" ? "Procedimento Rápido" :
+                                                     "Ambulatorial"}
+                                                </Badge>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {a.diagnostico && (

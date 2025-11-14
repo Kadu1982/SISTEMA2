@@ -44,6 +44,7 @@ public class OperadorDTO {
     private Boolean ativo;
     private List<String> perfis;
     private List<String> modulos; // Módulos aos quais o operador tem acesso
+    private java.util.Map<String, java.util.List<Long>> modulosUnidades; // Módulos vinculados a unidades específicas
     private Boolean isMaster;
 
     // Informações da unidade

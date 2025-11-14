@@ -143,8 +143,17 @@ const Login: React.FC = () => {
                 ...operador,
                 unidadeId: unidadeId,
                 unidadeAtual: unidadeSelecionada?.nome || null,
-                unidadeTipo: unidadeSelecionada?.tipo || null
+                unidadeTipo: unidadeSelecionada?.tipo || null,
+                // Preserva modulosUnidades se vier do backend
+                modulosUnidades: operador.modulosUnidades || {}
             };
+            console.log('🔐 Login - Operador com unidade:', {
+                login: operadorComUnidade.login,
+                modulos: operadorComUnidade.modulos,
+                modulosUnidades: operadorComUnidade.modulosUnidades,
+                unidadeId: operadorComUnidade.unidadeId,
+                unidadeTipo: operadorComUnidade.unidadeTipo
+            });
             localStorage.setItem('operadorData', JSON.stringify(operadorComUnidade));
 
             toast({

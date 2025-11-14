@@ -7,6 +7,7 @@ import com.sistemadesaude.backend.operador.entity.Operador;
 import com.sistemadesaude.backend.operador.mapper.OperadorMapper;
 import com.sistemadesaude.backend.operador.repository.OperadorRepository;
 import com.sistemadesaude.backend.operador.repository.OperadorModuloAcessoRepository;
+import com.sistemadesaude.backend.operador.repository.OperadorModuloUnidadeRepository;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class AuthenticationService {
     private final OperadorMapper operadorMapper;
     private final JwtService jwtService;
     private final OperadorModuloAcessoRepository moduloAcessoRepository;
+    private final OperadorModuloUnidadeRepository moduloUnidadeRepository;
 
     /** Usado para fazer lookup reflexivo de beans opcionais (AcessoValidator, TermoUsoService). */
     private final ApplicationContext applicationContext;
@@ -83,6 +85,22 @@ public class AuthenticationService {
             operadorDTO.setModulos(modulos != null ? modulos : new java.util.ArrayList<>());
             log.debug("Operador {} tem {} módulo(s): {}", operador.getLogin(), 
                     modulos != null ? modulos.size() : 0, modulos);
+            
+            // 5.2) Carrega unidades vinculadas a cada módulo
+            if (modulos != null && !modulos.isEmpty()) {
+                java.util.Map<String, java.util.List<Long>> modulosUnidades = new java.util.HashMap<>();
+                for (String modulo : modulos) {
+                    try {
+                        java.util.List<Long> unidades = moduloUnidadeRepository.findUnidadesByOperadorAndModulo(operador.getId(), modulo);
+                        if (unidades != null && !unidades.isEmpty()) {
+                            modulosUnidades.put(modulo, unidades);
+                        }
+                    } catch (Exception e) {
+                        log.warn("Erro ao carregar unidades do módulo {} para operador {}: {}", modulo, operador.getId(), e.getMessage());
+                    }
+                }
+                operadorDTO.setModulosUnidades(modulosUnidades);
+            }
         } catch (Exception e) {
             log.warn("Erro ao carregar módulos do operador {}: {}", operador.getId(), e.getMessage());
             operadorDTO.setModulos(new java.util.ArrayList<>());

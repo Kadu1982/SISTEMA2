@@ -94,10 +94,22 @@ export const assinaturaDigitalService = {
    * Verifica se operador tem senha de assinatura cadastrada
    */
   async verificarSenhaAssinatura(operadorId: number): Promise<boolean> {
-    const { data } = await api.get(
-      `/assinaturas-digitais/operadores/${operadorId}/tem-senha`
-    );
-    return data?.data ?? data ?? false;
+    try {
+      const { data } = await api.get(
+        `/assinaturas-digitais/operadores/${operadorId}/tem-senha`
+      );
+      // O backend retorna boolean diretamente, não dentro de um objeto
+      const resultado = typeof data === 'boolean' ? data : (data?.data ?? data ?? false);
+      console.log("🔍 Resposta verificação senha:", { operadorId, data, resultado });
+      return resultado;
+    } catch (error: any) {
+      console.error("❌ Erro ao verificar senha:", error);
+      // Se der erro (ex: 404), assume que não tem senha
+      if (error?.response?.status === 404) {
+        return false;
+      }
+      throw error;
+    }
   },
 };
 

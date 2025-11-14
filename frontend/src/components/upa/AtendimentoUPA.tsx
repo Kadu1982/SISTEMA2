@@ -3,23 +3,21 @@
 // Busca, auto-refresh opcional e abertura do modal de atendimento.
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { UserCheck, Search, User, Clock, AlertTriangle, RefreshCw } from 'lucide-react';
 import { listarTriadosUPA, type UpaTriadoDTO } from '@/services/upaService';
-import AtendimentoMedicoModal from './AtendimentoMedicoModal';
 
-type Ctx = { pacienteId: number; ocorrenciaId: number; triagemId: number; nome: string } | null;
 const REFRESH_MS_DEFAULT = 30000;
 
 const AtendimentoUPA: React.FC = () => {
+    const navigate = useNavigate();
     const [lista, setLista] = useState<UpaTriadoDTO[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [busca, setBusca] = useState('');
     const [autoRefresh, setAutoRefresh] = useState(true);
-    const [ctx, setCtx] = useState<Ctx>(null);
-    const [show, setShow] = useState(false);
     const timerRef = useRef<any>(null);
 
     const carregar = async () => {
@@ -79,22 +77,14 @@ const AtendimentoUPA: React.FC = () => {
                                 </div>
                             </div>
                         </div>
-                        <Button onClick={() => { setCtx({ pacienteId:p.pacienteId, ocorrenciaId:p.upaId, triagemId:p.triagemId, nome:p.pacienteNome }); setShow(true); }}>
+                        <Button onClick={() => {
+                            navigate(`/upa/atendimento?pacienteId=${p.pacienteId}&ocorrenciaId=${p.upaId}&triagemId=${p.triagemId}&pacienteNome=${encodeURIComponent(p.pacienteNome || '')}`);
+                        }}>
                             <UserCheck className="mr-2 h-4 w-4" />Atender
                         </Button>
                     </div>
                 ))}
             </div>
-
-            {show && ctx && (
-                <AtendimentoMedicoModal
-                    pacienteId={ctx.pacienteId}
-                    ocorrenciaId={ctx.ocorrenciaId}
-                    triagemId={ctx.triagemId}
-                    pacienteNome={ctx.nome}
-                    onClose={() => { setShow(false); setCtx(null); carregar(); }}
-                />
-            )}
         </div>
     );
 };

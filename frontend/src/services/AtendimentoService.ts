@@ -46,6 +46,9 @@ export interface Atendimento {
     anamnese?: string;
     exameClinico?: string;
     condutaMedica?: string;
+
+    // Campo para identificar o tipo de atendimento (AMBULATORIAL, UPA, etc.)
+    tipoAtendimento?: string;
 }
 
 export interface AtendimentoRequest {

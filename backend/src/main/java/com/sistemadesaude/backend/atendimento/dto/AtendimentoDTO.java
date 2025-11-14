@@ -62,6 +62,12 @@ public class AtendimentoDTO {
     // Campo para compatibilidade com a queixa principal
     private String queixaPrincipal;
 
+    // Campo para identificar o tipo de atendimento (AMBULATORIAL, UPA, etc.)
+    private String tipoAtendimento;
+
+    // Campo retorno (mantido para compatibilidade com atendimentos UPA)
+    private String retorno;
+
     /**
      * Verifica se o motivo de desfecho é encaminhamento
      */

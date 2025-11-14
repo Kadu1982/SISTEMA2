@@ -209,9 +209,56 @@ const Layout: React.FC = () => {
         }
 
         // =====================================================
+        // ✅ VERIFICAÇÃO DE MÓDULOS CONFIGURADOS (PRIMEIRO - ANTES DE TUDO)
+        // =====================================================
+        // Se o operador tem módulos configurados, verifica se o módulo corresponde ao item do menu
+        // Esta verificação deve acontecer ANTES de todas as regras restritivas para permitir módulos configurados
+        if (operador.modulos && operador.modulos.length > 0) {
+            // Encontra o código do módulo que corresponde ao label do menu
+            const moduloCorrespondente = Object.entries(moduloToLabelMap).find(
+                ([_, label]) => label === item.label
+            )?.[0];
+            
+            if (moduloCorrespondente) {
+                // Verifica se o operador tem acesso a este módulo
+                const temAcessoAoModulo = operador.modulos.some(modulo => 
+                    modulo.toUpperCase() === moduloCorrespondente.toUpperCase()
+                );
+                if (temAcessoAoModulo) {
+                    // Verifica se o módulo tem unidades específicas configuradas
+                    const unidadesModulo = operador.modulosUnidades?.[moduloCorrespondente];
+                    console.log(`🔍 Verificando módulo ${moduloCorrespondente}:`, {
+                        temAcessoAoModulo,
+                        unidadesModulo,
+                        unidadeAtualId: operador.unidadeId,
+                        modulosUnidades: operador.modulosUnidades
+                    });
+                    
+                    if (unidadesModulo && unidadesModulo.length > 0) {
+                        // Se tem unidades configuradas, só mostra se a unidade atual estiver na lista
+                        const unidadeAtualId = operador.unidadeId;
+                        if (unidadeAtualId && unidadesModulo.includes(unidadeAtualId)) {
+                            console.log(`✅ Permitindo ${item.label} - Unidade atual (${unidadeAtualId}) está na lista`);
+                            return true;
+                        }
+                        // Se não está na lista de unidades configuradas, não mostra
+                        console.log(`🚫 Bloqueando ${item.label} - Unidade atual (${unidadeAtualId}) não está na lista de unidades configuradas`);
+                        return false;
+                    }
+                    // Se não tem unidades configuradas, mostra em todas as unidades (independente do tipo)
+                    console.log(`✅ Permitindo ${item.label} - Módulo configurado sem restrição de unidades`);
+                    return true;
+                } else {
+                    console.log(`🚫 Bloqueando ${item.label} - Módulo ${moduloCorrespondente} não está na lista de módulos do operador`);
+                }
+            }
+        }
+
+        // =====================================================
         // 🏥 REGRAS ESPECÍFICAS POR PERFIL E TIPO DE UNIDADE
         // ⚠️ IMPORTANTE: Estas regras se aplicam a TODOS os operadores,
         //    EXCETO admin.master e outros administradores (verificados acima)
+        //    E módulos explicitamente configurados (verificados acima)
         // =====================================================
         const unidadeTipo = operador.unidadeTipo?.toUpperCase();
         
@@ -234,55 +281,34 @@ const Layout: React.FC = () => {
         });
 
         // Regra 1: Médico ESF em unidade UBS/CENTRO_ESPECIALIDADES → só vê "Atendimento Ambulatorial"
+        // IMPORTANTE: Módulos configurados já foram verificados acima
         if (temPerfilMedicoESF && (unidadeTipo === 'UBS' || unidadeTipo === 'CENTRO_ESPECIALIDADES')) {
             // Permite apenas o módulo "Atendimento Ambulatorial"
             if (item.label === 'Atendimento Ambulatorial') {
                 return true;
             }
-            // Bloqueia todos os outros módulos (exceto Dashboard que já foi permitido acima)
+            // Bloqueia todos os outros módulos padrão (exceto Dashboard e módulos configurados que já foram verificados)
             return false;
         }
 
-        // Regra 2: Médico UPA em unidade UPA → só vê "UPA"
+        // Regra 2: Médico UPA em unidade UPA → permite "UPA" e módulos configurados
+        // IMPORTANTE: Módulos configurados já foram verificados acima
         if (temPerfilMedicoUPA && unidadeTipo === 'UPA') {
-            // Permite apenas o módulo "UPA"
+            // Permite o módulo "UPA"
             if (item.label === 'UPA') {
                 return true;
             }
-            // Bloqueia todos os outros módulos (exceto Dashboard que já foi permitido acima)
-            return false;
+            // Outros módulos padrão não são permitidos (módulos configurados já foram verificados acima)
         }
 
-        // Regra 3: Se está em UPA mas NÃO tem perfil Médico UPA → não vê módulos (exceto Dashboard)
-        // Isso previne que operadores vejam "Acolhimento Ambulatorial" quando estão em UPA
-        // IMPORTANTE: Esta regra só se aplica se a unidade UPA estiver configurada para o operador
+        // Regra 3: Se está em UPA mas NÃO tem perfil Médico UPA → não vê módulos (exceto Dashboard e módulos configurados)
+        // Isso previne que operadores vejam módulos padrão quando estão em UPA sem perfil adequado
+        // IMPORTANTE: Módulos explicitamente configurados já foram permitidos acima
         if (unidadeTipo === 'UPA' && !temPerfilMedicoUPA) {
-            // Se não tem perfil Médico UPA e está em UPA, não deve ver nenhum módulo
-            // (exceto Dashboard que já foi permitido acima)
-            // Esta regra bloqueia TODOS os módulos quando está em UPA sem perfil adequado
-            console.log(`🚫 Bloqueando ${item.label} - Operador em UPA sem perfil Médico UPA`);
+            // Se não tem perfil Médico UPA e está em UPA, não deve ver módulos padrão
+            // (exceto Dashboard que já foi permitido acima e módulos configurados que já foram verificados)
+            console.log(`🚫 Bloqueando ${item.label} - Operador em UPA sem perfil Médico UPA (módulo não configurado)`);
             return false;
-        }
-
-        // =====================================================
-        // ✅ VERIFICAÇÃO DE MÓDULOS CONFIGURADOS
-        // =====================================================
-        // Se o operador tem módulos configurados, verifica se o módulo corresponde ao item do menu
-        if (operador.modulos && operador.modulos.length > 0) {
-            // Encontra o código do módulo que corresponde ao label do menu
-            const moduloCorrespondente = Object.entries(moduloToLabelMap).find(
-                ([_, label]) => label === item.label
-            )?.[0];
-            
-            if (moduloCorrespondente) {
-                // Verifica se o operador tem acesso a este módulo
-                const temAcessoAoModulo = operador.modulos.some(modulo => 
-                    modulo.toUpperCase() === moduloCorrespondente.toUpperCase()
-                );
-                if (temAcessoAoModulo) {
-                    return true;
-                }
-            }
         }
 
         // ✅ CORREÇÃO: Verifica perfis específicos permitidos

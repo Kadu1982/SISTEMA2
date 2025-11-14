@@ -5,13 +5,19 @@
 // CriarAtendimentoUpaRequest (que não tem 'ocorrenciaId'), evitando o TS2353.
 // Mantive tudo funcional e aditivo, sem alterar sua identidade.
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { X, FileText, ClipboardList, Stethoscope, Pill, FilePlus, FileCheck2, Printer } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { X, FileText, ClipboardList, Stethoscope, Pill, FilePlus, FileCheck2, Printer, Activity } from 'lucide-react';
+import CidBusca from '@/components/atendimento/CidBusca';
+import PrescricaoMedicamentoForm from '@/components/prescricao/PrescricaoMedicamentoForm';
+import MotivoDesfechoSelect from '@/components/atendimento/MotivoDesfechoSelect';
+import { Cid } from '@/types/Cid';
+import { PrescricaoMedicamento } from '@/types/prescricao';
 import {
     salvarAtendimentoUPA,
     liberarAtendimentoUPA,
@@ -53,19 +59,68 @@ function openPdfBase64(b64: string, filename = 'documento.pdf') {
 
 const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, triagemId, pacienteNome, onClose }) => {
     const [cid10, setCid10] = useState('');
+    const [cidSelecionado, setCidSelecionado] = useState<Cid | null>(null);
     const [anamnese, setAnamnese] = useState('');
     const [exameFisico, setExameFisico] = useState('');
     const [hipoteseDiagnostica, setHipoteseDiagnostica] = useState('');
     const [conduta, setConduta] = useState('');
-    const [prescricao, setPrescricao] = useState('');
+    const [prescricao, setPrescricao] = useState(''); // Mantido para compatibilidade com receituário
     const [observacoes, setObservacoes] = useState('');
     const [retorno, setRetorno] = useState('');
     const [salvando, setSalvando] = useState(false);
     const [atendimentoId, setAtendimentoId] = useState<number | null>(null);
 
+    // ✅ NOVOS: Prescrições de medicamentos (igual ao Atendimento Ambulatorial)
+    const [prescricoesMedicamentos, setPrescricoesMedicamentos] = useState<PrescricaoMedicamento[]>([]);
+    
+    // ✅ NOVOS: Motivo de desfecho e setores (igual ao Atendimento Ambulatorial)
+    const [motivoDesfecho, setMotivoDesfecho] = useState('01'); // Padrão: Alta
+    const [especialidadeEncaminhamento, setEspecialidadeEncaminhamento] = useState('');
+    const [setorEncaminhamento, setSetorEncaminhamento] = useState('');
+    const [tiposCuidadosEnfermagem, setTiposCuidadosEnfermagem] = useState<string[]>([]);
+    const [orientacoes, setOrientacoes] = useState('');
+
     // ✅ NOVOS: checkboxes de impressão (no tab Prescrição)
     const [printAtestado, setPrintAtestado] = useState(false);
     const [printReceita, setPrintReceita] = useState(false);
+
+    // ✅ Handler para quando um CID é selecionado
+    const handleCidSelecionado = (cid: Cid | null) => {
+        setCidSelecionado(cid);
+        if (cid) {
+            setCid10(cid.codigo);
+            // Opcionalmente, preencher hipótese diagnóstica com a descrição do CID
+            if (!hipoteseDiagnostica.trim()) {
+                setHipoteseDiagnostica(cid.descricao);
+            }
+        } else {
+            setCid10('');
+        }
+    };
+
+    // ✅ Handlers para Motivo de Desfecho (igual ao Atendimento Ambulatorial)
+    const handleMotivoChange = useCallback((value: string) => {
+        setMotivoDesfecho(value);
+        if (value !== "03") {
+            setEspecialidadeEncaminhamento("");
+        }
+        if (value !== "02" && value !== "04") {
+            setSetorEncaminhamento("");
+            setTiposCuidadosEnfermagem([]);
+        }
+    }, []);
+
+    const handleEspecialidadeChange = useCallback((value: string) => {
+        setEspecialidadeEncaminhamento(value);
+    }, []);
+
+    const handleSetorChange = useCallback((value: string) => {
+        setSetorEncaminhamento(value);
+    }, []);
+
+    const handleTiposCuidadosChange = useCallback((value: string[]) => {
+        setTiposCuidadosEnfermagem(value);
+    }, []);
 
     const salvar = async (status: 'EM_ANDAMENTO'|'CONCLUIDO' = 'CONCLUIDO') => {
         try {
@@ -82,10 +137,18 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                 exameFisico: exameFisico || undefined,
                 hipoteseDiagnostica: hipoteseDiagnostica || undefined,
                 conduta: conduta || undefined,
-                prescricao: prescricao || undefined,
+                prescricao: prescricao || undefined, // Mantido para compatibilidade
                 observacoes: observacoes || undefined,
                 retorno: retorno || undefined,
-                statusAtendimento: status
+                orientacoes: orientacoes || undefined,
+                statusAtendimento: status,
+                // ✅ NOVOS: Motivo de desfecho e setores
+                motivoDesfecho: motivoDesfecho || "01",
+                especialidadeEncaminhamento: especialidadeEncaminhamento || undefined,
+                setorEncaminhamento: setorEncaminhamento || undefined,
+                tiposCuidadosEnfermagem: tiposCuidadosEnfermagem.length > 0 ? tiposCuidadosEnfermagem : undefined,
+                // ✅ NOVOS: Prescrições de medicamentos
+                prescricoesMedicamentos: prescricoesMedicamentos.length > 0 ? prescricoesMedicamentos : undefined
             };
 
             const id = await salvarAtendimentoUPA(payload);
@@ -200,9 +263,10 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                 {/* Tabs */}
                 <div className="p-4">
                     <Tabs defaultValue="clinico" className="w-full">
-                        <TabsList className="grid grid-cols-4 gap-2">
+                        <TabsList className="grid grid-cols-5 gap-2">
                             <TabsTrigger value="clinico"><ClipboardList className="h-4 w-4 mr-1" />Clínico</TabsTrigger>
                             <TabsTrigger value="prescricao"><Pill className="h-4 w-4 mr-1" />Prescrição</TabsTrigger>
+                            <TabsTrigger value="desfecho"><Activity className="h-4 w-4 mr-1" />Desfecho</TabsTrigger>
                             <TabsTrigger value="docs"><FilePlus className="h-4 w-4 mr-1" />Documentos</TabsTrigger>
                             <TabsTrigger value="resumo"><FileCheck2 className="h-4 w-4 mr-1" />Resumo</TabsTrigger>
                         </TabsList>
@@ -223,7 +287,11 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                                 </div>
                                 <div className="space-y-2">
                                     <Label>CID-10 *</Label>
-                                    <Input value={cid10} onChange={e=>setCid10(e.target.value)} placeholder="Ex.: J00, A09..." />
+                                    <CidBusca
+                                        onCidSelecionado={handleCidSelecionado}
+                                        cidSelecionado={cidSelecionado}
+                                        placeholder="Digite o código ou descrição do CID..."
+                                    />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Conduta</Label>
@@ -241,18 +309,16 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                         </TabsContent>
 
                         <TabsContent value="prescricao" className="pt-4">
-                            <Textarea
-                                className="min-h-[200px]"
-                                placeholder="Ex.: Dipirona 500mg, VO, 1 cp de 6/6h por 3 dias"
-                                value={prescricao}
-                                onChange={e=>setPrescricao(e.target.value)}
+                            {/* ✅ Prescrição de Medicamentos (igual ao Atendimento Ambulatorial) */}
+                            <PrescricaoMedicamentoForm
+                                value={prescricoesMedicamentos}
+                                onChange={setPrescricoesMedicamentos}
+                                disabled={false}
+                                atendimentoId={atendimentoId ? String(atendimentoId) : undefined}
                             />
-                            <p className="text-xs text-gray-500 mt-2">
-                                *Cada linha aqui será enviada para o Receituário quando você marcar a opção abaixo.
-                            </p>
 
                             {/* ✅ Checkboxes de impressão */}
-                            <div className="mt-3 flex flex-col gap-2">
+                            <div className="mt-4 flex flex-col gap-2">
                                 <label className="flex items-center gap-2">
                                     <input
                                         type="checkbox"
@@ -261,9 +327,9 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                                         onChange={(e)=>setPrintAtestado(e.target.checked)}
                                     />
                                     <span className="flex items-center gap-2">
-                    <Printer className="h-4 w-4" />
-                    Imprimir <b>Atestado</b> ao concluir
-                  </span>
+                                        <Printer className="h-4 w-4" />
+                                        Imprimir <b>Atestado</b> ao concluir
+                                    </span>
                                 </label>
 
                                 <label className="flex items-center gap-2">
@@ -274,16 +340,52 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                                         onChange={(e)=>setPrintReceita(e.target.checked)}
                                     />
                                     <span className="flex items-center gap-2">
-                    <Printer className="h-4 w-4" />
-                    Imprimir <b>Receituário</b> ao concluir
-                  </span>
+                                        <Printer className="h-4 w-4" />
+                                        Imprimir <b>Receituário</b> ao concluir
+                                    </span>
                                 </label>
                             </div>
+                        </TabsContent>
 
-                            <p className="text-xs text-gray-500 mt-2">
-                                *Se no futuro você quiser trocar esta área por uma tabela estruturada (medicamento, dose, via, frequência, duração),
-                                basta mapear os campos para o payload do receituário. O comportamento de impressão permanece o mesmo.
-                            </p>
+                        {/* ✅ NOVA ABA: Motivo de Desfecho e Setores */}
+                        <TabsContent value="desfecho" className="pt-4">
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle className="flex items-center gap-2">
+                                        <Activity className="h-5 w-5" />
+                                        Motivo de Desfecho e Encaminhamentos
+                                    </CardTitle>
+                                    <CardDescription>
+                                        Selecione o motivo de desfecho do atendimento conforme tabela oficial do SUS.
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <div className="space-y-4">
+                                        <MotivoDesfechoSelect
+                                            motivoValue={motivoDesfecho}
+                                            especialidadeValue={especialidadeEncaminhamento}
+                                            setorValue={setorEncaminhamento}
+                                            tiposCuidadosValue={tiposCuidadosEnfermagem}
+                                            onMotivoChange={handleMotivoChange}
+                                            onEspecialidadeChange={handleEspecialidadeChange}
+                                            onSetorChange={handleSetorChange}
+                                            onTiposCuidadosChange={handleTiposCuidadosChange}
+                                            disabled={false}
+                                        />
+
+                                        {/* Orientações ao Paciente */}
+                                        <div className="space-y-2">
+                                            <Label>Orientações ao Paciente</Label>
+                                            <Textarea
+                                                value={orientacoes}
+                                                onChange={e=>setOrientacoes(e.target.value)}
+                                                placeholder="Cuidados, restrições, sinais de alerta..."
+                                                rows={3}
+                                            />
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         </TabsContent>
 
                         <TabsContent value="docs" className="pt-4">
@@ -294,14 +396,27 @@ const AtendimentoMedicoModal: React.FC<Props> = ({ pacienteId, ocorrenciaId, tri
                         </TabsContent>
 
                         <TabsContent value="resumo" className="pt-4">
-                            <div className="text-sm">
+                            <div className="text-sm space-y-2">
                                 <p><b>Paciente:</b> #{pacienteId}{pacienteNome ? ` — ${pacienteNome}` : ''}</p>
                                 <p><b>Ocorrência:</b> #{ocorrenciaId} • <b>Triagem:</b> #{triagemId}</p>
                                 <p><b>CID-10:</b> {cid10 || '—'}</p>
                                 <p><b>Hipótese:</b> {hipoteseDiagnostica || '—'}</p>
                                 <p><b>Conduta:</b> {conduta || '—'}</p>
-                                <p><b>Prescrição:</b> {prescricao || '—'}</p>
+                                <p><b>Prescrições:</b> {prescricoesMedicamentos.length > 0 ? `${prescricoesMedicamentos.length} medicamento(s)` : 'Nenhuma'}</p>
+                                <p><b>Motivo de Desfecho:</b> {
+                                    motivoDesfecho === '01' ? 'Alta' :
+                                    motivoDesfecho === '02' ? 'Alta se melhora' :
+                                    motivoDesfecho === '03' ? 'Encaminhamento' :
+                                    motivoDesfecho === '04' ? 'Alta após medicação/procedimento' :
+                                    motivoDesfecho === '05' ? 'Óbito' : '—'
+                                }</p>
+                                {especialidadeEncaminhamento && <p><b>Especialidade:</b> {especialidadeEncaminhamento}</p>}
+                                {setorEncaminhamento && <p><b>Setor:</b> {setorEncaminhamento}</p>}
+                                {tiposCuidadosEnfermagem.length > 0 && (
+                                    <p><b>Cuidados de Enfermagem:</b> {tiposCuidadosEnfermagem.join(', ')}</p>
+                                )}
                                 <p><b>Observações:</b> {observacoes || '—'}</p>
+                                <p><b>Orientações:</b> {orientacoes || '—'}</p>
                                 <p><b>Retorno:</b> {retorno || '—'}</p>
                             </div>
                         </TabsContent>

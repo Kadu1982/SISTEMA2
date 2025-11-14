@@ -42,6 +42,7 @@ const SAMU = lazy(() => import("@/pages/samu/Samu"));
 
 // ✅ UPA ADICIONADO
 const UPA = lazy(() => import("@/pages/upa/Upa"));
+const AtendimentoUPAPage = lazy(() => import("@/pages/upa/AtendimentoUPAPage"));
 
 // ✅ LABORATÓRIO ADICIONADO
 const Laboratorio = lazy(() => import("@/pages/laboratorio/Laboratorio"));
@@ -104,6 +105,7 @@ export const AppRoutes = () => {
                 <Route path="atendimento-odontologico" element={<AtendimentoOdontologico />} />
                 <Route path="samu" element={<SAMU />} />
                 <Route path="upa" element={<UPA />} />
+                <Route path="upa/atendimento" element={<AtendimentoUPAPage />} />
                 <Route path="procedimentos-rapidos" element={<ProcedimentosRapidos />} />
 
                 {/* Rotas do Módulo Hospitalar */}

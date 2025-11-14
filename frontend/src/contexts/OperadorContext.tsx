@@ -9,6 +9,7 @@ export interface Operador {
     login: string;
     perfis?: string[]; // ✅ Array de strings, não objetos
     modulos?: string[]; // ✅ Array de módulos aos quais o operador tem acesso
+    modulosUnidades?: Record<string, number[]>; // ✅ Módulos vinculados a unidades específicas
     isMaster?: boolean;
     unidadeId?: number | null; // ID da unidade atual onde está logado
     unidadeAtual?: string | null; // Nome da unidade atual
@@ -53,8 +54,17 @@ export const OperadorProvider = ({ children }: { children: ReactNode }) => {
 
             const operadorComMaster = {
                 ...storedOperador,
-                isMaster: isMasterAdmin
+                isMaster: isMasterAdmin,
+                // Garante que modulosUnidades existe mesmo se não vier do localStorage
+                modulosUnidades: storedOperador.modulosUnidades || {}
             };
+            
+            console.log('📦 Carregando operador do localStorage:', {
+                login: operadorComMaster.login,
+                modulos: operadorComMaster.modulos,
+                modulosUnidades: operadorComMaster.modulosUnidades,
+                unidadeId: operadorComMaster.unidadeId
+            });
 
             setOperador(operadorComMaster);
         }

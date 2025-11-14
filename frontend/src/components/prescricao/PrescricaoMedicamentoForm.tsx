@@ -201,12 +201,13 @@ export const PrescricaoMedicamentoForm: React.FC<PrescricaoMedicamentoFormProps>
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <div>
-                    <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <Pill className="h-5 w-5" />
-                        Prescrição de Medicamentos
+        <Form {...form}>
+            <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h3 className="text-lg font-semibold flex items-center gap-2">
+                            <Pill className="h-5 w-5" />
+                            Prescrição de Medicamentos
                     </h3>
                     <p className="text-sm text-gray-600 mt-1">
                         Adicione medicamentos com posologia detalhada
@@ -694,7 +695,8 @@ export const PrescricaoMedicamentoForm: React.FC<PrescricaoMedicamentoFormProps>
                     ))}
                 </div>
             )}
-        </div>
+            </div>
+        </Form>
     );
 };
 

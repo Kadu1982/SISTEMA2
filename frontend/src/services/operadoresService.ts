@@ -142,7 +142,8 @@ export async function listarSetores(id: number): Promise<number[]> {
 }
 
 export async function salvarSetores(id: number, ids: number[]): Promise<void> {
-    await api.put(`/operadores/${id}/setores`, ids, {
+    // O backend espera um objeto com a propriedade "setorIds"
+    await api.put(`/operadores/${id}/setores`, { setorIds: ids }, {
         headers: { "Content-Type": "application/json" },
     });
 }
@@ -196,7 +197,33 @@ export async function salvarHorarios(
 
 export async function listarModulos(id: number): Promise<string[]> {
     const { data } = await api.get(`/operadores/${id}/modulos`);
-    return unwrap<string[]>(data) || [];
+    const resultado = unwrap<any>(data);
+    // Se retornar objeto com modulos e modulosUnidades, extrai apenas os módulos
+    if (resultado && Array.isArray(resultado.modulos)) {
+        return resultado.modulos;
+    }
+    // Fallback para formato antigo (array direto)
+    return Array.isArray(resultado) ? resultado : [];
+}
+
+export async function listarModulosComUnidades(id: number): Promise<{ modulos: string[], modulosUnidades: Record<string, number[]> }> {
+    const { data } = await api.get(`/operadores/${id}/modulos`);
+    const resultado = unwrap<any>(data);
+    return {
+        modulos: resultado?.modulos || [],
+        modulosUnidades: resultado?.modulosUnidades || {}
+    };
+}
+
+export async function listarUnidadesDoModulo(operadorId: number, modulo: string): Promise<number[]> {
+    const { data } = await api.get(`/operadores/${operadorId}/modulos/${modulo}/unidades`);
+    return unwrap<number[]>(data) || [];
+}
+
+export async function salvarUnidadesDoModulo(operadorId: number, modulo: string, unidadeIds: number[]): Promise<void> {
+    await api.put(`/operadores/${operadorId}/modulos/${modulo}/unidades`, { unidadeIds }, {
+        headers: { "Content-Type": "application/json" },
+    });
 }
 
 export async function salvarModulos(id: number, vals: string[]): Promise<void> {
@@ -291,6 +318,9 @@ export const listarSetoresDoOperador = listarSetores;
 export const salvarSetoresDoOperador = salvarSetores;
 export const listarModulosDoOperador = listarModulos;
 export const salvarModulosDoOperador = salvarModulos;
+export const listarModulosComUnidadesDoOperador = listarModulosComUnidades;
+export const listarUnidadesDoModuloDoOperador = listarUnidadesDoModulo;
+export const salvarUnidadesDoModuloDoOperador = salvarUnidadesDoModulo;
 export async function listarUnidadesDoOperador(id: number): Promise<number[]> {
     const { data } = await api.get(`/operadores/${id}/unidades`);
     return unwrap<number[]>(data) || [];
@@ -365,6 +395,9 @@ const operadoresService = {
     salvarSetoresDoOperador,
     listarModulosDoOperador,
     salvarModulosDoOperador,
+    listarModulosComUnidadesDoOperador,
+    listarUnidadesDoModuloDoOperador,
+    salvarUnidadesDoModuloDoOperador,
     listarUnidadesDoOperador,
     salvarUnidadesDoOperador,
     listarDominioSetores,

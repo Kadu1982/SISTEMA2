@@ -5,6 +5,12 @@ import com.sistemadesaude.backend.atendimento.entity.Atendimento;
 import com.sistemadesaude.backend.atendimento.mapper.AtendimentoMapper;
 import com.sistemadesaude.backend.atendimento.repository.AtendimentoRepository;
 import com.sistemadesaude.backend.exception.ResourceNotFoundException;
+import com.sistemadesaude.backend.upa.entity.AtendimentoUpa;
+import com.sistemadesaude.backend.upa.repository.AtendimentoUpaRepository;
+import com.sistemadesaude.backend.assistenciasocial.entity.AtendimentoAssistencial;
+import com.sistemadesaude.backend.assistenciasocial.repository.AtendimentoAssistencialRepository;
+import com.sistemadesaude.backend.procedimentosrapidos.entity.ProcedimentoRapido;
+import com.sistemadesaude.backend.procedimentosrapidos.repository.ProcedimentoRapidoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +42,9 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
     private final AtendimentoRepository repository;
     private final AtendimentoMapper mapper;
+    private final AtendimentoUpaRepository upaAtendimentoRepository;
+    private final AtendimentoAssistencialRepository assistencialRepository;
+    private final ProcedimentoRapidoRepository procedimentoRapidoRepository;
 
     // ========================================
     // 💾 OPERAÇÕES BÁSICAS CRUD
@@ -164,16 +174,157 @@ public class AtendimentoServiceImpl implements AtendimentoService {
 
     @Override
     public List<AtendimentoDTO> buscarPorPaciente(Long pacienteId) {
-        log.debug("👤 Buscando atendimentos para paciente: {}", pacienteId);
+        log.debug("👤 Buscando TODOS os atendimentos para paciente: {}", pacienteId);
 
         if (pacienteId == null) {
             throw new IllegalArgumentException("PacienteId não pode ser nulo");
         }
 
-        List<Atendimento> atendimentos = repository.findByPacienteIdAndAtivoTrueOrderByDataHoraDesc(pacienteId);
+        List<AtendimentoDTO> todosAtendimentos = new ArrayList<>();
 
-        log.debug("📊 Encontrados {} atendimento(s) para paciente {}", atendimentos.size(), pacienteId);
-        return mapper.toDTOList(atendimentos);
+        // 1. Buscar atendimentos ambulatoriais
+        List<Atendimento> atendimentosAmbulatoriais = repository.findByPacienteIdAndAtivoTrueOrderByDataHoraDesc(pacienteId);
+        List<AtendimentoDTO> dtosAmbulatoriais = mapper.toDTOList(atendimentosAmbulatoriais);
+        dtosAmbulatoriais.forEach(dto -> dto.setTipoAtendimento("AMBULATORIAL"));
+        todosAtendimentos.addAll(dtosAmbulatoriais);
+
+        // 2. Buscar atendimentos UPA
+        List<AtendimentoUpa> atendimentosUpa = upaAtendimentoRepository.findByPacienteId(pacienteId);
+        List<AtendimentoDTO> dtosUpa = converterAtendimentosUpaParaDTO(atendimentosUpa);
+        todosAtendimentos.addAll(dtosUpa);
+
+        // 3. Buscar atendimentos assistenciais (relacionamento ManyToMany)
+        List<AtendimentoAssistencial> atendimentosAssistenciais = assistencialRepository.findByPacienteId(pacienteId);
+        List<AtendimentoDTO> dtosAssistenciais = converterAtendimentosAssistenciaisParaDTO(atendimentosAssistenciais);
+        todosAtendimentos.addAll(dtosAssistenciais);
+
+        // 4. Buscar procedimentos rápidos
+        List<ProcedimentoRapido> procedimentosRapidos = procedimentoRapidoRepository.findByPacienteIdOrderByDataCriacaoDesc(pacienteId);
+        List<AtendimentoDTO> dtosProcedimentos = converterProcedimentosRapidosParaDTO(procedimentosRapidos);
+        todosAtendimentos.addAll(dtosProcedimentos);
+
+        // Ordenar por data/hora (mais recente primeiro)
+        todosAtendimentos.sort((a1, a2) -> {
+            LocalDateTime d1 = a1.getDataHora() != null ? a1.getDataHora() : LocalDateTime.MIN;
+            LocalDateTime d2 = a2.getDataHora() != null ? a2.getDataHora() : LocalDateTime.MIN;
+            return d2.compareTo(d1); // Ordem decrescente
+        });
+
+        log.debug("📊 Histórico unificado para paciente {}: {} ambulatorial(is), {} UPA, {} assistencial(is), {} procedimento(s) rápido(s) (total: {})", 
+                pacienteId, atendimentosAmbulatoriais.size(), atendimentosUpa.size(), 
+                atendimentosAssistenciais.size(), procedimentosRapidos.size(), todosAtendimentos.size());
+        
+        return todosAtendimentos;
+    }
+
+    /**
+     * Converte atendimentos UPA para o formato AtendimentoDTO
+     */
+    private List<AtendimentoDTO> converterAtendimentosUpaParaDTO(List<AtendimentoUpa> atendimentosUpa) {
+        return atendimentosUpa.stream()
+                .map(this::converterAtendimentoUpaParaDTO)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converte um atendimento UPA para AtendimentoDTO
+     */
+    private AtendimentoDTO converterAtendimentoUpaParaDTO(AtendimentoUpa upa) {
+        if (upa == null) {
+            return null;
+        }
+
+        return AtendimentoDTO.builder()
+                .id(upa.getId())
+                .pacienteId(upa.getPaciente() != null ? upa.getPaciente().getId().toString() : null)
+                .cid10(upa.getCid10() != null ? upa.getCid10() : "")
+                .diagnostico(upa.getHipoteseDiagnostica())
+                .prescricao(upa.getPrescricao())
+                .observacoes(upa.getObservacoes())
+                .examesFisicos(upa.getExameFisico())
+                .sintomas(upa.getAnamnese())
+                .dataHora(upa.getCriadoEm() != null ? upa.getCriadoEm() : LocalDateTime.now())
+                .tipoAtendimento("UPA") // Marca como atendimento UPA
+                .statusAtendimento(upa.getStatusAtendimento() != null ? upa.getStatusAtendimento().name() : null)
+                .retorno(upa.getRetorno())
+                .ativo(true) // Atendimentos UPA são sempre ativos
+                .queixaPrincipal(upa.getTriagem() != null ? upa.getTriagem().getQueixaPrincipal() : null)
+                .build();
+    }
+
+    /**
+     * Converte atendimentos assistenciais para o formato AtendimentoDTO
+     */
+    private List<AtendimentoDTO> converterAtendimentosAssistenciaisParaDTO(List<AtendimentoAssistencial> atendimentos) {
+        return atendimentos.stream()
+                .map(this::converterAtendimentoAssistencialParaDTO)
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converte um atendimento assistencial para AtendimentoDTO
+     */
+    private AtendimentoDTO converterAtendimentoAssistencialParaDTO(AtendimentoAssistencial assistencial) {
+        if (assistencial == null) {
+            return null;
+        }
+
+        // Extrair IDs dos pacientes (relacionamento ManyToMany)
+        String pacienteIds = assistencial.getPacientes() != null && !assistencial.getPacientes().isEmpty()
+                ? assistencial.getPacientes().stream()
+                        .map(p -> p.getId().toString())
+                        .collect(Collectors.joining(","))
+                : null;
+
+        return AtendimentoDTO.builder()
+                .id(assistencial.getId())
+                .pacienteId(pacienteIds) // Pode ter múltiplos pacientes
+                .observacoes(assistencial.getAnotacoes())
+                .dataHora(assistencial.getDataHora() != null ? assistencial.getDataHora() : LocalDateTime.now())
+                .tipoAtendimento("ASSISTENCIAL_SOCIAL")
+                .statusAtendimento(assistencial.getStatus())
+                .ativo(assistencial.getStatus() != null && !assistencial.getStatus().equalsIgnoreCase("CANCELADO"))
+                .queixaPrincipal("Atendimento " + (assistencial.getTipoAtendimento() != null ? assistencial.getTipoAtendimento().name() : "Assistencial"))
+                .build();
+    }
+
+    /**
+     * Converte procedimentos rápidos para o formato AtendimentoDTO
+     */
+    private List<AtendimentoDTO> converterProcedimentosRapidosParaDTO(List<ProcedimentoRapido> procedimentos) {
+        return procedimentos.stream()
+                .map(this::converterProcedimentoRapidoParaDTO)
+                .filter(dto -> dto != null)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Converte um procedimento rápido para AtendimentoDTO
+     */
+    private AtendimentoDTO converterProcedimentoRapidoParaDTO(ProcedimentoRapido procedimento) {
+        if (procedimento == null) {
+            return null;
+        }
+
+        // Construir descrição das atividades
+        String atividadesDesc = procedimento.getAtividades() != null && !procedimento.getAtividades().isEmpty()
+                ? procedimento.getAtividades().stream()
+                        .map(a -> a.getTipo() + ": " + a.getAtividade())
+                        .collect(Collectors.joining("; "))
+                : null;
+
+        return AtendimentoDTO.builder()
+                .id(procedimento.getId())
+                .pacienteId(procedimento.getPaciente() != null ? procedimento.getPaciente().getId().toString() : null)
+                .observacoes(procedimento.getObservacoesGerais())
+                .prescricao(atividadesDesc)
+                .dataHora(procedimento.getDataCriacao() != null ? procedimento.getDataCriacao() : LocalDateTime.now())
+                .tipoAtendimento("PROCEDIMENTO_RAPIDO")
+                .statusAtendimento(procedimento.getStatus() != null ? procedimento.getStatus().name() : null)
+                .ativo(procedimento.getStatus() != null && !procedimento.getStatus().name().equals("CANCELADO"))
+                .queixaPrincipal(procedimento.getOrigemEncaminhamento())
+                .build();
     }
 
     @Override

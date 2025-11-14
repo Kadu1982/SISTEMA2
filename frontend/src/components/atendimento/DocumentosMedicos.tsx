@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle } from "react";
+import React, { forwardRef, useImperativeHandle, useState } from "react";
 import { useForm, useFieldArray, type SubmitHandler, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -12,6 +12,8 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { FileText, Send, PlusCircle, Trash2, Printer } from "lucide-react";
+import CidBusca from "@/components/atendimento/CidBusca";
+import { Cid } from "@/types/Cid";
 
 import {
     gerarAtestado,
@@ -108,6 +110,9 @@ const DocumentosMedicos = forwardRef<DocumentosMedicosHandle, DocumentosMedicosP
         // flags de impressão
         const [printAtestado, setPrintAtestado] = React.useState(false);
         const [printReceituario, setPrintReceituario] = React.useState(false);
+        
+        // Estado para CID selecionado (para usar com CidBusca)
+        const [cidSelecionadoAtestado, setCidSelecionadoAtestado] = React.useState<Cid | null>(null);
 
         /** RHF — useForm
          *  - sem genéricos no zodResolver (deixe inferir)
@@ -403,10 +408,14 @@ const DocumentosMedicos = forwardRef<DocumentosMedicosHandle, DocumentosMedicosP
                                                 <FormItem>
                                                     <FormLabel>CID (opcional)</FormLabel>
                                                     <FormControl>
-                                                        <Input
-                                                            placeholder="Ex.: J00"
+                                                        <CidBusca
+                                                            onCidSelecionado={(cid) => {
+                                                                setCidSelecionadoAtestado(cid);
+                                                                field.onChange(cid ? cid.codigo : "");
+                                                            }}
+                                                            cidSelecionado={cidSelecionadoAtestado}
+                                                            placeholder="Digite o código ou descrição do CID..."
                                                             disabled={!formAtestado.watch("consentimentoCid")}
-                                                            {...field}
                                                         />
                                                     </FormControl>
                                                     <FormMessage />

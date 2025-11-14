@@ -14,6 +14,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * Repository para a entidade AtendimentoAssistencial.
@@ -37,6 +38,14 @@ public interface AtendimentoAssistencialRepository extends JpaRepository<Atendim
      */
     @Query("SELECT a FROM AtendimentoAssistencial a JOIN a.pacientes p WHERE p = :paciente")
     Page<AtendimentoAssistencial> findByPaciente(@Param("paciente") Paciente paciente, Pageable pageable);
+    
+    /**
+     * Busca atendimentos por paciente ID (sem paginação, para histórico unificado)
+     * @param pacienteId ID do paciente.
+     * @return Lista de atendimentos encontrados.
+     */
+    @Query("SELECT DISTINCT a FROM AtendimentoAssistencial a JOIN a.pacientes p WHERE p.id = :pacienteId ORDER BY a.dataHora DESC")
+    List<AtendimentoAssistencial> findByPacienteId(@Param("pacienteId") Long pacienteId);
     
     /**
      * Busca atendimentos por família.

@@ -55,6 +55,21 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
   const [senhaAssinaturaAssinar, setSenhaAssinaturaAssinar] = useState("");
   const [corenAssinar, setCorenAssinar] = useState("");
 
+  // Resetar estado quando o diálogo abre
+  useEffect(() => {
+    if (open) {
+      // Resetar para modo senha quando abre (será ajustado após verificação)
+      setModo("senha");
+      setTemSenha(false);
+      setSenhaAssinatura("");
+      setConfirmarSenha("");
+      setCoren("");
+      setSenhaLogin("");
+      setSenhaAssinaturaAssinar("");
+      setCorenAssinar("");
+    }
+  }, [open]);
+
   // Verifica se operador tem senha cadastrada
   useEffect(() => {
     if (open && operadorId) {
@@ -66,14 +81,27 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
     try {
       setVerificando(true);
       const tem = await assinaturaDigitalService.verificarSenhaAssinatura(operadorId);
+      console.log("🔍 Verificação de senha:", { operadorId, tem, atividadeId });
       setTemSenha(tem);
-      if (atividadeId) {
+      
+      // IMPORTANTE: Se não tem senha, SEMPRE vai para modo "senha" primeiro
+      // Só vai para modo "assinar" se TEM senha E tem atividadeId
+      if (!tem) {
+        console.log("📝 Sem senha cadastrada - forçando modo: senha");
+        setModo("senha");
+      } else if (atividadeId && tem) {
+        console.log("✅ Tem senha e atividadeId - modo: assinar");
         setModo("assinar");
       } else {
+        console.log("📝 Sem atividadeId ou sem senha - modo: senha");
         setModo("senha");
       }
     } catch (error: any) {
-      console.error("Erro ao verificar senha:", error);
+      console.error("❌ Erro ao verificar senha:", error);
+      // Em caso de erro, assume que não tem senha e vai para modo criar senha
+      setTemSenha(false);
+      setModo("senha");
+      console.log("⚠️ Erro na verificação - forçando modo: senha");
     } finally {
       setVerificando(false);
     }
@@ -115,7 +143,11 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
         coren: coren.trim(),
       };
 
-      await assinaturaDigitalService.criarSenhaAssinatura(request);
+      console.log("📝 Criando senha de assinatura:", { operadorId, coren: coren.trim(), senhaLength: senhaAssinatura.length });
+      
+      const resultado = await assinaturaDigitalService.criarSenhaAssinatura(request);
+      
+      console.log("✅ Senha criada com sucesso:", resultado);
 
       toast({
         title: "Sucesso!",
@@ -127,19 +159,30 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
       setConfirmarSenha("");
       setCoren("");
 
+      // Se tem atividadeId, muda para modo assinar após criar senha
       if (atividadeId) {
         setModo("assinar");
+        // Não fecha o diálogo, apenas muda o modo para permitir assinar
       } else {
+        // Se não tem atividadeId, fecha o diálogo após criar senha
         onOpenChange(false);
         onSuccess?.();
       }
     } catch (error: any) {
+      console.error("❌ Erro ao criar senha de assinatura:", error);
+      console.error("❌ Detalhes do erro:", {
+        message: error?.message,
+        response: error?.response?.data,
+        status: error?.response?.status,
+      });
+      
       toast({
         title: "Erro",
         description:
           error?.response?.data?.message ||
+          error?.response?.data?.error ||
           error?.message ||
-          "Erro ao criar senha de assinatura",
+          "Erro ao criar senha de assinatura. Verifique os dados e tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -266,6 +309,7 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : modo === "senha" ? (
+          // Formulário para criar/atualizar senha de assinatura
           <div className="space-y-4 py-4">
             {temSenha && (
               <Alert>
@@ -318,8 +362,24 @@ export const AssinaturaDigitalDialog: React.FC<AssinaturaDigitalDialogProps> = (
             {!temSenha && (
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
-                  Você precisa criar uma senha de assinatura antes de assinar atividades.
+                <AlertDescription className="space-y-2">
+                  <p>Você precisa criar uma senha de assinatura antes de assinar atividades.</p>
+                  {atividadeId && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setModo("senha");
+                        // Limpa campos de assinatura quando muda para criar senha
+                        setSenhaLogin("");
+                        setSenhaAssinaturaAssinar("");
+                        setCorenAssinar("");
+                      }}
+                      className="mt-2"
+                    >
+                      Criar Senha Agora
+                    </Button>
+                  )}
                 </AlertDescription>
               </Alert>
             )}

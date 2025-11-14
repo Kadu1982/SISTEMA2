@@ -568,8 +568,23 @@ function AbaRestricoes({ operadorId }: { operadorId: number }) {
     const [form, setForm] = useState<opSvc.RestricaoDTO>({ tipo:'IP', valor:'', observacao:'', ativo:true });
 
     const carregar = async ()=>{
-        try { setLista(await opSvc.listarRestricoes(operadorId)); }
-        catch(e:any){ toast({ title: 'Erro', description: e?.message || 'Falha ao listar restrições.', variant:'destructive' }); }
+        try { 
+            const resultado = await opSvc.listarRestricoes(operadorId);
+            // Garantir que sempre seja um array
+            if (Array.isArray(resultado)) {
+                setLista(resultado);
+            } else if (resultado && typeof resultado === 'object') {
+                // Se for um objeto, converter para array (caso seja um objeto com propriedades)
+                const array = Object.values(resultado).filter((item: any) => item && typeof item === 'object' && item.id !== undefined);
+                setLista(array.length > 0 ? array : []);
+            } else {
+                setLista([]);
+            }
+        }
+        catch(e:any){ 
+            toast({ title: 'Erro', description: e?.message || 'Falha ao listar restrições.', variant:'destructive' }); 
+            setLista([]); // Garantir array vazio em caso de erro
+        }
     };
     useEffect(()=>{ carregar(); }, [operadorId]);
 
@@ -735,24 +750,69 @@ const MODULOS_DISPONIVEIS = [
 function AbaModulos({ operadorId }: { operadorId: number }) {
     const { toast } = useToast();
     const [modulos, setModulos] = useState<string[]>([]);
+    const [modulosUnidades, setModulosUnidades] = useState<Record<string, number[]>>({});
+    const [unidadesDisponiveis, setUnidadesDisponiveis] = useState<Array<{id: number, nome: string}>>([]);
+    const [moduloAberto, setModuloAberto] = useState<string | null>(null);
     const [salvando, setSalvando] = useState(false);
+
+    const carregarUnidades = async () => {
+        try {
+            const { listarUnidades } = await import('@/services/unidadesService');
+            const unidades = await listarUnidades();
+            setUnidadesDisponiveis(unidades.map(u => ({ id: u.id!, nome: u.nome })));
+        } catch(e:any) {
+            toast({ title:'Erro', description:'Falha ao carregar lista de unidades.', variant:'destructive' });
+        }
+    };
 
     const carregar = async ()=> {
         try { 
-            const modulosCarregados = await opSvc.listarModulosDoOperador(operadorId);
-            setModulos(modulosCarregados);
+            const resultado = await opSvc.listarModulosComUnidadesDoOperador(operadorId);
+            setModulos(resultado.modulos);
+            setModulosUnidades(resultado.modulosUnidades || {});
         }
         catch(e:any){ 
             toast({ title:'Erro', description:e?.message || 'Falha ao listar módulos.', variant:'destructive' }); 
         }
     };
-    useEffect(()=>{ carregar(); }, [operadorId]);
+    
+    useEffect(()=>{ 
+        carregarUnidades();
+        carregar(); 
+    }, [operadorId]);
 
     const toggleModulo = (codigo: string) => {
         if (modulos.includes(codigo)) {
             setModulos(modulos.filter(m => m !== codigo));
+            // Remove unidades configuradas quando remove o módulo
+            const novasUnidades = { ...modulosUnidades };
+            delete novasUnidades[codigo];
+            setModulosUnidades(novasUnidades);
         } else {
             setModulos([...modulos, codigo]);
+        }
+    };
+
+    const toggleUnidadeModulo = (modulo: string, unidadeId: number) => {
+        const unidadesAtuais = modulosUnidades[modulo] || [];
+        const novasUnidades = unidadesAtuais.includes(unidadeId)
+            ? unidadesAtuais.filter(id => id !== unidadeId)
+            : [...unidadesAtuais, unidadeId];
+        
+        setModulosUnidades({
+            ...modulosUnidades,
+            [modulo]: novasUnidades
+        });
+    };
+
+    const salvarUnidadesModulo = async (modulo: string) => {
+        try {
+            const unidades = modulosUnidades[modulo] || [];
+            await opSvc.salvarUnidadesDoModuloDoOperador(operadorId, modulo, unidades);
+            toast({ title: 'Sucesso', description: `Unidades do módulo ${MODULOS_DISPONIVEIS.find(m => m.codigo === modulo)?.nome || modulo} salvas.` });
+            setModuloAberto(null);
+        } catch(e:any) {
+            toast({ title:'Erro', description:e?.message || 'Falha ao salvar unidades do módulo.', variant:'destructive' });
         }
     };
 
@@ -760,7 +820,16 @@ function AbaModulos({ operadorId }: { operadorId: number }) {
         setSalvando(true);
         try {
             await opSvc.salvarModulosDoOperador(operadorId, modulos);
-            toast({ title: 'Sucesso', description: 'Módulos salvos com sucesso.' });
+            // Salva unidades de cada módulo que tem unidades configuradas
+            for (const modulo of modulos) {
+                if (modulosUnidades[modulo] && modulosUnidades[modulo].length > 0) {
+                    await opSvc.salvarUnidadesDoModuloDoOperador(operadorId, modulo, modulosUnidades[modulo]);
+                } else {
+                    // Se não tem unidades, remove vínculos (módulo aparece em todas)
+                    await opSvc.salvarUnidadesDoModuloDoOperador(operadorId, modulo, []);
+                }
+            }
+            toast({ title: 'Sucesso', description: 'Módulos e unidades salvos com sucesso.' });
         } catch(e:any) {
             toast({ title:'Erro', description:e?.message || 'Falha ao salvar módulos.', variant:'destructive' });
         } finally {
@@ -772,34 +841,109 @@ function AbaModulos({ operadorId }: { operadorId: number }) {
         <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
                 Selecione os módulos que este operador pode acessar. Os módulos selecionados aqui sobrescrevem os módulos do perfil.
+                <br />
+                <strong>Dica:</strong> Clique no ícone de configuração ao lado de cada módulo para definir em quais unidades ele deve aparecer. Se não configurar, o módulo aparecerá em todas as unidades do operador.
             </p>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-96 overflow-y-auto border rounded p-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-96 overflow-y-auto border rounded p-3">
                 {MODULOS_DISPONIVEIS.map(modulo => {
                     const selecionado = modulos.includes(modulo.codigo);
+                    const unidadesModulo = modulosUnidades[modulo.codigo] || [];
+                    const temUnidadesConfiguradas = unidadesModulo.length > 0;
                     return (
-                        <label 
-                            key={modulo.codigo}
-                            className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
-                        >
-                            <Checkbox 
-                                checked={selecionado}
-                                onCheckedChange={() => toggleModulo(modulo.codigo)}
-                            />
-                            <span className="text-sm">{modulo.nome}</span>
-                        </label>
+                        <div key={modulo.codigo} className="flex items-center justify-between p-2 rounded hover:bg-muted">
+                            <label className="flex items-center gap-2 cursor-pointer flex-1">
+                                <Checkbox 
+                                    checked={selecionado}
+                                    onCheckedChange={() => toggleModulo(modulo.codigo)}
+                                />
+                                <span className="text-sm">{modulo.nome}</span>
+                                {selecionado && temUnidadesConfiguradas && (
+                                    <Badge variant="outline" className="text-xs">
+                                        {unidadesModulo.length} unidade(s)
+                                    </Badge>
+                                )}
+                            </label>
+                            {selecionado && (
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => setModuloAberto(moduloAberto === modulo.codigo ? null : modulo.codigo)}
+                                    className="h-8 w-8 p-0"
+                                >
+                                    <Settings className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
                     );
                 })}
             </div>
+
+            {/* Configuração de unidades por módulo */}
+            {moduloAberto && modulos.includes(moduloAberto) && (
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="text-sm">
+                            Configurar Unidades - {MODULOS_DISPONIVEIS.find(m => m.codigo === moduloAberto)?.nome}
+                        </CardTitle>
+                        <CardDescription className="text-xs">
+                            Selecione as unidades onde este módulo deve aparecer. Se nenhuma for selecionada, o módulo aparecerá em todas as unidades do operador.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                        {unidadesDisponiveis.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">Carregando unidades...</p>
+                        ) : (
+                            <div className="space-y-2">
+                                {unidadesDisponiveis.map(unidade => {
+                                    const selecionada = (modulosUnidades[moduloAberto] || []).includes(unidade.id);
+                                    return (
+                                        <label 
+                                            key={unidade.id}
+                                            className="flex items-center gap-2 p-2 rounded hover:bg-muted cursor-pointer"
+                                        >
+                                            <Checkbox 
+                                                checked={selecionada}
+                                                onCheckedChange={() => toggleUnidadeModulo(moduloAberto, unidade.id)}
+                                            />
+                                            <span className="text-sm">{unidade.nome}</span>
+                                        </label>
+                                    );
+                                })}
+                            </div>
+                        )}
+                        <div className="flex gap-2">
+                            <Button 
+                                size="sm" 
+                                onClick={() => salvarUnidadesModulo(moduloAberto)}
+                                disabled={salvando}
+                            >
+                                Salvar Unidades
+                            </Button>
+                            <Button 
+                                size="sm" 
+                                variant="outline"
+                                onClick={() => setModuloAberto(null)}
+                            >
+                                Fechar
+                            </Button>
+                        </div>
+                    </CardContent>
+                </Card>
+            )}
 
             {modulos.length > 0 && (
                 <div className="flex flex-wrap gap-2 p-2 bg-muted rounded">
                     <span className="text-sm font-medium">Módulos selecionados:</span>
                     {modulos.map(m => {
                         const modulo = MODULOS_DISPONIVEIS.find(mod => mod.codigo === m);
+                        const unidadesModulo = modulosUnidades[m] || [];
                         return (
                             <Badge key={m} variant="secondary" className="flex items-center gap-1">
                                 {modulo?.nome || m}
+                                {unidadesModulo.length > 0 && (
+                                    <span className="text-xs">({unidadesModulo.length} unidade{unidadesModulo.length > 1 ? 's' : ''})</span>
+                                )}
                                 <X 
                                     className="h-3 w-3 cursor-pointer hover:text-destructive" 
                                     onClick={() => toggleModulo(m)}
