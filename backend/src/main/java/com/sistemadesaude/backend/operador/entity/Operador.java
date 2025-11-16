@@ -1,5 +1,6 @@
 package com.sistemadesaude.backend.operador.entity;
 
+import com.sistemadesaude.backend.perfilacesso.entity.PerfilEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -9,9 +10,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Entity
@@ -77,23 +76,28 @@ public class Operador implements UserDetails {
     private String atualizadoPor;
 
 
-    // ✅ CORREÇÃO DEFINITIVA: Mapeamento @ElementCollection.
-    // Isso instrui o Hibernate/JPA a procurar por uma tabela 'operador_perfis'
-    // com uma coluna 'perfil' do tipo String, que é EXATAMENTE a estrutura
-    // que causa o erro. Isso alinha o código com a realidade do banco de dados.
-    @ElementCollection(fetch = FetchType.EAGER)
-    @CollectionTable(name = "operador_perfis", joinColumns = @JoinColumn(name = "operador_id"))
-    @Column(name = "perfil")
+    // Mapeamento @ManyToMany com a tabela perfis
+    // A tabela de junção operador_perfis tem (operador_id, perfil_id)
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+        name = "operador_perfis",
+        joinColumns = @JoinColumn(name = "operador_id"),
+        inverseJoinColumns = @JoinColumn(name = "perfil_id")
+    )
     @Builder.Default
-    private List<String> perfis = new java.util.ArrayList<>();
+    private Set<PerfilEntity> perfis = new HashSet<>();
 
 
-    // O método getAuthorities já estava correto para uma Lista de Strings,
-    // então ele volta a funcionar perfeitamente com a correção acima.
+    // Converte os perfis para authorities do Spring Security
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        if (perfis == null || perfis.isEmpty()) {
+            return Collections.emptyList();
+        }
         return this.perfis.stream()
-                .map(perfil -> new SimpleGrantedAuthority("ROLE_" + perfil.toUpperCase()))
+                .filter(Objects::nonNull)
+                .filter(p -> p.getTipo() != null)
+                .map(perfil -> new SimpleGrantedAuthority("ROLE_" + perfil.getTipo().name()))
                 .collect(Collectors.toList());
     }
 

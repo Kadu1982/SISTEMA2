@@ -1,14 +1,25 @@
-# Maven output
-/target
+# Maven
+target/
+.mvn/
+mvnw
+mvnw.cmd
 
-# Local artifacts
-#/logs
-
-# IDE artifacts
+# IDE
+.idea/
 *.iml
-.idea
-.vscode
+*.swp
 
-# Operating system files
-.DS_Store
-Thumbs.db
+# Logs (apenas arquivos .log, não o diretório src/main/java/.../logs/)
+*.log
+# Não excluir: src/main/java/com/sistemadesaude/backend/logs/
+
+# Testes
+src/test/
+
+# Documentação
+*.md
+docs/
+
+# Git
+.git
+.gitignore

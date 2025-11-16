@@ -12,10 +12,10 @@ CREATE TABLE public.operador_perfis (
                                         operador_id BIGINT NOT NULL,
                                         perfil_id BIGINT NOT NULL,
                                         PRIMARY KEY (operador_id, perfil_id),
-                                        CONSTRAINT fk_operador_to_perfis FOREIGN KEY (operador_id) REFERENCES public.operadores(id) ON DELETE CASCADE,
+                                        CONSTRAINT fk_operador_to_perfis FOREIGN KEY (operador_id) REFERENCES public.operador(id) ON DELETE CASCADE,
                                         CONSTRAINT fk_perfil_to_operadores FOREIGN KEY (perfil_id) REFERENCES public.perfis(id) ON DELETE CASCADE
 );
 
 -- Adiciona a coluna 'is_master' na tabela de operadores, caso ela não exista.
-ALTER TABLE public.operadores
+ALTER TABLE public.operador
     ADD COLUMN IF NOT EXISTS is_master BOOLEAN NOT NULL DEFAULT false;

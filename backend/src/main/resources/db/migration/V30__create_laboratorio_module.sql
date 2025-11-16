@@ -5,7 +5,7 @@
 -- =====================================================
 
 -- Tabela de Configurações do Laboratório
-CREATE TABLE lab_configuracao (
+CREATE TABLE IF NOT EXISTS lab_configuracao (
     id BIGSERIAL PRIMARY KEY,
     unidade_id BIGINT NOT NULL UNIQUE,
 
@@ -74,11 +74,11 @@ CREATE TABLE lab_configuracao (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMP,
 
-    FOREIGN KEY (unidade_id) REFERENCES unidade_saude(id)
+    FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id)
 );
 
 -- Tabela de Materiais de Exame
-CREATE TABLE lab_material_exame (
+CREATE TABLE IF NOT EXISTS lab_material_exame (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
     sigla VARCHAR(10) NOT NULL,
@@ -89,7 +89,7 @@ CREATE TABLE lab_material_exame (
 );
 
 -- Tabela de Grupos de Exames
-CREATE TABLE lab_grupo_exame (
+CREATE TABLE IF NOT EXISTS lab_grupo_exame (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
     nome VARCHAR(200) NOT NULL,
@@ -101,7 +101,7 @@ CREATE TABLE lab_grupo_exame (
 );
 
 -- Tabela de Mapas do Laboratório
-CREATE TABLE lab_mapa (
+CREATE TABLE IF NOT EXISTS lab_mapa (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
     descricao VARCHAR(200) NOT NULL,
@@ -113,7 +113,7 @@ CREATE TABLE lab_mapa (
 );
 
 -- Tabela de Profissionais do Mapa
-CREATE TABLE lab_mapa_profissional (
+CREATE TABLE IF NOT EXISTS lab_mapa_profissional (
     id BIGSERIAL PRIMARY KEY,
     mapa_id BIGINT NOT NULL,
     profissional_id BIGINT NOT NULL,
@@ -125,7 +125,7 @@ CREATE TABLE lab_mapa_profissional (
 );
 
 -- Tabela de Exames
-CREATE TABLE lab_exame (
+CREATE TABLE IF NOT EXISTS lab_exame (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE NOT NULL,
     nome VARCHAR(200) NOT NULL,
@@ -175,8 +175,46 @@ CREATE TABLE lab_exame (
     FOREIGN KEY (mapa_id) REFERENCES lab_mapa(id)
 );
 
+-- Corrigir tipos de colunas TEXT que podem ter sido criadas como OID
+-- (isso pode acontecer se a tabela já existia com estrutura diferente)
+DO $$
+BEGIN
+    -- Corrigir orientacoes_paciente se for OID
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'lab_exame' 
+        AND column_name = 'orientacoes_paciente'
+        AND data_type = 'oid'
+    ) THEN
+        ALTER TABLE lab_exame DROP COLUMN orientacoes_paciente;
+        ALTER TABLE lab_exame ADD COLUMN orientacoes_paciente TEXT;
+    END IF;
+
+    -- Corrigir preparo se for OID
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'lab_exame' 
+        AND column_name = 'preparo'
+        AND data_type = 'oid'
+    ) THEN
+        ALTER TABLE lab_exame DROP COLUMN preparo;
+        ALTER TABLE lab_exame ADD COLUMN preparo TEXT;
+    END IF;
+
+    -- Corrigir modelo_laudo se for OID
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'lab_exame' 
+        AND column_name = 'modelo_laudo'
+        AND data_type = 'oid'
+    ) THEN
+        ALTER TABLE lab_exame DROP COLUMN modelo_laudo;
+        ALTER TABLE lab_exame ADD COLUMN modelo_laudo TEXT;
+    END IF;
+END $$;
+
 -- Tabela de Materiais do Exame (Relacionamento)
-CREATE TABLE lab_exame_material (
+CREATE TABLE IF NOT EXISTS lab_exame_material (
     id BIGSERIAL PRIMARY KEY,
     exame_id BIGINT NOT NULL,
     material_id BIGINT NOT NULL,
@@ -189,7 +227,7 @@ CREATE TABLE lab_exame_material (
 );
 
 -- Tabela de Exames Complementares
-CREATE TABLE lab_exame_complementar (
+CREATE TABLE IF NOT EXISTS lab_exame_complementar (
     exame_id BIGINT NOT NULL,
     exame_complementar_id BIGINT NOT NULL,
 
@@ -199,7 +237,7 @@ CREATE TABLE lab_exame_complementar (
 );
 
 -- Tabela de Campos Dinâmicos do Exame
-CREATE TABLE lab_campo_exame (
+CREATE TABLE IF NOT EXISTS lab_campo_exame (
     id BIGSERIAL PRIMARY KEY,
     exame_id BIGINT NOT NULL,
     nome VARCHAR(100) NOT NULL,
@@ -222,7 +260,7 @@ CREATE TABLE lab_campo_exame (
 );
 
 -- Tabela de Métodos/Valores de Referência
-CREATE TABLE lab_metodo_exame (
+CREATE TABLE IF NOT EXISTS lab_metodo_exame (
     id BIGSERIAL PRIMARY KEY,
     exame_id BIGINT NOT NULL,
     nome_metodo VARCHAR(200) NOT NULL,
@@ -242,7 +280,7 @@ CREATE TABLE lab_metodo_exame (
 );
 
 -- Tabela de Textos Prontos
-CREATE TABLE lab_texto_pronto (
+CREATE TABLE IF NOT EXISTS lab_texto_pronto (
     id BIGSERIAL PRIMARY KEY,
     exame_id BIGINT,
     abreviatura VARCHAR(50) NOT NULL,
@@ -255,7 +293,7 @@ CREATE TABLE lab_texto_pronto (
 );
 
 -- Tabela de Motivos de Exame
-CREATE TABLE lab_motivo_exame (
+CREATE TABLE IF NOT EXISTS lab_motivo_exame (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
     descricao VARCHAR(200) NOT NULL,
@@ -265,7 +303,7 @@ CREATE TABLE lab_motivo_exame (
 );
 
 -- Tabela de Motivos de Nova Coleta
-CREATE TABLE lab_motivo_nova_coleta (
+CREATE TABLE IF NOT EXISTS lab_motivo_nova_coleta (
     id BIGSERIAL PRIMARY KEY,
     codigo VARCHAR(20) UNIQUE,
     descricao VARCHAR(200) NOT NULL,
@@ -275,7 +313,7 @@ CREATE TABLE lab_motivo_nova_coleta (
 );
 
 -- Tabela de Recepção de Exames
-CREATE TABLE lab_recepcao_exame (
+CREATE TABLE IF NOT EXISTS lab_recepcao_exame (
     id BIGSERIAL PRIMARY KEY,
     numero_recepcao VARCHAR(20) UNIQUE NOT NULL,
     codigo_barras VARCHAR(50) UNIQUE,
@@ -303,13 +341,13 @@ CREATE TABLE lab_recepcao_exame (
     updated_at TIMESTAMP,
 
     FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-    FOREIGN KEY (unidade_id) REFERENCES unidade_saude(id),
+    FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id),
     FOREIGN KEY (profissional_solicitante_id) REFERENCES profissionais(id),
-    FOREIGN KEY (operador_recepcao_id) REFERENCES operadores(id)
+    FOREIGN KEY (operador_recepcao_id) REFERENCES operador(id)
 );
 
 -- Tabela de Exames da Recepção
-CREATE TABLE lab_exame_recepcao (
+CREATE TABLE IF NOT EXISTS lab_exame_recepcao (
     id BIGSERIAL PRIMARY KEY,
     recepcao_id BIGINT NOT NULL,
     exame_id BIGINT NOT NULL,
@@ -328,7 +366,7 @@ CREATE TABLE lab_exame_recepcao (
 );
 
 -- Tabela de Coleta de Material
-CREATE TABLE lab_coleta_material (
+CREATE TABLE IF NOT EXISTS lab_coleta_material (
     id BIGSERIAL PRIMARY KEY,
     recepcao_id BIGINT NOT NULL,
     data_coleta TIMESTAMP NOT NULL,
@@ -338,11 +376,11 @@ CREATE TABLE lab_coleta_material (
     updated_at TIMESTAMP,
 
     FOREIGN KEY (recepcao_id) REFERENCES lab_recepcao_exame(id),
-    FOREIGN KEY (operador_coleta_id) REFERENCES operadores(id)
+    FOREIGN KEY (operador_coleta_id) REFERENCES operador(id)
 );
 
 -- Tabela de Materiais Coletados
-CREATE TABLE lab_material_coletado (
+CREATE TABLE IF NOT EXISTS lab_material_coletado (
     id BIGSERIAL PRIMARY KEY,
     coleta_id BIGINT NOT NULL,
     exame_recepcao_id BIGINT NOT NULL,
@@ -364,7 +402,7 @@ CREATE TABLE lab_material_coletado (
 );
 
 -- Tabela de Resultados de Exames
-CREATE TABLE lab_resultado_exame (
+CREATE TABLE IF NOT EXISTS lab_resultado_exame (
     id BIGSERIAL PRIMARY KEY,
     exame_recepcao_id BIGINT NOT NULL UNIQUE,
     metodo_id BIGINT,
@@ -402,12 +440,12 @@ CREATE TABLE lab_resultado_exame (
 
     FOREIGN KEY (exame_recepcao_id) REFERENCES lab_exame_recepcao(id),
     FOREIGN KEY (metodo_id) REFERENCES lab_metodo_exame(id),
-    FOREIGN KEY (operador_digitacao_id) REFERENCES operadores(id),
+    FOREIGN KEY (operador_digitacao_id) REFERENCES operador(id),
     FOREIGN KEY (profissional_assinatura_id) REFERENCES profissionais(id)
 );
 
 -- Tabela de Valores dos Campos do Resultado
-CREATE TABLE lab_valor_campo_resultado (
+CREATE TABLE IF NOT EXISTS lab_valor_campo_resultado (
     id BIGSERIAL PRIMARY KEY,
     resultado_id BIGINT NOT NULL,
     campo_id BIGINT NOT NULL,
@@ -421,7 +459,7 @@ CREATE TABLE lab_valor_campo_resultado (
 );
 
 -- Tabela de Entrega de Exames
-CREATE TABLE lab_entrega_exame (
+CREATE TABLE IF NOT EXISTS lab_entrega_exame (
     id BIGSERIAL PRIMARY KEY,
     recepcao_id BIGINT NOT NULL,
     data_entrega TIMESTAMP NOT NULL,
@@ -441,11 +479,11 @@ CREATE TABLE lab_entrega_exame (
     created_at TIMESTAMP NOT NULL DEFAULT NOW(),
 
     FOREIGN KEY (recepcao_id) REFERENCES lab_recepcao_exame(id),
-    FOREIGN KEY (operador_entrega_id) REFERENCES operadores(id)
+    FOREIGN KEY (operador_entrega_id) REFERENCES operador(id)
 );
 
 -- Tabela de Exames Entregues
-CREATE TABLE lab_exame_entregue (
+CREATE TABLE IF NOT EXISTS lab_exame_entregue (
     id BIGSERIAL PRIMARY KEY,
     entrega_id BIGINT NOT NULL,
     exame_recepcao_id BIGINT NOT NULL,
@@ -456,17 +494,17 @@ CREATE TABLE lab_exame_entregue (
 );
 
 -- Índices para melhor performance
-CREATE INDEX idx_lab_exame_codigo ON lab_exame(codigo);
-CREATE INDEX idx_lab_exame_ativo ON lab_exame(ativo);
-CREATE INDEX idx_lab_exame_grupo ON lab_exame(grupo_id);
-CREATE INDEX idx_lab_recepcao_numero ON lab_recepcao_exame(numero_recepcao);
-CREATE INDEX idx_lab_recepcao_codigo_barras ON lab_recepcao_exame(codigo_barras);
-CREATE INDEX idx_lab_recepcao_paciente ON lab_recepcao_exame(paciente_id);
-CREATE INDEX idx_lab_recepcao_data ON lab_recepcao_exame(data_recepcao);
-CREATE INDEX idx_lab_recepcao_status ON lab_recepcao_exame(status);
-CREATE INDEX idx_lab_resultado_exame_recepcao ON lab_resultado_exame(exame_recepcao_id);
-CREATE INDEX idx_lab_resultado_liberado ON lab_resultado_exame(laudo_liberado);
-CREATE INDEX idx_lab_resultado_assinado ON lab_resultado_exame(assinado);
+CREATE INDEX IF NOT EXISTS idx_lab_exame_codigo ON lab_exame(codigo);
+CREATE INDEX IF NOT EXISTS idx_lab_exame_ativo ON lab_exame(ativo);
+CREATE INDEX IF NOT EXISTS idx_lab_exame_grupo ON lab_exame(grupo_id);
+CREATE INDEX IF NOT EXISTS idx_lab_recepcao_numero ON lab_recepcao_exame(numero_recepcao);
+CREATE INDEX IF NOT EXISTS idx_lab_recepcao_codigo_barras ON lab_recepcao_exame(codigo_barras);
+CREATE INDEX IF NOT EXISTS idx_lab_recepcao_paciente ON lab_recepcao_exame(paciente_id);
+CREATE INDEX IF NOT EXISTS idx_lab_recepcao_data ON lab_recepcao_exame(data_recepcao);
+CREATE INDEX IF NOT EXISTS idx_lab_recepcao_status ON lab_recepcao_exame(status);
+CREATE INDEX IF NOT EXISTS idx_lab_resultado_exame_recepcao ON lab_resultado_exame(exame_recepcao_id);
+CREATE INDEX IF NOT EXISTS idx_lab_resultado_liberado ON lab_resultado_exame(laudo_liberado);
+CREATE INDEX IF NOT EXISTS idx_lab_resultado_assinado ON lab_resultado_exame(assinado);
 
 -- Comentários nas tabelas
 COMMENT ON TABLE lab_configuracao IS 'Configurações do módulo de laboratório por unidade';

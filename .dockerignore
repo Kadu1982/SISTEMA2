@@ -1,37 +1,79 @@
-# SCM
+# Git
 .git
-.gitmodules
+.gitignore
+.gitattributes
 
-# Editors
-.idea
-.vscode
-*.iml
+# Documentação
+*.md
+docs/
+README*.md
+GUIA*.md
 
-# Python
-__pycache__
-*.pyc
-
-# Node
-node_modules
-**/node_modules
-npm-debug.log
+# Node modules (serão instalados no container)
+node_modules/
+frontend/node_modules/
 
 # Build artifacts
-**/dist
-**/build
-**/.next
-**/target
-logs
-storage
+dist/
+build/
+target/
+*.jar
+*.war
 
-# OS files
+# Logs
+*.log
+logs/
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.swp
+*.swo
+*~
+
+# OS
 .DS_Store
 Thumbs.db
 
-# Virtual environments
-.venv
-
-# Environment files
+# Environment
 .env
 .env.local
-.env.*
+.env.*.local
+
+# Testes
+test/
+tests/
+*.test.js
+*.test.ts
+*.spec.js
+*.spec.ts
+__tests__/
+coverage/
+
+# Scripts locais
+scripts/
+*.sh
+*.bat
+*.ps1
+
+# Backups
+backups/
+*.sql
+*.sql.gz
+*.backup
+
+# Temporários
+tmp/
+temp/
+*.tmp
+
+# Docker
+docker-compose.yml
+docker-compose.*.yml
+Dockerfile*
+.dockerignore
+
+# Outros
+*.pdf
+storage/

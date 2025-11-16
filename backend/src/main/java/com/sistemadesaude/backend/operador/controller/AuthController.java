@@ -36,9 +36,22 @@ public class AuthController {
         this.operadorRepository = operadorRepository;
     }
 
-    /** Autenticação por login/senha. */
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    /**
+     * Autenticação por login/senha - aceita JSON.
+     */
+    @PostMapping(value = "/login", consumes = "application/json")
+    public ResponseEntity<LoginResponse> loginJson(@RequestBody LoginRequest request) {
+        return ResponseEntity.ok(authenticationService.login(request));
+    }
+
+    /**
+     * Autenticação por login/senha - aceita form-urlencoded.
+     */
+    @PostMapping(value = "/login", consumes = "application/x-www-form-urlencoded")
+    public ResponseEntity<LoginResponse> loginForm(
+            @RequestParam String login,
+            @RequestParam String senha) {
+        LoginRequest request = new LoginRequest(login, senha);
         return ResponseEntity.ok(authenticationService.login(request));
     }
 

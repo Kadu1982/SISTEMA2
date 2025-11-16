@@ -12,8 +12,11 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class JwtService {
@@ -35,15 +38,24 @@ public class JwtService {
     /**
      * Gera token JWT para o operador
      * ✅ CORRIGIDO: Usa unidadeSaudeId em vez de getUnidade()
+     * ✅ CORRIGIDO: Converte Set<PerfilEntity> para List<String>
      */
     public String gerarToken(Operador operador) {
+        // Converte os perfis para uma lista de strings (nomes dos enums)
+        List<String> perfisNomes = operador.getPerfis() != null
+                ? operador.getPerfis().stream()
+                    .filter(p -> p != null && p.getTipo() != null)
+                    .map(p -> p.getTipo().name())
+                    .collect(Collectors.toList())
+                : Collections.emptyList();
+
         return Jwts.builder()
                 .setSubject(operador.getLogin())
                 .claim("id", operador.getId())
                 .claim("nome", operador.getNome())
                 .claim("login", operador.getLogin())
                 .claim("isMaster", operador.getIsMaster())
-                .claim("perfis", operador.getPerfis())
+                .claim("perfis", perfisNomes)
                 .claim("unidadeId", operador.getUnidadeSaudeId()) // ✅ CORRIGIDO: usa unidadeSaudeId
                 .claim("unidadeAtualId", operador.getUnidadeAtualId()) // ✅ ADICIONADO: unidade atual
                 .setIssuedAt(new Date())
