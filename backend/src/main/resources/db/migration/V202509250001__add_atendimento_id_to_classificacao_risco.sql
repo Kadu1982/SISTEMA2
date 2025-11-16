@@ -11,11 +11,16 @@ BEGIN
     ) THEN
         -- Adicionar coluna apenas se a tabela existir
         ALTER TABLE classificacao_risco ADD COLUMN IF NOT EXISTS atendimento_id BIGINT;
+        
+        -- Criar índice para performance (apenas se não existir)
+        IF NOT EXISTS (
+            SELECT 1 FROM pg_indexes 
+            WHERE indexname = 'idx_classificacao_risco_atendimento'
+        ) THEN
+            CREATE INDEX idx_classificacao_risco_atendimento ON classificacao_risco(atendimento_id);
+        END IF;
+        
+        -- Adicionar comentário explicativo
+        COMMENT ON COLUMN classificacao_risco.atendimento_id IS 'Referência ao atendimento relacionado com a classificação de risco';
     END IF;
-END $$;;
-
--- Criar índice para performance
-CREATE INDEX idx_classificacao_risco_atendimento ON classificacao_risco(atendimento_id);
-
--- Adicionar comentário explicativo
-COMMENT ON COLUMN classificacao_risco.atendimento_id IS 'Referência ao atendimento relacionado com a classificação de risco';
+END $$;
