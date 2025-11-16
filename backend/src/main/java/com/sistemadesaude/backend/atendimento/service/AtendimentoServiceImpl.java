@@ -223,6 +223,7 @@ public class AtendimentoServiceImpl implements AtendimentoService {
     private List<AtendimentoDTO> converterAtendimentosUpaParaDTO(List<AtendimentoUpa> atendimentosUpa) {
         return atendimentosUpa.stream()
                 .map(this::converterAtendimentoUpaParaDTO)
+                .filter(dto -> dto != null)
                 .collect(Collectors.toList());
     }
 
