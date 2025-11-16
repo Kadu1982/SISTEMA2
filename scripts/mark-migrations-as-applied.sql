@@ -28,7 +28,13 @@ BEGIN
             ('20250908', 'ciap atendimento', 'V20250908__ciap_atendimento.sql'),
             ('20250923.2200', 'add alergias column to classificacao risco', 'V20250923_2200__add_alergias_column_to_classificacao_risco.sql'),
             ('202501250001', 'criar tabela triagens', 'V202501250001__criar_tabela_triagens.sql'),
-            ('202509250001', 'add atendimento id to classificacao risco', 'V202509250001__add_atendimento_id_to_classificacao_risco.sql')
+            ('202509250001', 'add atendimento id to classificacao risco', 'V202509250001__add_atendimento_id_to_classificacao_risco.sql'),
+            ('202509250002', 'add avaliacao glasgow to classificacao risco', 'V202509250002__add_avaliacao_glasgow_to_classificacao_risco.sql'),
+            ('202509250003', 'add classificacao anterior id to classificacao risco', 'V202509250003__add_classificacao_anterior_id_to_classificacao_risco.sql'),
+            ('202509251200', 'add cor prioridade to classificacao risco', 'V202509251200__add_cor_prioridade_to_classificacao_risco.sql'),
+            ('202509251201', 'add data classificacao to classificacao risco', 'V202509251201__add_data_classificacao_to_classificacao_risco.sql'),
+            ('202509251202', 'add encaminhamento social to classificacao risco', 'V202509251202__add_encaminhamento_social_to_classificacao_risco.sql'),
+            ('202509251203', 'add missing columns classificacao risco', 'V202509251203__add_missing_columns_classificacao_risco.sql')
         ) AS t(version, description, script)
     LOOP
         -- Verificar se a migration já existe
@@ -75,6 +81,6 @@ END $$;
 -- Verificar migrations marcadas
 SELECT version, description, installed_on, success 
 FROM flyway_schema_history 
-WHERE version IN ('30', '31', '33', '35', '20250125.0001', '202501250001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908', '20250923.2200', '202509250001')
+WHERE version IN ('30', '31', '33', '35', '20250125.0001', '202501250001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908', '20250923.2200', '202509250001', '202509250002', '202509250003', '202509251200', '202509251201', '202509251202', '202509251203')
 ORDER BY installed_rank;
 
