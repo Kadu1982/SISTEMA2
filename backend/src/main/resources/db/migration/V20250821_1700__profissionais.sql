@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS profissionais (
                                              id BIGSERIAL PRIMARY KEY,
-                                             nome_completo VARCHAR(180) NOT NULL,
+                                             nome VARCHAR(255) NOT NULL,
     tipo_cadastro VARCHAR(20) NOT NULL,
     sexo VARCHAR(20) NOT NULL,
     data_nascimento DATE,
@@ -81,6 +81,18 @@ CREATE TABLE IF NOT EXISTS profissional_vinculos_unidade (
     );
 
 -- Índices úteis
-CREATE INDEX IF NOT EXISTS idx_profissionais_nome ON profissionais (nome_completo);
-CREATE INDEX IF NOT EXISTS idx_profissionais_cpf ON profissionais (cpf);
-CREATE INDEX IF NOT EXISTS idx_profissionais_cns ON profissionais (cns);
+-- Nota: A tabela já existe na baseline com a coluna 'nome' (não 'nome_completo')
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_nome') THEN
+        CREATE INDEX idx_profissionais_nome ON profissionais (nome);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_cpf') THEN
+        CREATE INDEX idx_profissionais_cpf ON profissionais (cpf);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_cns') THEN
+        CREATE INDEX idx_profissionais_cns ON profissionais (cns);
+    END IF;
+END $$;
