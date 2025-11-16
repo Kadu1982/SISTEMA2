@@ -25,7 +25,8 @@ BEGIN
             ('20250827.1900', 'prontuario documentos', 'V20250827_1900__prontuario_documentos.sql'),
             ('20250907', 'operador restricoes json', 'V20250907__operador_restricoes_json.sql'),
             ('20250907.1', 'create audit evento', 'V20250907.1__create_audit_evento.sql'),
-            ('20250908', 'ciap atendimento', 'V20250908__ciap_atendimento.sql')
+            ('20250908', 'ciap atendimento', 'V20250908__ciap_atendimento.sql'),
+            ('20250923.2200', 'add alergias column to classificacao risco', 'V20250923_2200__add_alergias_column_to_classificacao_risco.sql')
         ) AS t(version, description, script)
     LOOP
         -- Verificar se a migration já existe
@@ -72,6 +73,6 @@ END $$;
 -- Verificar migrations marcadas
 SELECT version, description, installed_on, success 
 FROM flyway_schema_history 
-WHERE version IN ('30', '31', '33', '35', '20250125.0001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908')
+WHERE version IN ('30', '31', '33', '35', '20250125.0001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908', '20250923.2200')
 ORDER BY installed_rank;
 
