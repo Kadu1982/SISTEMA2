@@ -21,7 +21,7 @@ import { Plus, Trash2, Pill } from "lucide-react";
 
 import RemumeBusca from "@/components/atendimento/RemumeBusca";
 import { MedicamentoRemume } from "@/types/Remume";
-import { PrescricaoMedicamento, TipoPrescricao, UNIDADES_MEDIDA, VIAS_ADMINISTRACAO, APRAZAMENTOS } from "@/types/prescricao";
+import { PrescricaoMedicamento, TipoPrescricao, UNIDADES_MEDIDA, VIAS_ADMINISTRACAO, APRAZAMENTOS } from "@/types/Prescricao";
 
 // Schema de validação para uma prescrição
 const prescricaoSchema = z.object({

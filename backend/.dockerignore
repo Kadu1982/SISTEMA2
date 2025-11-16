@@ -2,7 +2,7 @@
 /target
 
 # Local artifacts
-/logs
+#/logs
 
 # IDE artifacts
 *.iml
