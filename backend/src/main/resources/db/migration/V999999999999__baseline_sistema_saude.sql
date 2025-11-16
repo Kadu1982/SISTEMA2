@@ -157,6 +157,33 @@ CREATE TABLE IF NOT EXISTS operador_modulo_unidade (
     CONSTRAINT uk_operador_modulo_unidade UNIQUE (operador_id, modulo, unidade_id)
 );
 
+-- Unidade Perfis Permitidos (ElementCollection)
+CREATE TABLE IF NOT EXISTS unidade_perfis_permitidos (
+    unidade_id BIGINT NOT NULL,
+    perfil_tipo VARCHAR(50) NOT NULL,
+    PRIMARY KEY (unidade_id, perfil_tipo),
+    CONSTRAINT fk_unidade_perfis FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id) ON DELETE CASCADE
+);
+
+-- Documentos da Unidade
+CREATE TABLE IF NOT EXISTS documentos_unidade (
+    id BIGSERIAL PRIMARY KEY,
+    unidade_id BIGINT NOT NULL,
+    tipo_documento VARCHAR(100),
+    numero_documento VARCHAR(100),
+    orgao_emissor VARCHAR(100),
+    data_emissao DATE,
+    data_validade DATE,
+    arquivo_path VARCHAR(500),
+    observacoes TEXT,
+    ativo BOOLEAN DEFAULT TRUE,
+    data_criacao TIMESTAMP DEFAULT NOW(),
+    data_atualizacao TIMESTAMP,
+    criado_por VARCHAR(50),
+    atualizado_por VARCHAR(50),
+    CONSTRAINT fk_documento_unidade FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id) ON DELETE CASCADE
+);
+
 -- Configurações do Sistema
 CREATE TABLE IF NOT EXISTS configuracoes (
     id SERIAL PRIMARY KEY,
