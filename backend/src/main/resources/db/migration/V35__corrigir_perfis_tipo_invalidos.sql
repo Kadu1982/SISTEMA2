@@ -17,33 +17,34 @@ UPDATE perfis SET tipo = 'RECEPCIONISTA' WHERE tipo = 'Recepcionista UPA';
 UPDATE perfis SET tipo = 'RECEPCIONISTA' WHERE tipo = 'UPA';
 
 -- Verifica se há outros valores inválidos e mapeia para tipos válidos baseado no nome
+-- Usa apenas a coluna 'nome' pois 'nome_customizado' pode não existir em bancos antigos
 UPDATE perfis 
 SET tipo = 'ENFERMEIRO' 
 WHERE tipo NOT IN ('ADMINISTRADOR_DO_SISTEMA', 'GESTOR', 'MEDICO', 'ENFERMEIRO', 'TRIAGEM', 
                    'DENTISTA', 'FARMACEUTICO', 'TECNICO_ENFERMAGEM', 'TECNICO_HIGIENE_DENTAL', 
                    'RECEPCIONISTA', 'USUARIO_SISTEMA', 'SAMU_OPERADOR', 'SAMU_REGULADOR')
-  AND (nome ILIKE '%ENFERMEIRO%' OR nome_customizado ILIKE '%ENFERMEIRO%');
+  AND nome ILIKE '%ENFERMEIRO%';
 
 UPDATE perfis 
 SET tipo = 'MEDICO' 
 WHERE tipo NOT IN ('ADMINISTRADOR_DO_SISTEMA', 'GESTOR', 'MEDICO', 'ENFERMEIRO', 'TRIAGEM', 
                    'DENTISTA', 'FARMACEUTICO', 'TECNICO_ENFERMAGEM', 'TECNICO_HIGIENE_DENTAL', 
                    'RECEPCIONISTA', 'USUARIO_SISTEMA', 'SAMU_OPERADOR', 'SAMU_REGULADOR')
-  AND (nome ILIKE '%MÉDICO%' OR nome ILIKE '%MEDICO%' OR nome_customizado ILIKE '%MÉDICO%' OR nome_customizado ILIKE '%MEDICO%');
+  AND (nome ILIKE '%MÉDICO%' OR nome ILIKE '%MEDICO%');
 
 UPDATE perfis 
 SET tipo = 'DENTISTA' 
 WHERE tipo NOT IN ('ADMINISTRADOR_DO_SISTEMA', 'GESTOR', 'MEDICO', 'ENFERMEIRO', 'TRIAGEM', 
                    'DENTISTA', 'FARMACEUTICO', 'TECNICO_ENFERMAGEM', 'TECNICO_HIGIENE_DENTAL', 
                    'RECEPCIONISTA', 'USUARIO_SISTEMA', 'SAMU_OPERADOR', 'SAMU_REGULADOR')
-  AND (nome ILIKE '%DENTISTA%' OR nome_customizado ILIKE '%DENTISTA%');
+  AND nome ILIKE '%DENTISTA%';
 
 UPDATE perfis 
 SET tipo = 'RECEPCIONISTA' 
 WHERE tipo NOT IN ('ADMINISTRADOR_DO_SISTEMA', 'GESTOR', 'MEDICO', 'ENFERMEIRO', 'TRIAGEM', 
                    'DENTISTA', 'FARMACEUTICO', 'TECNICO_ENFERMAGEM', 'TECNICO_HIGIENE_DENTAL', 
                    'RECEPCIONISTA', 'USUARIO_SISTEMA', 'SAMU_OPERADOR', 'SAMU_REGULADOR')
-  AND (nome ILIKE '%RECEPCIONISTA%' OR nome_customizado ILIKE '%RECEPCIONISTA%');
+  AND nome ILIKE '%RECEPCIONISTA%';
 
 -- Para qualquer perfil restante com tipo inválido, mapeia para USUARIO_SISTEMA
 UPDATE perfis 
