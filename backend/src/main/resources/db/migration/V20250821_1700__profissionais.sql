@@ -81,18 +81,26 @@ CREATE TABLE IF NOT EXISTS profissional_vinculos_unidade (
     );
 
 -- Índices úteis
--- Nota: A tabela já existe na baseline com a coluna 'nome' (não 'nome_completo')
+-- Nota: A tabela já existe na baseline com apenas: nome, cpf, data_nascimento, telefone, email, ativo, data_criacao, data_atualizacao
 DO $$
 BEGIN
+    -- Índice em nome (sempre existe)
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_nome') THEN
         CREATE INDEX idx_profissionais_nome ON profissionais (nome);
     END IF;
     
+    -- Índice em cpf (sempre existe)
     IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_cpf') THEN
         CREATE INDEX idx_profissionais_cpf ON profissionais (cpf);
     END IF;
     
-    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_cns') THEN
-        CREATE INDEX idx_profissionais_cns ON profissionais (cns);
+    -- Índice em cns (apenas se a coluna existir)
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'profissionais' AND column_name = 'cns'
+    ) THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_profissionais_cns') THEN
+            CREATE INDEX idx_profissionais_cns ON profissionais (cns);
+        END IF;
     END IF;
 END $$;
