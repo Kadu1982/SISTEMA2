@@ -34,7 +34,11 @@ BEGIN
             ('202509251200', 'add cor prioridade to classificacao risco', 'V202509251200__add_cor_prioridade_to_classificacao_risco.sql'),
             ('202509251201', 'add data classificacao to classificacao risco', 'V202509251201__add_data_classificacao_to_classificacao_risco.sql'),
             ('202509251202', 'add encaminhamento social to classificacao risco', 'V202509251202__add_encaminhamento_social_to_classificacao_risco.sql'),
-            ('202509251203', 'add missing columns classificacao risco', 'V202509251203__add_missing_columns_classificacao_risco.sql')
+            ('202509251203', 'add missing columns classificacao risco', 'V202509251203__add_missing_columns_classificacao_risco.sql'),
+            ('202509251206', 'fix foreign key constraints', 'V202509251206__fix_foreign_key_constraints.sql'),
+            ('202509251207', 'create configuracao hospitalar table', 'V202509251207__create_configuracao_hospitalar_table.sql'),
+            ('202509251208', 'create controle acesso table', 'V202509251208__create_controle_acesso_table.sql'),
+            ('202509251209', 'create fila atendimento table', 'V202509251209__create_fila_atendimento_table.sql')
         ) AS t(version, description, script)
     LOOP
         -- Verificar se a migration já existe
@@ -81,6 +85,6 @@ END $$;
 -- Verificar migrations marcadas
 SELECT version, description, installed_on, success 
 FROM flyway_schema_history 
-WHERE version IN ('30', '31', '33', '35', '20250125.0001', '202501250001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908', '20250923.2200', '202509250001', '202509250002', '202509250003', '202509251200', '202509251201', '202509251202', '202509251203')
+WHERE version IN ('30', '31', '33', '35', '20250125.0001', '202501250001', '20250821.1700', '20250827.1900', '20250907', '20250907.1', '20250908', '20250923.2200', '202509250001', '202509250002', '202509250003', '202509251200', '202509251201', '202509251202', '202509251203', '202509251206', '202509251207', '202509251208', '202509251209')
 ORDER BY installed_rank;
 
