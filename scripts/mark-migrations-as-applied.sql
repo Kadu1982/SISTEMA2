@@ -71,6 +71,6 @@ END $$;
 -- Verificar migrations marcadas
 SELECT version, description, installed_on, success 
 FROM flyway_schema_history 
-WHERE version IN ('30', '31', '33', '35', '20250125.0001', '20250821.1700', '20250827.1900', '20250907')
+WHERE version IN ('30', '31', '33', '35', '20250125.0001', '20250821.1700', '20250827.1900', '20250907', '20250907.1')
 ORDER BY installed_rank;
 
