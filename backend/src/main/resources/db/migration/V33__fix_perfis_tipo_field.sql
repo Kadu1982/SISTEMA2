@@ -8,7 +8,10 @@ BEGIN
         SELECT 1 FROM information_schema.columns 
         WHERE table_name = 'perfis' AND column_name = 'tipo'
     ) THEN
-        ALTER TABLE perfis ADD COLUMN tipo VARCHAR(20);
+        ALTER TABLE perfis ADD COLUMN tipo VARCHAR(50);
+    ELSE
+        -- Se já existir, aumentar tamanho se necessário
+        ALTER TABLE perfis ALTER COLUMN tipo TYPE VARCHAR(50);
     END IF;
 END $$;
 
