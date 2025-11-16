@@ -23,38 +23,50 @@ CREATE INDEX IF NOT EXISTS idx_agendamentos_data ON agendamentos(data_agendament
 CREATE INDEX IF NOT EXISTS idx_agendamentos_status ON agendamentos(status);
 
 -- Criação da tabela triagens
+-- Nota: A tabela já existe na baseline, esta migration apenas adiciona índices faltantes
 CREATE TABLE IF NOT EXISTS triagens (
     id BIGSERIAL PRIMARY KEY,
-    agendamento_id BIGINT NOT NULL,
-    paciente_id BIGINT NOT NULL,
-    data_hora_triagem TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    -- Sinais Vitais
+    agendamento_id BIGINT,
+    paciente_id BIGINT,
+    data_triagem TIMESTAMP,
     pressao_arterial VARCHAR(20),
-    temperatura DECIMAL(4,1),
+    temperatura DECIMAL(4,2),
     peso DECIMAL(5,2),
-    altura DECIMAL(3,2),
+    altura DECIMAL(5,2),
     frequencia_cardiaca INTEGER,
-    saturacao_oxigenio INTEGER,
-    escala_dor INTEGER CHECK (escala_dor >= 0 AND escala_dor <= 10),
-
-    -- Dados da Triagem
-    queixa_principal TEXT NOT NULL,
+    frequencia_respiratoria INTEGER,
+    saturacao_oxigenio DECIMAL(5,2),
+    escala_dor INTEGER,
+    classificacao_risco VARCHAR(20),
+    classificacao_original VARCHAR(20),
+    conduta_sugerida TEXT,
+    diagnosticos_sugeridos TEXT,
     observacoes TEXT,
-    classificacao_risco VARCHAR(20) NOT NULL CHECK (classificacao_risco IN ('VERMELHO', 'LARANJA', 'AMARELO', 'VERDE', 'AZUL')),
-    profissional_id BIGINT NOT NULL,
-
-    -- Constraints
-    CONSTRAINT fk_triagem_agendamento FOREIGN KEY (agendamento_id) REFERENCES agendamentos(id),
-    CONSTRAINT fk_triagem_paciente FOREIGN KEY (paciente_id) REFERENCES pacientes(id),
-    CONSTRAINT uk_triagem_agendamento UNIQUE (agendamento_id)
+    alergias TEXT,
+    profissional_id BIGINT,
+    unidade_id BIGINT,
+    queixa_principal TEXT
 );
 
--- Índices para otimização
-CREATE INDEX IF NOT EXISTS idx_triagens_paciente_id ON triagens(paciente_id);
-CREATE INDEX IF NOT EXISTS idx_triagens_profissional_id ON triagens(profissional_id);
-CREATE INDEX IF NOT EXISTS idx_triagens_classificacao_risco ON triagens(classificacao_risco);
-CREATE INDEX IF NOT EXISTS idx_triagens_data_hora ON triagens(data_hora_triagem);
+-- Índices para otimização (apenas criar se não existirem)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_triagens_paciente_id') THEN
+        CREATE INDEX idx_triagens_paciente_id ON triagens(paciente_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_triagens_profissional_id') THEN
+        CREATE INDEX idx_triagens_profissional_id ON triagens(profissional_id);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_triagens_classificacao_risco') THEN
+        CREATE INDEX idx_triagens_classificacao_risco ON triagens(classificacao_risco);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_triagens_data_triagem') THEN
+        CREATE INDEX idx_triagens_data_triagem ON triagens(data_triagem);
+    END IF;
+END $$;
 
 -- Comentários
 COMMENT ON TABLE triagens IS 'Tabela para armazenar dados das triagens e classificação de risco';
