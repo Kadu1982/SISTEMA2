@@ -20,24 +20,8 @@
 CREATE TABLE IF NOT EXISTS unidades_saude (
     id SERIAL PRIMARY KEY,
     nome VARCHAR(200) NOT NULL,
-    codigo VARCHAR(30) UNIQUE,
-    razao_social VARCHAR(200),
-    nome_fantasia VARCHAR(200),
-    cnpj VARCHAR(14) UNIQUE,
     codigo_cnes VARCHAR(7) NOT NULL UNIQUE,
     tipo VARCHAR(50) NOT NULL DEFAULT 'UBS',
-    tipo_estabelecimento VARCHAR(100),
-    esfera_administrativa VARCHAR(100),
-    atividade_gestao VARCHAR(100),
-    fluxo_clientela VARCHAR(100),
-    turnos_atendimento VARCHAR(100),
-    natureza_organizacao VARCHAR(100),
-    logradouro VARCHAR(200),
-    numero VARCHAR(20),
-    complemento VARCHAR(100),
-    bairro VARCHAR(100),
-    municipio VARCHAR(100),
-    uf VARCHAR(2),
     endereco VARCHAR(500),
     cep VARCHAR(8),
     cidade VARCHAR(100),
@@ -85,7 +69,7 @@ CREATE TABLE IF NOT EXISTS perfis (
     descricao TEXT,
     sistema_perfil BOOLEAN DEFAULT FALSE,
     ativo BOOLEAN DEFAULT TRUE,
-    tipo VARCHAR(50),
+    tipo VARCHAR(20),
     nome_customizado VARCHAR(100),
     nivel_customizado INTEGER,
     data_criacao TIMESTAMP DEFAULT NOW(),
@@ -157,43 +141,12 @@ CREATE TABLE IF NOT EXISTS operador_modulo_unidade (
     CONSTRAINT uk_operador_modulo_unidade UNIQUE (operador_id, modulo, unidade_id)
 );
 
--- Unidade Perfis Permitidos (ElementCollection)
-CREATE TABLE IF NOT EXISTS unidade_perfis_permitidos (
-    unidade_id BIGINT NOT NULL,
-    perfil_tipo VARCHAR(50) NOT NULL,
-    PRIMARY KEY (unidade_id, perfil_tipo),
-    CONSTRAINT fk_unidade_perfis FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id) ON DELETE CASCADE
-);
-
--- Documentos da Unidade
-CREATE TABLE IF NOT EXISTS documentos_unidade (
-    id BIGSERIAL PRIMARY KEY,
-    unidade_id BIGINT NOT NULL,
-    tipo_documento VARCHAR(100),
-    numero_documento VARCHAR(100),
-    orgao_emissor VARCHAR(100),
-    data_emissao DATE,
-    data_validade DATE,
-    arquivo_path VARCHAR(500),
-    observacoes TEXT,
-    ativo BOOLEAN DEFAULT TRUE,
-    data_criacao TIMESTAMP DEFAULT NOW(),
-    data_atualizacao TIMESTAMP,
-    criado_por VARCHAR(50),
-    atualizado_por VARCHAR(50),
-    CONSTRAINT fk_documento_unidade FOREIGN KEY (unidade_id) REFERENCES unidades_saude(id) ON DELETE CASCADE
-);
-
 -- Configurações do Sistema
 CREATE TABLE IF NOT EXISTS configuracoes (
     id SERIAL PRIMARY KEY,
     chave VARCHAR(100) NOT NULL UNIQUE,
     valor TEXT,
     descricao TEXT,
-    grupo VARCHAR(100),
-    tipo VARCHAR(50),
-    editavel BOOLEAN DEFAULT TRUE,
-    valores_possiveis TEXT,
     data_criacao TIMESTAMP DEFAULT NOW(),
     data_atualizacao TIMESTAMP,
     criado_por VARCHAR(50),
@@ -671,29 +624,6 @@ CREATE TABLE IF NOT EXISTS atendimentos_assistenciais_motivos (
 -- ================================================================
 -- DADOS INICIAIS CRÍTICOS
 -- ================================================================
-
--- Garantir que a tabela perfis tenha todas as colunas necessárias
-DO $$
-BEGIN
-    -- Adicionar coluna 'ativo' se não existir
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'perfis' AND column_name = 'ativo'
-    ) THEN
-        ALTER TABLE perfis ADD COLUMN ativo BOOLEAN DEFAULT TRUE;
-    END IF;
-    
-    -- Adicionar coluna 'tipo' se não existir
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.columns 
-        WHERE table_name = 'perfis' AND column_name = 'tipo'
-    ) THEN
-        ALTER TABLE perfis ADD COLUMN tipo VARCHAR(50);
-    ELSE
-        -- Se já existir, aumentar tamanho se necessário
-        ALTER TABLE perfis ALTER COLUMN tipo TYPE VARCHAR(50);
-    END IF;
-END $$;
 
 -- Inserir unidade de saúde padrão
 INSERT INTO unidades_saude (nome, codigo_cnes, tipo, ativa, data_criacao, criado_por)

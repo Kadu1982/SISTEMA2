@@ -9,9 +9,9 @@ mvnw.cmd
 *.iml
 *.swp
 
-# Logs (apenas arquivos .log, não o diretório src/main/java/.../logs/)
+# Logs
 *.log
-# Não excluir: src/main/java/com/sistemadesaude/backend/logs/
+logs/
 
 # Testes
 src/test/

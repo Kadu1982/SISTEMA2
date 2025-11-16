@@ -94,7 +94,16 @@
       "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe\" -U postgres -d saude_db -c \"SELECT id, login, nome, ativo, is_master FROM operador WHERE login = ''admin.master'';\")",
       "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe\" -U postgres -d saude_db -c \"\\d operador_perfis\")",
       "Bash(cmd.exe /c \"\"\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe\"\" -U postgres -d saude_db -c \"\"\\d operador_perfis\"\"\")",
-      "mcp__gemini-cli__ping"
+      "mcp__gemini-cli__ping",
+      "Bash(del \"C:\\Users\\okdur\\IdeaProjects\\SISTEMA2\\backend\\src\\main\\resources\\db\\migration\\V202510012100__add_samu_perfis_to_admin.sql\")",
+      "Bash(git add:*)",
+      "Bash(git rm:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git restore:*)",
+      "Bash(del nul)",
+      "Bash(ssh root@72.60.55.213 \"docker compose -f /opt/apps/SISTEMA2/docker-compose.prod.yml exec -T postgres psql -U postgres -d saude_db -c \"\"UPDATE operador SET senha = ''$2a$10$kMmDQ5VqzD5STYl19Mw83uYwstaNnc0soRuQz9JXfXjcz.XDMPu9q'', nome = ''Administrador Master'', cargo = ''Administrador do Sistema'', cpf = ''00000000000'', email = NULL, ativo = true, is_master = true WHERE login = ''admin.master'';\"\"\")",
+      "Bash(ssh:*)"
     ],
     "deny": [],
     "ask": []

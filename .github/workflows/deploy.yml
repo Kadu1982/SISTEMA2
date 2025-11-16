@@ -1,0 +1,60 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - master
+      - staging
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  deploy:
+    name: Deploy to Production VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: 22
+          script: |
+            set -e
+
+            echo "📦 Atualizando código do GitHub..."
+            cd /opt/apps/SISTEMA2
+            git fetch origin
+            git reset --hard origin/${{ github.ref_name }}
+
+            echo "🔨 Reconstruindo containers Docker..."
+            docker compose -f docker-compose.prod.yml build --no-cache
+
+            echo "🔄 Reiniciando serviços..."
+            docker compose -f docker-compose.prod.yml down
+            docker compose -f docker-compose.prod.yml up -d
+
+            echo "🧹 Limpando imagens antigas..."
+            docker image prune -f
+
+            echo "✅ Deploy concluído com sucesso!"
+
+            echo "📊 Status dos containers:"
+            docker compose -f docker-compose.prod.yml ps
+
+      - name: Notificar sucesso
+        if: success()
+        run: |
+          echo "✅ Deploy realizado com sucesso em $(date)"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+      - name: Notificar falha
+        if: failure()
+        run: |
+          echo "❌ Deploy falhou!"
+          exit 1
