@@ -23,7 +23,8 @@ BEGIN
             ('20250125.0001', 'criar tabela triagens', 'V20250125_0001__criar_tabela_triagens.sql'),
             ('20250821.1700', 'profissionais', 'V20250821_1700__profissionais.sql'),
             ('20250827.1900', 'prontuario documentos', 'V20250827_1900__prontuario_documentos.sql'),
-            ('20250907', 'operador restricoes json', 'V20250907__operador_restricoes_json.sql')
+            ('20250907', 'operador restricoes json', 'V20250907__operador_restricoes_json.sql'),
+            ('20250907.1', 'create audit evento', 'V20250907.1__create_audit_evento.sql')
         ) AS t(version, description, script)
     LOOP
         -- Verificar se a migration já existe

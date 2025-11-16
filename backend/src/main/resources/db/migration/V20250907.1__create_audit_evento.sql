@@ -16,10 +16,38 @@ CREATE TABLE IF NOT EXISTS audit_evento (
     );
 
 -- 🔎 Índices úteis para relatórios e filtros
-CREATE INDEX IF NOT EXISTS idx_audit_evento_data      ON audit_evento (data_hora);
-CREATE INDEX IF NOT EXISTS idx_audit_evento_oper      ON audit_evento (operador_id);
-CREATE INDEX IF NOT EXISTS idx_audit_evento_entidade  ON audit_evento (entidade);
-CREATE INDEX IF NOT EXISTS idx_audit_evento_operacao  ON audit_evento (operacao);
+-- Nota: A tabela já existe na baseline com a coluna 'data_evento' (não 'data_hora')
+DO $$
+BEGIN
+    -- Índice em data_evento (nome correto conforme baseline)
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_audit_evento_data') THEN
+        CREATE INDEX idx_audit_evento_data ON audit_evento (data_evento);
+    END IF;
+    
+    -- Índice em operador_id (sempre existe)
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_audit_evento_oper') THEN
+        CREATE INDEX idx_audit_evento_oper ON audit_evento (operador_id);
+    END IF;
+    
+    -- Índices em entidade e operacao (apenas se as colunas existirem)
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_evento' AND column_name = 'entidade'
+    ) THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_audit_evento_entidade') THEN
+            CREATE INDEX idx_audit_evento_entidade ON audit_evento (entidade);
+        END IF;
+    END IF;
+    
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'audit_evento' AND column_name = 'operacao'
+    ) THEN
+        IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_audit_evento_operacao') THEN
+            CREATE INDEX idx_audit_evento_operacao ON audit_evento (operacao);
+        END IF;
+    END IF;
+END $$;
 
 -- 📌 Observações:
 -- - A entidade JPA correspondente é com.sistemadesaude.backend.auditoria.AuditEvento
