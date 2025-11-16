@@ -6,23 +6,33 @@ ALTER TABLE atendimentos
     ADD COLUMN IF NOT EXISTS ciap_rfe VARCHAR(3);
 
 -- 2) Tabela para Diagnósticos (70–99)
+-- Nota: A tabela já existe na baseline com a coluna 'ciap' (não 'codigo')
 CREATE TABLE IF NOT EXISTS atendimento_ciap_diag (
-                                                     atendimento_id BIGINT NOT NULL,
-                                                     codigo VARCHAR(3) NOT NULL,
-    CONSTRAINT pk_atend_ciap_diag PRIMARY KEY (atendimento_id, codigo),
-    CONSTRAINT fk_atend_ciap_diag_atend FOREIGN KEY (atendimento_id)
-    REFERENCES atendimentos (id) ON DELETE CASCADE
-    );
+    atendimento_id BIGINT NOT NULL,
+    ciap VARCHAR(10) NOT NULL,
+    PRIMARY KEY (atendimento_id, ciap),
+    CONSTRAINT fk_atend_ciap_diag FOREIGN KEY (atendimento_id) REFERENCES atendimentos(id)
+);
 
 -- 3) Tabela para Processos/Procedimentos (30–69)
+-- Nota: A tabela já existe na baseline com a coluna 'ciap' (não 'codigo')
 CREATE TABLE IF NOT EXISTS atendimento_ciap_proc (
-                                                     atendimento_id BIGINT NOT NULL,
-                                                     codigo VARCHAR(3) NOT NULL,
-    CONSTRAINT pk_atend_ciap_proc PRIMARY KEY (atendimento_id, codigo),
-    CONSTRAINT fk_atend_ciap_proc_atend FOREIGN KEY (atendimento_id)
-    REFERENCES atendimentos (id) ON DELETE CASCADE
-    );
+    atendimento_id BIGINT NOT NULL,
+    ciap VARCHAR(10) NOT NULL,
+    PRIMARY KEY (atendimento_id, ciap),
+    CONSTRAINT fk_atend_ciap_proc FOREIGN KEY (atendimento_id) REFERENCES atendimentos(id)
+);
 
 -- Índices auxiliares (opcional)
-CREATE INDEX IF NOT EXISTS idx_atend_ciap_diag_cod ON atendimento_ciap_diag (codigo);
-CREATE INDEX IF NOT EXISTS idx_atend_ciap_proc_cod ON atendimento_ciap_proc (codigo);
+-- Nota: A tabela já existe na baseline com a coluna 'ciap' (não 'codigo')
+DO $$
+BEGIN
+    -- Índice em ciap (nome correto conforme baseline)
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_atend_ciap_diag_cod') THEN
+        CREATE INDEX idx_atend_ciap_diag_cod ON atendimento_ciap_diag (ciap);
+    END IF;
+    
+    IF NOT EXISTS (SELECT 1 FROM pg_indexes WHERE indexname = 'idx_atend_ciap_proc_cod') THEN
+        CREATE INDEX idx_atend_ciap_proc_cod ON atendimento_ciap_proc (ciap);
+    END IF;
+END $$;
