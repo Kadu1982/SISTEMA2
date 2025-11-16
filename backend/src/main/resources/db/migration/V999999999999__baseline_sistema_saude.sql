@@ -625,6 +625,26 @@ CREATE TABLE IF NOT EXISTS atendimentos_assistenciais_motivos (
 -- DADOS INICIAIS CRÍTICOS
 -- ================================================================
 
+-- Garantir que a tabela perfis tenha todas as colunas necessárias
+DO $$
+BEGIN
+    -- Adicionar coluna 'ativo' se não existir
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'perfis' AND column_name = 'ativo'
+    ) THEN
+        ALTER TABLE perfis ADD COLUMN ativo BOOLEAN DEFAULT TRUE;
+    END IF;
+    
+    -- Adicionar coluna 'tipo' se não existir
+    IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'perfis' AND column_name = 'tipo'
+    ) THEN
+        ALTER TABLE perfis ADD COLUMN tipo VARCHAR(20);
+    END IF;
+END $$;
+
 -- Inserir unidade de saúde padrão
 INSERT INTO unidades_saude (nome, codigo_cnes, tipo, ativa, data_criacao, criado_por)
 SELECT 'Unidade de Saúde Padrão', '0000001', 'UBS', TRUE, NOW(), 'sistema'
