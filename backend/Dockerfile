@@ -1,7 +1,7 @@
 # ============================================
 # STAGE 1: Build da aplicação
 # ============================================
-FROM maven:3.9.5-eclipse-temurin-17 AS build
+FROM maven:3.9.5-eclipse-temurin-21 AS build
 WORKDIR /app
 
 # Copiar arquivos de dependências primeiro (cache layer)
@@ -15,7 +15,7 @@ RUN mvn clean package -DskipTests -B
 # ============================================
 # STAGE 2: Runtime da aplicação
 # ============================================
-FROM eclipse-temurin:17-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 # Instalar wget para healthcheck
 RUN apk add --no-cache wget
